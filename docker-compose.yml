@@ -1,0 +1,19 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: samct-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: samctdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    ports:
+      - "5432:5432"
+    volumes:
+      - samct_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  samct_postgres_data:
+  

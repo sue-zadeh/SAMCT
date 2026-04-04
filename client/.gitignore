@@ -22,3 +22,37 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+# Node
+node_modules/
+dist/
+npm-debug.log*
+
+# Vite / frontend
+client/node_modules/
+client/dist/
+
+# .NET build folders
+bin/
+obj/
+server/bin/
+server/obj/
+
+# User / IDE files
+.vscode/
+.idea/
+*.user
+*.suo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+.env.*
+
+# Logs
+*.log
+
+# Optional: local database or secrets
+appsettings.Local.json
