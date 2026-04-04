@@ -137,3 +137,33 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Node
+node_modules/
+client/node_modules/
+dist/
+client/dist/
+npm-debug.log*
+
+# .NET
+bin/
+obj/
+server/bin/
+server/obj/
+
+# VS Code / IDE
+.vscode/
+.idea/
+*.user
+*.suo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.*
+
+# Logs
+*.log
