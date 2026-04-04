@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "sVcV4jHmBxY=",
+  "success": true,
+  "projectFilePath": "/home/sue/devacademy/1/SAMCT/server/server.csproj",
+  "expectedPackageFiles": [
+    "/home/sue/.nuget/packages/microsoft.aspnetcore.openapi/9.0.4/microsoft.aspnetcore.openapi.9.0.4.nupkg.sha512",
+    "/home/sue/.nuget/packages/microsoft.openapi/1.6.17/microsoft.openapi.1.6.17.nupkg.sha512"
+  ],
+  "logs": []
+}
