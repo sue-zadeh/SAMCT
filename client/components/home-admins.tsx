@@ -1,16 +1,37 @@
 import { Link } from "react-router-dom";
 
 function HomeAdmins() {
+  const fullName = localStorage.getItem("fullname") || "Admin User";
+  const firstName = localStorage.getItem("firstname") || "Admin";
+  const profileImageUrl =
+    localStorage.getItem("profileImageUrl") || "https://via.placeholder.com/80";
+
   return (
     <main className="container py-5">
       {/* Header */}
       <section className="mb-5">
-        <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+        <div className="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-4 p-4 border rounded-4 shadow-sm bg-white">
+          <div className="d-flex align-items-center gap-3">
+            <img
+              src={profileImageUrl}
+              alt={fullName}
+              width="80"
+              height="80"
+              className="rounded-circle border"
+              style={{ objectFit: "cover" }}
+            />
+
+            <div>
+              <p className="text-uppercase text-primary fw-semibold mb-1">
+                Admin Portal
+              </p>
+              <h1 className="fw-bold mb-1">Welcome, {firstName}</h1>
+              <p className="text-secondary mb-0">{fullName}</p>
+            </div>
+          </div>
+
           <div>
-            <p className="text-uppercase text-primary fw-semibold mb-1">
-              Admin Portal
-            </p>
-            <h1 className="fw-bold mb-2">Admin Dashboard</h1>
+            <h2 className="h4 fw-bold mb-2">Admin Dashboard</h2>
             <p className="text-secondary mb-0">
               Manage records, documents, maintenance, property data, and public website content.
             </p>

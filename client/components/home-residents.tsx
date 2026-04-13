@@ -1,35 +1,45 @@
 import { Link } from "react-router-dom";
 
 function HomeResidents() {
+  const fullName = localStorage.getItem("fullname") || "Resident User";
+  const firstName = localStorage.getItem("firstname") || "Resident";
+  const profileImageUrl =
+    localStorage.getItem("profileImageUrl") || "https://via.placeholder.com/80";
+
   return (
     <main className="container py-5">
       {/* Header */}
       <section className="mb-5">
-        <div className="row align-items-center g-4">
-          <div className="col-lg-7">
-            <p className="text-uppercase text-primary fw-semibold mb-1">
-              Resident Portal
-            </p>
-            <h1 className="fw-bold mb-3">Welcome to the Resident Portal</h1>
-            <p className="lead mb-3">
-              Log maintenance issues and access resident-related information in one place.
-            </p>
+        <div className="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-4 p-4 border rounded-4 shadow-sm bg-white">
+          <div className="d-flex align-items-center gap-3">
+            <img
+              src={profileImageUrl}
+              alt={fullName}
+              width="80"
+              height="80"
+              className="rounded-circle border"
+              style={{ objectFit: "cover" }}
+            />
+
+            <div>
+              <p className="text-uppercase text-primary fw-semibold mb-1">
+                Resident Portal
+              </p>
+              <h1 className="fw-bold mb-1">Welcome, {firstName}</h1>
+              <p className="text-secondary mb-0">{fullName}</p>
+            </div>
+          </div>
+
+          <div>
+            <h2 className="h4 fw-bold mb-2">Resident Dashboard</h2>
             <p className="text-secondary mb-0">
-              This portal is designed to help residents report issues, track submitted requests,
-              and view notices or documents if these are included in the final system.
+              Log maintenance issues, view submitted requests, and check resident updates.
             </p>
           </div>
 
-          <div className="col-lg-5">
-            <div className="p-4 border rounded-4 shadow-sm bg-white">
-              <h2 className="h5 fw-bold mb-3">Resident Access</h2>
-              <ul className="mb-0 ps-3">
-                <li className="mb-2">Log maintenance issues</li>
-                <li className="mb-2">View submitted requests</li>
-                <li className="mb-2">Check request status updates</li>
-                <li>Access notices or documents if enabled</li>
-              </ul>
-            </div>
+          <div className="d-flex flex-wrap gap-2">
+            <button className="btn btn-primary">Log Maintenance Issue</button>
+            <button className="btn btn-outline-dark">View My Requests</button>
           </div>
         </div>
       </section>

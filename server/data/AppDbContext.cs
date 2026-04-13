@@ -10,8 +10,6 @@ namespace server.Data
         }
 
         public DbSet<User> Users { get; set; }
-        public DbSet<Role> Roles { get; set; }
-        public DbSet<UserRole> UserRoles { get; set; }
         public DbSet<ContactMessage> ContactMessages { get; set; }
         public DbSet<MaintenanceRequest> MaintenanceRequests { get; set; }
 
@@ -19,8 +17,32 @@ namespace server.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<UserRole>()
-                .HasKey(ur => new { ur.UserId, ur.RoleId });
+            modelBuilder.Entity<User>().HasData(
+                new User
+                {
+                    Id = 1,
+                    FirstName = "Sue",
+                    LastName = "Admin",
+                    FullName = "Sue Admin",
+                    Email = "admin@samct.co.nz",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!"),
+                    Role = "Admin",
+                    ProfileImageUrl = "https://via.placeholder.com/80",
+                    IsActive = true
+                },
+                new User
+                {
+                    Id = 2,
+                    FirstName = "John",
+                    LastName = "Resident",
+                    FullName = "John Resident",
+                    Email = "resident@samct.co.nz",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("Resident123!"),
+                    Role = "Resident",
+                    ProfileImageUrl = "https://via.placeholder.com/80",
+                    IsActive = true
+                }
+            );
         }
     }
 }

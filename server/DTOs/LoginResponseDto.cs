@@ -1,19 +1,12 @@
-namespace server.Models
+namespace server.DTOs
 {
-    public class User
+    public class LoginResponseDto
     {
-        public int Id { get; set; }
-
+        public string Message { get; set; } = "";
         public string FirstName { get; set; } = "";
         public string LastName { get; set; } = "";
         public string FullName { get; set; } = "";
-
-        public string Email { get; set; } = "";
-        public string PasswordHash { get; set; } = "";
-
         public string Role { get; set; } = "";
         public string ProfileImageUrl { get; set; } = "";
-
-        public bool IsActive { get; set; } = true;
     }
 }
