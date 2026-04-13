@@ -12,14 +12,13 @@ function HomePublic() {
             </h1>
 
             <p className="lead mb-3">
-              A public website and secure portal for residents, village managers,
-              and administration.
+              Offers affordable housing to retired people in the South Auckland and surrounding regions.<br />
+Locations: Operates villages in Papakura, Ngatea, and Whitianga.
             </p>
 
             <p className="mb-4">
-              This platform is designed to support property-related records,
-              resident maintenance requests, key documents, and public information
-              such as marketing and availability.
+             The South Auckland Masonic Charitable Trust provides affordable housing for the elderly, focusing on retirement villages in Papakura, Ngatea, and Whitianga. Associated with local Freemasons, it supports community-focused, affordable retirement living with onsite maintenance, though it does not typically provide direct care services. 
+
             </p>
 
             <div className="d-flex flex-wrap gap-3">
