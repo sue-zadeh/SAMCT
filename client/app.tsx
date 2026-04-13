@@ -1,16 +1,19 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import HomePublic from "./components/home-public";
-
+import HomeAdmins from "./components/home-admins";
+import HomeResidents from "./components/home-residents";
 import Navbar from "./components/navbar";
 
 function App() {
   return (
-    <BrowserRouter>
-        <Navbar />
+    <>
+      <Navbar />
       <Routes>
         <Route path="/" element={<HomePublic />} />
+        <Route path="/admin" element={<HomeAdmins />} />
+        <Route path="/resident" element={<HomeResidents />} />
       </Routes>
-    </BrowserRouter>
+    </>
   );
 }
 
