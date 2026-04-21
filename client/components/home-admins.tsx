@@ -1,14 +1,16 @@
 import { Link } from "react-router-dom";
+import Navbar from "./navbar";
 
 function HomeAdmins() {
-  const fullName = localStorage.getItem("fullname") || "Admin User";
-  const firstName = localStorage.getItem("firstname") || "Admin";
+  const fullName = localStorage.getItem("fullname") || "Graeme Norton";
+  const firstName = localStorage.getItem("firstname") || "Graeme";
   const profileImageUrl =
     localStorage.getItem("profileImageUrl") || "https://via.placeholder.com/80";
 
   return (
+    <>
+      <Navbar userType="admin" />
     <main className="container py-5">
-      {/* Header */}
       <section className="mb-5">
         <div className="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-4 p-4 border rounded-4 shadow-sm bg-white">
           <div className="d-flex align-items-center gap-3">
@@ -44,7 +46,6 @@ function HomeAdmins() {
         </div>
       </section>
 
-      {/* Role Cards */}
       <section className="mb-5">
         <div className="row g-4">
           <div className="col-md-4">
@@ -76,7 +77,6 @@ function HomeAdmins() {
         </div>
       </section>
 
-      {/* Main Management Sections */}
       <section className="mb-5">
         <div className="row g-4">
           <div className="col-md-6 col-lg-4">
@@ -141,7 +141,6 @@ function HomeAdmins() {
         </div>
       </section>
 
-      {/* Quick Summary */}
       <section className="mb-5">
         <div className="p-4 rounded-4 border shadow-sm bg-light">
           <h2 className="h4 fw-bold mb-3">Admin Notes</h2>
@@ -153,7 +152,6 @@ function HomeAdmins() {
         </div>
       </section>
 
-      {/* Bottom CTA */}
       <section>
         <div className="p-5 rounded-4 border shadow-sm text-center bg-white">
           <h2 className="fw-bold mb-3">Need to update website content?</h2>
@@ -170,6 +168,7 @@ function HomeAdmins() {
         </div>
       </section>
     </main>
+    </>
   );
 }
 

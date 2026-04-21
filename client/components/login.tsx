@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import axios, { AxiosError } from "axios";
 import { useNavigate } from "react-router-dom";
+import Navbar from "./navbar";
+
 
 interface LoginProps {
   onLoginSuccess: () => void;
@@ -13,7 +15,6 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const [error, setError] = useState<string>("");
   const [rememberMe, setRememberMe] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isForgotPassword, setIsForgotPassword] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
   const navigate = useNavigate();
@@ -36,17 +37,21 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     setError("");
 
     try {
-      const response = await axios.post("/api/login", { email, password });
+      const response = await axios.post("http://localhost:5072/api/login", {
+        email,
+        password,
+      });
 
       if (response.data.message === "Login successful") {
-localStorage.setItem("firstname", response.data.FirstName || response.data.firstName || "");
-localStorage.setItem("lastname", response.data.LastName || response.data.lastName || "");
-localStorage.setItem("fullname", response.data.FullName || response.data.fullName || "");
-localStorage.setItem("role", response.data.Role || response.data.role || "");
-localStorage.setItem(
-  "profileImageUrl",
-  response.data.ProfileImageUrl || response.data.profileImageUrl || "https://via.placeholder.com/80"
-);
+        localStorage.setItem("firstname", response.data.firstName || response.data.FirstName || "");
+        localStorage.setItem("lastname", response.data.lastName || response.data.LastName || "");
+        localStorage.setItem("fullname", response.data.fullName || response.data.FullName || "");
+        localStorage.setItem("role", response.data.role || response.data.Role || "");
+        localStorage.setItem(
+          "profileImageUrl",
+          response.data.profileImageUrl || response.data.ProfileImageUrl || "https://via.placeholder.com/80"
+        );
+
         if (rememberMe) {
           localStorage.setItem("email", email);
         } else {
@@ -55,7 +60,14 @@ localStorage.setItem(
 
         onLoginSuccess();
 
-        if (response.data.role === "Admin") {
+        const role = response.data.role || response.data.Role;
+
+        if (
+          role === "Admin" ||
+          role === "CompanySecretary" ||
+          role === "FinanceAdmin" ||
+          role === "VillageManager"
+        ) {
           navigate("/admin");
         } else {
           navigate("/resident");
@@ -77,43 +89,13 @@ localStorage.setItem(
     }
   };
 
-  const handleForgotPassword = async () => {
-    if (!email) {
-      setError("Please enter your email.");
-      return;
-    }
-
-    setIsLoading(true);
-    setError("");
-
-    try {
-      const response = await axios.post("/api/forgot-password", { email });
-
-      if (response.data.message === "Password reset email sent successfully") {
-        alert("Password reset email sent. Check your inbox.");
-        setError("");
-      } else {
-        setError(response.data.message || "Failed to send reset email.");
-      }
-    } catch (err) {
-      const axiosError = err as AxiosError<{ message: string }>;
-      console.error("Error during forgot password:", axiosError);
-
-      if (axiosError.response?.data?.message) {
-        setError(axiosError.response.data.message);
-      } else {
-        setError("An unexpected error occurred. Please try again.");
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
   return (
+     <>
+          <Navbar userType="public" />
     <div
       className="login-container d-flex justify-content-center align-items-center vh-100"
       style={{ backgroundColor: "#F8F9FA" }}
@@ -124,7 +106,7 @@ localStorage.setItem(
       >
         <h2 className="text-center mb-4 text-primary">Welcome to SAMCT Portal</h2>
         <h3 className="text-center my-4">
-          <i>{isForgotPassword ? "Forgot Password" : "Login"}</i>
+          <i>Login</i>
         </h3>
 
         <div className="form-group mb-3">
@@ -135,68 +117,58 @@ localStorage.setItem(
             className="form-control"
             placeholder="Enter your email"
             value={email}
+            autoComplete="email"
             onChange={(e) => setEmail(e.target.value)}
           />
         </div>
 
-        {!isForgotPassword && (
-          <div className="form-group mb-3 position-relative">
-            <label htmlFor="password">Password</label>
+        <div className="form-group mb-3 position-relative">
+          <label htmlFor="password">Password</label>
+          <div className="input-group">
             <input
               type={showPassword ? "text" : "password"}
               id="password"
               className="form-control"
               placeholder="Enter your password"
               value={password}
+              autoComplete="current-password"
               onChange={(e) => setPassword(e.target.value)}
             />
-            <span
-              className="position-absolute top-50 end-0 translate-middle-y pe-3 pt-3"
-              style={{ cursor: "pointer", fontSize: "1.2rem" }}
+            <button
+              type="button"
+              className="btn btn-outline-secondary"
               onClick={togglePasswordVisibility}
             >
               {showPassword ? <FaEyeSlash /> : <FaEye />}
-            </span>
+            </button>
           </div>
-        )}
+        </div>
 
         {error && <div className="text-danger mb-2">{error}</div>}
 
-        {!isForgotPassword && (
-          <div className="form-check mb-3">
-            <input
-              type="checkbox"
-              id="rememberMe"
-              className="form-check-input"
-              checked={rememberMe}
-              onChange={() => setRememberMe(!rememberMe)}
-            />
-            <label htmlFor="rememberMe" className="form-check-label">
-              Remember Me
-            </label>
-          </div>
-        )}
+        <div className="form-check mb-3">
+          <input
+            type="checkbox"
+            id="rememberMe"
+            className="form-check-input"
+            checked={rememberMe}
+            onChange={() => setRememberMe(!rememberMe)}
+          />
+          <label htmlFor="rememberMe" className="form-check-label">
+            Remember Me
+          </label>
+        </div>
 
         <button
           className="btn btn-primary w-100"
-          onClick={isForgotPassword ? handleForgotPassword : handleLogin}
+          onClick={handleLogin}
           disabled={isLoading}
         >
-          {isLoading
-            ? "Processing..."
-            : isForgotPassword
-            ? "Send Password Reset Email"
-            : "Login"}
-        </button>
-
-        <button
-          className="btn btn-link w-100 mt-3"
-          onClick={() => setIsForgotPassword(!isForgotPassword)}
-        >
-          {isForgotPassword ? "Back to Login" : "Forgot Password?"}
+          {isLoading ? "Processing..." : "Login"}
         </button>
       </div>
     </div>
+    </>
   );
 };
 

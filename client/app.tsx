@@ -4,12 +4,11 @@ import HomeAdmins from "./components/home-admins";
 import HomeResidents from "./components/home-residents";
 import Login from "./components/login";
 import Register from "./components/register";
-import Navbar from "./components/navbar";
+import Footer from "./components/footer";
 
 function App() {
   return (
     <>
-      <Navbar />
       <Routes>
         <Route path="/" element={<HomePublic />} />
         <Route path="/admin" element={<HomeAdmins />} />
@@ -17,6 +16,7 @@ function App() {
         <Route path="/login" element={<Login onLoginSuccess={() => {}} />} />
         <Route path="/register" element={<Register />} />
       </Routes>
+      <Footer />
     </>
   );
 }

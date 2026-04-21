@@ -1,11 +1,16 @@
 import { Link } from "react-router-dom";
+import Navbar from "./navbar";
 
 function HomePublic() {
   return (
+    <>
+      <Navbar userType="public" />
+      
     <main>
       {/* Hero Section */}
       <section className="container py-5">
         <div className="row align-items-center g-5">
+     
           <div className="col-lg-6">
             <p className="text-uppercase text-primary fw-semibold mb-2">
               Affordable retirement living
@@ -272,6 +277,7 @@ function HomePublic() {
         </div>
       </section>
     </main>
+    </>
   );
 }
 

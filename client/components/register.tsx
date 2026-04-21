@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import axios from "axios";
 import { FaUser, FaEnvelope, FaEye, FaEyeSlash, FaLock, FaImage } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import Navbar from "./navbar";
+
 
 function Register() {
   const navigate = useNavigate();
@@ -91,6 +93,8 @@ function Register() {
   };
 
   return (
+    <>
+         <Navbar userType="public" />
     <div
       className="container d-flex justify-content-center align-items-center py-5"
       style={{ minHeight: "100vh" }}
@@ -233,6 +237,7 @@ function Register() {
         </form>
       </div>
     </div>
+    </>
   );
 }
 

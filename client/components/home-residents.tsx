@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import Navbar from "./navbar";
 
 function HomeResidents() {
   const fullName = localStorage.getItem("fullname") || "Resident User";
@@ -7,6 +8,8 @@ function HomeResidents() {
     localStorage.getItem("profileImageUrl") || "https://via.placeholder.com/80";
 
   return (
+    <>
+     <Navbar userType="resident" />
     <main className="container py-5">
       {/* Header */}
       <section className="mb-5">
@@ -141,6 +144,7 @@ function HomeResidents() {
         </div>
       </section>
     </main>
+    </>
   );
 }
 
