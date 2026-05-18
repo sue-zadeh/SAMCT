@@ -15,6 +15,7 @@ export default function Navbar({ userType }: NavbarProps) {
     localStorage.removeItem("fullname");
     localStorage.removeItem("role");
     localStorage.removeItem("profileImageUrl");
+    localStorage.removeItem("email");
     navigate("/");
   };
 
@@ -22,7 +23,6 @@ export default function Navbar({ userType }: NavbarProps) {
     { label: "Home", path: "/" },
     { label: "About", path: "/about" },
     { label: "Availability", path: "/availability" },
-    { label: "Marketing", path: "/marketing" },
     { label: "Contact", path: "/contact" },
     { label: "Login", path: "/login" },
     { label: "Register", path: "/register" },
@@ -32,18 +32,20 @@ export default function Navbar({ userType }: NavbarProps) {
     { label: "Dashboard", path: "/resident" },
     { label: "Maintenance", path: "/resident/maintenance" },
     { label: "My Requests", path: "/resident/requests" },
-    { label: "Documents", path: "/resident/documents" },
+    { label: "Documents & Notices", path: "/resident/documents" },
+    { label: "Profile", path: "/resident/profile" },
   ];
 
   const adminLinks = [
     { label: "Dashboard", path: "/admin" },
-    { label: "Properties", path: "/admin/properties" },
+    { label: "Residents", path: "/admin/people" },
+    { label: "Village Data", path: "/admin/properties" },
     { label: "Maintenance", path: "/admin/maintenance" },
-    { label: "Documents", path: "/admin/documents" },
+    { label: "Documents & Notices", path: "/admin/documents" },
     { label: "Orders", path: "/admin/orders" },
     { label: "Accounts", path: "/admin/accounts" },
-    { label: "People", path: "/admin/people" },
     { label: "Website Content", path: "/admin/content" },
+    { label: "Profile", path: "/admin/profile" },
   ];
 
   let links = publicLinks;
@@ -116,6 +118,7 @@ const styles: Record<string, React.CSSProperties> = {
     textDecoration: "none",
     color: "#374151",
     fontWeight: 500,
+    fontSize: "0.95rem",
   },
   logoutButton: {
     border: "1px solid #d1d5db",

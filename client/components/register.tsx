@@ -1,9 +1,16 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { FaUser, FaEnvelope, FaEye, FaEyeSlash, FaLock, FaImage } from "react-icons/fa";
+import {
+  FaUser,
+  FaEnvelope,
+  FaEye,
+  FaEyeSlash,
+  FaLock,
+  FaImage,
+  FaBuilding,
+} from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import Navbar from "./navbar";
-
 
 function Register() {
   const navigate = useNavigate();
@@ -15,9 +22,10 @@ function Register() {
     password: "",
     confirmPassword: "",
     role: "Resident",
-    profileImageUrl: "",
+    village: "Papakura",
   });
 
+  const [profileImage, setProfileImage] = useState<File | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [notification, setNotification] = useState("");
@@ -29,6 +37,12 @@ function Register() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setProfileImage(e.target.files[0]);
+    }
+  };
+
   const validateForm = () => {
     if (
       !formData.firstName ||
@@ -36,7 +50,8 @@ function Register() {
       !formData.email ||
       !formData.password ||
       !formData.confirmPassword ||
-      !formData.role
+      !formData.role ||
+      !formData.village
     ) {
       return "All required fields must be filled.";
     }
@@ -69,14 +84,27 @@ function Register() {
       setIsLoading(true);
       setNotification("");
 
-      const response = await axios.post("http://localhost:5072/api/register", {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        password: formData.password,
-        role: formData.role,
-        profileImageUrl: formData.profileImageUrl,
-      });
+      const data = new FormData();
+      data.append("firstName", formData.firstName);
+      data.append("lastName", formData.lastName);
+      data.append("email", formData.email);
+      data.append("password", formData.password);
+      data.append("role", formData.role);
+      data.append("village", formData.village);
+
+      if (profileImage) {
+        data.append("profileImage", profileImage);
+      }
+
+      const response = await axios.post(
+        "http://localhost:5072/api/register",
+        data,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
 
       setNotification(response.data.message || "User registered successfully.");
 
@@ -84,159 +112,183 @@ function Register() {
         navigate("/");
       }, 1200);
     } catch (error: any) {
-      setNotification(
-        error?.response?.data?.message || "Failed to register user."
-      );
-    } finally {
+  setNotification(
+    error?.response?.data?.message ||
+      error?.message ||
+      "Registration failed. Please check the entered details and try again."
+  );
+} finally {
       setIsLoading(false);
     }
   };
 
   return (
     <>
-         <Navbar userType="public" />
-    <div
-      className="container d-flex justify-content-center align-items-center py-5"
-      style={{ minHeight: "100vh" }}
-    >
-      <div className="card shadow p-4" style={{ maxWidth: "550px", width: "100%" }}>
-        <h2 className="text-center mb-4">Register User</h2>
+      <Navbar userType="public" />
+      <div
+        className="container d-flex justify-content-center align-items-center py-5"
+        style={{ minHeight: "100vh" }}
+      >
+        <div
+          className="card shadow p-4"
+          style={{ maxWidth: "550px", width: "100%" }}
+        >
+          <h2 className="text-center mb-4">Register User</h2>
 
-        {notification && (
-          <div className="alert alert-info text-center">{notification}</div>
-        )}
+          {notification && (
+            <div className="alert alert-info text-center">{notification}</div>
+          )}
 
-        <form onSubmit={handleSubmit}>
-          <div className="row">
-            <div className="col-md-6 mb-3">
+          <form onSubmit={handleSubmit}>
+            <div className="row">
+              <div className="col-md-6 mb-3">
+                <label className="form-label">
+                  <FaUser className="me-2" />
+                  First Name
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  name="firstName"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">
+                  <FaUser className="me-2" />
+                  Last Name
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
+            <div className="mb-3">
               <label className="form-label">
-                <FaUser className="me-2" />
-                First Name
+                <FaEnvelope className="me-2" />
+                Email
               </label>
               <input
-                type="text"
+                type="email"
                 className="form-control"
-                name="firstName"
-                value={formData.firstName}
+                name="email"
+                value={formData.email}
                 onChange={handleChange}
               />
             </div>
 
-            <div className="col-md-6 mb-3">
+            <div className="mb-3">
               <label className="form-label">
                 <FaUser className="me-2" />
-                Last Name
+                Role
+              </label>
+              <select
+                className="form-select"
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+              >
+                <option value="Resident">Resident</option>
+                <option value="VillageManager">Village Manager</option>
+                <option value="CompanySecretary">Company Secretary</option>
+                <option value="FinancialAdvisor">Financial Advisor</option>
+                <option value="Chairman">Chairman</option>
+              </select>
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label">
+                <FaBuilding className="me-2" />
+                Village
+              </label>
+              <select
+                className="form-select"
+                name="village"
+                value={formData.village}
+                onChange={handleChange}
+              >
+                <option value="Papakura">Papakura</option>
+                <option value="Ngatea">Ngatea</option>
+                <option value="Whitianga">Whitianga</option>
+              </select>
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label">
+                <FaImage className="me-2" />
+                Profile Image
               </label>
               <input
-                type="text"
+                type="file"
                 className="form-control"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleChange}
+                accept="image/*"
+                onChange={handleImageChange}
               />
             </div>
-          </div>
 
-          <div className="mb-3">
-            <label className="form-label">
-              <FaEnvelope className="me-2" />
-              Email
-            </label>
-            <input
-              type="email"
-              className="form-control"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-            />
-          </div>
+            <div className="mb-3 position-relative">
+              <label className="form-label">
+                <FaLock className="me-2" />
+                Password
+              </label>
+              <div className="input-group">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  className="form-control"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                />
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              </div>
+            </div>
 
-          <div className="mb-3">
-            <label className="form-label">
-              <FaUser className="me-2" />
-              Role
-            </label>
-            <select
-              className="form-select"
-              name="role"
-              value={formData.role}
-              onChange={handleChange}
+            <div className="mb-4">
+              <label className="form-label">
+                <FaLock className="me-2" />
+                Confirm Password
+              </label>
+              <div className="input-group">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  className="form-control"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                />
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              className="btn btn-primary w-100"
+              disabled={isLoading}
             >
-              <option value="Resident">Resident</option>
-              <option value="Admin">Admin</option>
-              <option value="CompanySecretary">Company Secretary</option>
-              <option value="FinanceAdmin">Finance Admin</option>
-              <option value="VillageManager">Village Manager</option>
-            </select>
-          </div>
-
-          <div className="mb-3">
-            <label className="form-label">
-              <FaImage className="me-2" />
-              Profile Image URL
-            </label>
-            <input
-              type="text"
-              className="form-control"
-              name="profileImageUrl"
-              value={formData.profileImageUrl}
-              onChange={handleChange}
-              placeholder="Optional image URL"
-            />
-          </div>
-
-          <div className="mb-3 position-relative">
-            <label className="form-label">
-              <FaLock className="me-2" />
-              Password
-            </label>
-            <div className="input-group">
-              <input
-                type={showPassword ? "text" : "password"}
-                className="form-control"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-              />
-              <button
-                type="button"
-                className="btn btn-outline-secondary"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? <FaEyeSlash /> : <FaEye />}
-              </button>
-            </div>
-          </div>
-
-          <div className="mb-4">
-            <label className="form-label">
-              <FaLock className="me-2" />
-              Confirm Password
-            </label>
-            <div className="input-group">
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                className="form-control"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-              />
-              <button
-                type="button"
-                className="btn btn-outline-secondary"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              >
-                {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
-              </button>
-            </div>
-          </div>
-
-          <button type="submit" className="btn btn-primary w-100" disabled={isLoading}>
-            {isLoading ? "Registering..." : "Register User"}
-          </button>
-        </form>
+              {isLoading ? "Registering..." : "Register User"}
+            </button>
+          </form>
+        </div>
       </div>
-    </div>
     </>
   );
 }
