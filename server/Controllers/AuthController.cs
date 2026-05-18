@@ -20,31 +20,43 @@ namespace server.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequestDto request)
         {
-            if (string.IsNullOrWhiteSpace(request.FirstName) ||
+            if (string.IsNullOrWhiteSpace(request.UserName) ||
+                string.IsNullOrWhiteSpace(request.FirstName) ||
                 string.IsNullOrWhiteSpace(request.LastName) ||
                 string.IsNullOrWhiteSpace(request.Email) ||
                 string.IsNullOrWhiteSpace(request.Password) ||
-                string.IsNullOrWhiteSpace(request.Role))
+                string.IsNullOrWhiteSpace(request.Role) ||
+                string.IsNullOrWhiteSpace(request.Village))
             {
                 return BadRequest(new { message = "All required fields must be filled." });
             }
 
-            var existingUser = await _context.Users
+            var existingUserByEmail = await _context.Users
                 .FirstOrDefaultAsync(u => u.Email == request.Email);
 
-            if (existingUser != null)
+            if (existingUserByEmail != null)
             {
-                return BadRequest(new { message = "This email is already registered." });
+                return BadRequest(new { message = "Email is already in use." });
+            }
+
+            var existingUserByUserName = await _context.Users
+                .FirstOrDefaultAsync(u => u.UserName == request.UserName);
+
+            if (existingUserByUserName != null)
+            {
+                return BadRequest(new { message = "Username is already in use." });
             }
 
             var user = new User
             {
+                UserName = request.UserName,
                 FirstName = request.FirstName,
                 LastName = request.LastName,
                 FullName = $"{request.FirstName} {request.LastName}",
                 Email = request.Email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
                 Role = request.Role,
+                Village = request.Village,
                 ProfileImageUrl = string.IsNullOrWhiteSpace(request.ProfileImageUrl)
                     ? "https://via.placeholder.com/80"
                     : request.ProfileImageUrl,
@@ -61,7 +73,7 @@ namespace server.Controllers
         public async Task<IActionResult> Login([FromBody] LoginRequestDto request)
         {
             var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Email == request.Email && u.IsActive);
+                .FirstOrDefaultAsync(u => u.UserName == request.UserName && u.IsActive);
 
             if (user == null)
             {
@@ -78,10 +90,12 @@ namespace server.Controllers
             var response = new LoginResponseDto
             {
                 Message = "Login successful",
+                UserName = user.UserName,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 FullName = user.FullName,
                 Role = user.Role,
+                Village = user.Village,
                 ProfileImageUrl = user.ProfileImageUrl
             };
 

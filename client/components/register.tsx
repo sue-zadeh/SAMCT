@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import axios from "axios";
+import React, { useState } from 'react'
+import axios from 'axios'
 import {
   FaUser,
   FaEnvelope,
@@ -8,43 +8,39 @@ import {
   FaLock,
   FaImage,
   FaBuilding,
-} from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
-import Navbar from "./navbar";
+} from 'react-icons/fa'
+import { useNavigate } from 'react-router-dom'
+import Navbar from './navbar'
 
 function Register() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    role: "Resident",
-    village: "Papakura",
-  });
+    userName: '',
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    role: 'Resident',
+    village: 'Papakura',
+    profileImageUrl: '',
+  })
 
-  const [profileImage, setProfileImage] = useState<File | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [notification, setNotification] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [notification, setNotification] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setProfileImage(e.target.files[0]);
-    }
-  };
+    setFormData({ ...formData, [e.target.name]: e.target.value })
+  }
 
   const validateForm = () => {
     if (
+      !formData.userName ||
       !formData.firstName ||
       !formData.lastName ||
       !formData.email ||
@@ -53,85 +49,74 @@ function Register() {
       !formData.role ||
       !formData.village
     ) {
-      return "All required fields must be filled.";
+      return 'All required fields must be filled.'
     }
 
     if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      return "Invalid email format.";
+      return 'Invalid email format.'
     }
 
     if (formData.password.length < 8) {
-      return "Password must be at least 8 characters.";
+      return 'Password must be at least 8 characters.'
     }
 
     if (formData.password !== formData.confirmPassword) {
-      return "Passwords do not match.";
+      return 'Passwords do not match.'
     }
 
-    return null;
-  };
+    return null
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
-    const error = validateForm();
+    const error = validateForm()
     if (error) {
-      setNotification(error);
-      return;
+      setNotification(error)
+      return
     }
 
     try {
-      setIsLoading(true);
-      setNotification("");
+      setIsLoading(true)
+      setNotification('')
 
-      const data = new FormData();
-      data.append("firstName", formData.firstName);
-      data.append("lastName", formData.lastName);
-      data.append("email", formData.email);
-      data.append("password", formData.password);
-      data.append("role", formData.role);
-      data.append("village", formData.village);
+      const response = await axios.post('http://localhost:5072/api/register', {
+        userName: formData.userName,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role,
+        village: formData.village,
+        profileImageUrl: formData.profileImageUrl,
+      })
 
-      if (profileImage) {
-        data.append("profileImage", profileImage);
-      }
-
-      const response = await axios.post(
-        "http://localhost:5072/api/register",
-        data,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-
-      setNotification(response.data.message || "User registered successfully.");
+      setNotification(response.data.message || 'User registered successfully.')
 
       setTimeout(() => {
-        navigate("/");
-      }, 1200);
+        navigate('/login')
+      }, 1200)
     } catch (error: any) {
-  setNotification(
-    error?.response?.data?.message ||
-      error?.message ||
-      "Registration failed. Please check the entered details and try again."
-  );
-} finally {
-      setIsLoading(false);
+      setNotification(
+        error?.response?.data?.message ||
+          error?.message ||
+          'Registration failed. Please check the entered details and try again.',
+      )
+    } finally {
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <>
       <Navbar userType="public" />
       <div
         className="container d-flex justify-content-center align-items-center py-5"
-        style={{ minHeight: "100vh" }}
+        style={{ minHeight: '100vh' }}
       >
         <div
           className="card shadow p-4"
-          style={{ maxWidth: "550px", width: "100%" }}
+          style={{ maxWidth: '550px', width: '100%' }}
         >
           <h2 className="text-center mb-4">Register User</h2>
 
@@ -140,6 +125,20 @@ function Register() {
           )}
 
           <form onSubmit={handleSubmit}>
+            <div className="mb-3">
+              <label className="form-label">
+                <FaUser className="me-2" />
+                Username
+              </label>
+              <input
+                type="text"
+                className="form-control"
+                name="userName"
+                value={formData.userName}
+                onChange={handleChange}
+              />
+            </div>
+
             <div className="row">
               <div className="col-md-6 mb-3">
                 <label className="form-label">
@@ -223,13 +222,15 @@ function Register() {
             <div className="mb-3">
               <label className="form-label">
                 <FaImage className="me-2" />
-                Profile Image
+                Profile Image URL
               </label>
               <input
-                type="file"
+                type="text"
                 className="form-control"
-                accept="image/*"
-                onChange={handleImageChange}
+                name="profileImageUrl"
+                value={formData.profileImageUrl}
+                onChange={handleChange}
+                placeholder="Optional image URL"
               />
             </div>
 
@@ -240,7 +241,7 @@ function Register() {
               </label>
               <div className="input-group">
                 <input
-                  type={showPassword ? "text" : "password"}
+                  type={showPassword ? 'text' : 'password'}
                   className="form-control"
                   name="password"
                   value={formData.password}
@@ -263,7 +264,7 @@ function Register() {
               </label>
               <div className="input-group">
                 <input
-                  type={showConfirmPassword ? "text" : "password"}
+                  type={showConfirmPassword ? 'text' : 'password'}
                   className="form-control"
                   name="confirmPassword"
                   value={formData.confirmPassword}
@@ -284,13 +285,13 @@ function Register() {
               className="btn btn-primary w-100"
               disabled={isLoading}
             >
-              {isLoading ? "Registering..." : "Register User"}
+              {isLoading ? 'Registering...' : 'Register User'}
             </button>
           </form>
         </div>
       </div>
     </>
-  );
+  )
 }
 
-export default Register;
+export default Register
