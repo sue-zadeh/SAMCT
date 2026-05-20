@@ -1,0 +1,223 @@
+import Navbar from "./navbar";
+
+function HomeVillageManager() {
+  const firstName = localStorage.getItem("firstname") || "David";
+  const lastName = localStorage.getItem("lastname") || "Craddock";
+  const fullName =
+    localStorage.getItem("fullname") || `${firstName} ${lastName}`;
+  const village = localStorage.getItem("village") || "Ngatea";
+  const role = localStorage.getItem("role") || "VillageManager";
+  const profileImageUrl =
+    localStorage.getItem("profileImageUrl") || "https://via.placeholder.com/100";
+
+  const villageStats = [
+    { title: "Open Maintenance", value: "8", note: "Requests waiting for action" },
+    { title: "Residents", value: "24", note: "Profiles in this village" },
+    { title: "Unread Notices", value: "3", note: "New updates to review" },
+    { title: "Documents", value: "12", note: "Minutes, notices, village files" },
+  ];
+
+  const quickActions = [
+    {
+      title: "Village Data",
+      text: "View and manage information related only to your village.",
+      button: "Open Village Data",
+    },
+    {
+      title: "Maintenance Requests",
+      text: "Review private maintenance issues between residents and management.",
+      button: "View Maintenance",
+    },
+    {
+      title: "Residents",
+      text: "See resident profiles and information for your village only.",
+      button: "View Residents",
+    },
+    {
+      title: "Documents & Notices",
+      text: "Access village notices, minutes, and Code of Practice documents.",
+      button: "Open Documents",
+    },
+  ];
+
+  const recentItems = [
+    {
+      title: "Leaking tap - Unit 6",
+      status: "Pending",
+      date: "20 May 2026",
+    },
+    {
+      title: "Notice uploaded - Water shutdown",
+      status: "Completed",
+      date: "19 May 2026",
+    },
+    {
+      title: "Resident update - Unit 12",
+      status: "In Review",
+      date: "18 May 2026",
+    },
+  ];
+
+  const statusStyles: Record<string, React.CSSProperties> = {
+    Pending: {
+      backgroundColor: "#fef3c7",
+      color: "#92400e",
+    },
+    Completed: {
+      backgroundColor: "#dcfce7",
+      color: "#166534",
+    },
+    "In Review": {
+      backgroundColor: "#dbeafe",
+      color: "#1d4ed8",
+    },
+  };
+
+  return (
+    <>
+      <Navbar userType="villageManager" />
+
+      <main className="container py-5">
+        {/* Hero / Welcome */}
+        <section className="mb-4">
+          <div className="p-4 p-lg-5 border rounded-4 shadow-sm bg-white">
+            <div className="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-4">
+              <div className="d-flex align-items-center gap-3">
+                <img
+                  src={profileImageUrl}
+                  alt={fullName}
+                  width="90"
+                  height="90"
+                  className="rounded-circle border"
+                  style={{ objectFit: "cover" }}
+                />
+
+                <div>
+                  <p className="text-uppercase text-primary fw-semibold mb-1">
+                    Village Manager Portal
+                  </p>
+                  <h1 className="fw-bold mb-1">Welcome, {firstName}</h1>
+                  <p className="text-secondary mb-0">
+                    {fullName} | {role} | Village: {village}
+                  </p>
+                </div>
+              </div>
+
+              <div className="d-flex flex-wrap gap-2">
+                <button className="btn btn-primary">View Village Data</button>
+                <button className="btn btn-outline-dark">Open Maintenance</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Stats */}
+        <section className="mb-4">
+          <div className="row g-3">
+            {villageStats.map((item) => (
+              <div className="col-md-6 col-xl-3" key={item.title}>
+                <div className="p-4 border rounded-4 shadow-sm bg-white h-100">
+                  <p className="text-secondary mb-2">{item.title}</p>
+                  <h2 className="fw-bold mb-1">{item.value}</h2>
+                  <p className="small text-secondary mb-0">{item.note}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Quick Actions */}
+        <section className="mb-4">
+          <div className="p-4 border rounded-4 shadow-sm bg-white">
+            <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+              <div>
+                <p className="text-uppercase text-primary fw-semibold mb-1">
+                  Quick Actions
+                </p>
+                <h2 className="fw-bold mb-0">Manage your village area</h2>
+              </div>
+            </div>
+
+            <div className="row g-3">
+              {quickActions.map((item) => (
+                <div className="col-md-6" key={item.title}>
+                  <div className="p-4 border rounded-4 h-100">
+                    <h3 className="h5 fw-bold">{item.title}</h3>
+                    <p className="text-secondary">{item.text}</p>
+                    <button className="btn btn-sm btn-outline-primary">
+                      {item.button}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Recent Activity + Notes */}
+        <section>
+          <div className="row g-4">
+            <div className="col-lg-7">
+              <div className="p-4 border rounded-4 shadow-sm bg-white h-100">
+                <p className="text-uppercase text-primary fw-semibold mb-1">
+                  Recent Activity
+                </p>
+                <h2 className="fw-bold mb-3">Latest village updates</h2>
+
+                <div className="d-grid gap-3">
+                  {recentItems.map((item) => (
+                    <div
+                      key={item.title}
+                      className="p-3 border rounded-3 d-flex justify-content-between align-items-start flex-column flex-md-row gap-3"
+                    >
+                      <div>
+                        <h3 className="h6 fw-bold mb-1">{item.title}</h3>
+                        <p className="text-secondary small mb-0">
+                          Updated: {item.date}
+                        </p>
+                      </div>
+
+                      <span
+                        className="badge rounded-pill px-3 py-2"
+                        style={statusStyles[item.status]}
+                      >
+                        {item.status}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="col-lg-5">
+              <div className="p-4 border rounded-4 shadow-sm bg-white h-100">
+                <p className="text-uppercase text-primary fw-semibold mb-1">
+                  Access Notes
+                </p>
+                <h2 className="fw-bold mb-3">Your role access</h2>
+
+                <ul className="text-secondary ps-3 mb-0">
+                  <li className="mb-2">
+                    You should manage only data related to <strong>{village}</strong>.
+                  </li>
+                  <li className="mb-2">
+                    Maintenance requests are private between village management and admin.
+                  </li>
+                  <li className="mb-2">
+                    Residents should be able to view notices, minutes, and Code of Practice
+                    documents related to their own village.
+                  </li>
+                  <li className="mb-2">
+                    You may need a separate email account for village-related communication.
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </>
+  );
+}
+
+export default HomeVillageManager;

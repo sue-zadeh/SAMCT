@@ -1,16 +1,16 @@
-using Microsoft.AspNetCore.Http;
-
 namespace server.DTOs
 {
-    public class RegisterRequestDto
+    public class UserResponseDto
     {
+        public int Id { get; set; }
         public string UserName { get; set; } = "";
         public string FirstName { get; set; } = "";
         public string LastName { get; set; } = "";
+        public string FullName { get; set; } = "";
         public string Email { get; set; } = "";
-        public string Password { get; set; } = "";
         public string Role { get; set; } = "";
         public string Village { get; set; } = "";
-        public IFormFile? ProfileImage { get; set; }
+        public string ProfileImageUrl { get; set; } = "";
+        public bool IsActive { get; set; }
     }
 }

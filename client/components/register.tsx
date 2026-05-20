@@ -24,18 +24,25 @@ function Register() {
     confirmPassword: '',
     role: 'Resident',
     village: 'Papakura',
-    profileImageUrl: '',
   })
 
+  const [profileImage, setProfileImage] = useState<File | null>(null)
+  const [notification, setNotification] = useState('')
+  const [isError, setIsError] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [notification, setNotification] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
+  }
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setProfileImage(e.target.files[0])
+    }
   }
 
   const validateForm = () => {
@@ -73,25 +80,40 @@ function Register() {
     const error = validateForm()
     if (error) {
       setNotification(error)
+      setIsError(true)
       return
     }
 
     try {
       setIsLoading(true)
       setNotification('')
+      setIsError(false)
 
-      const response = await axios.post('http://localhost:5072/api/register', {
-        userName: formData.userName,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        password: formData.password,
-        role: formData.role,
-        village: formData.village,
-        profileImageUrl: formData.profileImageUrl,
-      })
+      const data = new FormData()
+      data.append('userName', formData.userName)
+      data.append('firstName', formData.firstName)
+      data.append('lastName', formData.lastName)
+      data.append('email', formData.email)
+      data.append('password', formData.password)
+      data.append('role', formData.role)
+      data.append('village', formData.village)
+
+      if (profileImage) {
+        data.append('profileImage', profileImage)
+      }
+
+      const response = await axios.post(
+        'http://localhost:5072/api/register',
+        data,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        },
+      )
 
       setNotification(response.data.message || 'User registered successfully.')
+      setIsError(false)
 
       setTimeout(() => {
         navigate('/login')
@@ -102,6 +124,7 @@ function Register() {
           error?.message ||
           'Registration failed. Please check the entered details and try again.',
       )
+      setIsError(true)
     } finally {
       setIsLoading(false)
     }
@@ -110,6 +133,7 @@ function Register() {
   return (
     <>
       <Navbar userType="public" />
+
       <div
         className="container d-flex justify-content-center align-items-center py-5"
         style={{ minHeight: '100vh' }}
@@ -121,7 +145,11 @@ function Register() {
           <h2 className="text-center mb-4">Register User</h2>
 
           {notification && (
-            <div className="alert alert-info text-center">{notification}</div>
+            <div
+              className={`alert text-center ${isError ? 'alert-danger' : 'alert-info'}`}
+            >
+              {notification}
+            </div>
           )}
 
           <form onSubmit={handleSubmit}>
@@ -222,19 +250,17 @@ function Register() {
             <div className="mb-3">
               <label className="form-label">
                 <FaImage className="me-2" />
-                Profile Image URL
+                Profile Image
               </label>
               <input
-                type="text"
+                type="file"
                 className="form-control"
-                name="profileImageUrl"
-                value={formData.profileImageUrl}
-                onChange={handleChange}
-                placeholder="Optional image URL"
+                accept="image/*"
+                onChange={handleImageChange}
               />
             </div>
 
-            <div className="mb-3 position-relative">
+            <div className="mb-3">
               <label className="form-label">
                 <FaLock className="me-2" />
                 Password

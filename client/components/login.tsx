@@ -46,15 +46,17 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         localStorage.setItem('firstname', response.data.firstName || '')
         localStorage.setItem('lastname', response.data.lastName || '')
         localStorage.setItem('fullname', response.data.fullName || '')
+        localStorage.setItem('email', response.data.email || '')
         localStorage.setItem('role', response.data.role || '')
         localStorage.setItem('village', response.data.village || '')
         localStorage.setItem(
           'profileImageUrl',
-          response.data.profileImageUrl || 'https://via.placeholder.com/80',
+          response.data.profileImageUrl || '',
         )
-
         if (rememberMe) {
           localStorage.setItem('username', userName)
+        } else {
+          localStorage.removeItem('username')
         }
 
         onLoginSuccess()
@@ -75,18 +77,17 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
       }
     } catch (err) {
       const axiosError = err as AxiosError<{ message: string }>
+
       if (axiosError.response?.data?.message) {
         setError(axiosError.response.data.message)
+      } else if (axiosError.message) {
+        setError(axiosError.message)
       } else {
         setError('An unexpected error occurred. Please try again.')
       }
     } finally {
       setIsLoading(false)
     }
-  }
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword)
   }
 
   return (
@@ -135,7 +136,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
               <button
                 type="button"
                 className="btn btn-outline-secondary"
-                onClick={togglePasswordVisibility}
+                onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
               </button>

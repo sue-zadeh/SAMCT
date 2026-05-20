@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
 
-type UserType = "public" | "resident" | "admin";
+type UserType = "public" | "resident" | "admin" | "villageManager";
 
 type NavbarProps = {
   userType: UserType;
@@ -8,6 +9,7 @@ type NavbarProps = {
 
 export default function Navbar({ userType }: NavbarProps) {
   const navigate = useNavigate();
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   const handleLogout = () => {
     localStorage.removeItem("firstname");
@@ -16,6 +18,8 @@ export default function Navbar({ userType }: NavbarProps) {
     localStorage.removeItem("role");
     localStorage.removeItem("profileImageUrl");
     localStorage.removeItem("email");
+    localStorage.removeItem("username");
+    localStorage.removeItem("village");
     navigate("/");
   };
 
@@ -33,7 +37,6 @@ export default function Navbar({ userType }: NavbarProps) {
     { label: "Maintenance", path: "/resident/maintenance" },
     { label: "My Requests", path: "/resident/requests" },
     { label: "Documents & Notices", path: "/resident/documents" },
-    { label: "Profile", path: "/resident/profile" },
   ];
 
   const adminLinks = [
@@ -45,8 +48,15 @@ export default function Navbar({ userType }: NavbarProps) {
     { label: "Orders", path: "/admin/orders" },
     { label: "Accounts", path: "/admin/accounts" },
     { label: "Website Content", path: "/admin/content" },
-    { label: "Profile", path: "/admin/profile" },
   ];
+  const villageManagerLinks = [
+  { label: "Dashboard", path: "/village-manager" },
+  { label: "My Village", path: "/village-manager/village" },
+  { label: "Maintenance", path: "/village-manager/maintenance" },
+  { label: "Residents", path: "/village-manager/residents" },
+  { label: "Documents & Notices", path: "/village-manager/documents" },
+  { label: "Profile", path: "/village-manager/profile" },
+];
 
   let links = publicLinks;
 
@@ -57,6 +67,10 @@ export default function Navbar({ userType }: NavbarProps) {
   if (userType === "admin") {
     links = adminLinks;
   }
+
+  if (userType === "villageManager") {
+  links = villageManagerLinks;
+}
 
   return (
     <nav style={styles.navbar}>
@@ -71,6 +85,49 @@ export default function Navbar({ userType }: NavbarProps) {
               {link.label}
             </Link>
           ))}
+
+          {userType === "resident" && (
+            <div
+              style={styles.dropdownWrapper}
+              onMouseEnter={() => setShowProfileMenu(true)}
+              onMouseLeave={() => setShowProfileMenu(false)}
+            >
+              <button type="button" style={styles.dropdownButton}>
+                Profile
+              </button>
+
+              {showProfileMenu && (
+                <div style={styles.dropdownMenu}>
+                  <Link to="/resident/profile" style={styles.dropdownItem}>
+                    My Profile
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
+
+          {userType === "admin" && (
+            <div
+              style={styles.dropdownWrapper}
+              onMouseEnter={() => setShowProfileMenu(true)}
+              onMouseLeave={() => setShowProfileMenu(false)}
+            >
+              <button type="button" style={styles.dropdownButton}>
+                Profile
+              </button>
+
+              {showProfileMenu && (
+                <div style={styles.dropdownMenu}>
+                  <Link to="/admin/profile" style={styles.dropdownItem}>
+                    My Profile
+                  </Link>
+                  <Link to="/admin/people" style={styles.dropdownItem}>
+                    Manage Users
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
 
           {userType !== "public" && (
             <button onClick={handleLogout} style={styles.logoutButton}>
@@ -128,5 +185,37 @@ const styles: Record<string, React.CSSProperties> = {
     cursor: "pointer",
     fontWeight: 500,
     color: "#374151",
+  },
+  dropdownWrapper: {
+    position: "relative",
+  },
+  dropdownButton: {
+    border: "none",
+    background: "none",
+    color: "#374151",
+    fontWeight: 500,
+    fontSize: "0.95rem",
+    cursor: "pointer",
+    padding: 0,
+  },
+  dropdownMenu: {
+    position: "absolute",
+    top: "100%",
+    right: 0,
+    backgroundColor: "white",
+    border: "1px solid #e5e7eb",
+    borderRadius: "8px",
+    minWidth: "170px",
+    boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
+    padding: "0.5rem 0",
+    zIndex: 1100,
+  },
+  dropdownItem: {
+    display: "block",
+    padding: "0.6rem 1rem",
+    textDecoration: "none",
+    color: "#374151",
+    fontWeight: 500,
+    whiteSpace: "nowrap",
   },
 };
