@@ -12,8 +12,8 @@ using server.Data;
 namespace server.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260520091310_UpdateUserProfileFields")]
-    partial class UpdateUserProfileFields
+    [Migration("20260520101753_StableAuthAndProfile")]
+    partial class StableAuthAndProfile
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

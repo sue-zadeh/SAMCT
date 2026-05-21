@@ -49,12 +49,12 @@ export default function Navbar({ userType }: NavbarProps) {
     { label: "Accounts", path: "/admin/accounts" },
     { label: "Website Content", path: "/admin/content" },
   ];
-  const villageManagerLinks = [
+const villageManagerLinks = [
   { label: "Dashboard", path: "/village-manager" },
   { label: "My Village", path: "/village-manager/village" },
   { label: "Maintenance", path: "/village-manager/maintenance" },
   { label: "Residents", path: "/village-manager/residents" },
-  { label: "Documents & Notices", path: "/village-manager/documents" },
+  { label: "Documents", path: "/village-manager/documents" },
   { label: "Profile", path: "/village-manager/profile" },
 ];
 

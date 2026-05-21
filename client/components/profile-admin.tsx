@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FaPen } from "react-icons/fa";
 import axios from "axios";
 import Navbar from "./navbar";
@@ -7,35 +7,64 @@ import Navbar from "./navbar";
 function ProfileAdmin() {
   const API_BASE_URL = "http://localhost:5072";
 
-  const firstName = localStorage.getItem("firstname") || "Graeme";
-  const lastName = localStorage.getItem("lastname") || "Norton";
-  const fullName =
-    localStorage.getItem("fullname") || `${firstName} ${lastName}`;
-  const userName = localStorage.getItem("username") || "graeme1";
-  const email = localStorage.getItem("email") || "graeme@example.com";
-  const village = localStorage.getItem("village") || "Papakura";
-  const role = localStorage.getItem("role") || "CompanySecretary";
-
-  const [profileImageUrl, setProfileImageUrl] = useState(
-    localStorage.getItem("profileImageUrl") || "https://via.placeholder.com/120"
-  );
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [userName, setUserName] = useState("");
+  const [email, setEmail] = useState("");
+  const [village, setVillage] = useState("");
+  const [role, setRole] = useState("");
+  const [profileImageUrl, setProfileImageUrl] = useState("");
   const [message, setMessage] = useState("");
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const profileImageSrc = profileImageUrl.startsWith("blob:")
-    ? profileImageUrl
-    : profileImageUrl.startsWith("http")
-    ? profileImageUrl
-    : `${API_BASE_URL}${profileImageUrl}`;
+  const loadProfile = async () => {
+    try {
+      const username = localStorage.getItem("username") || "";
+      if (!username) return;
+
+      const response = await axios.get(`${API_BASE_URL}/api/users/profile/${username}`);
+      const user = response.data;
+
+      setFirstName(user.firstName || "");
+      setLastName(user.lastName || "");
+      setFullName(user.fullName || "");
+      setUserName(user.userName || "");
+      setEmail(user.email || "");
+      setVillage(user.village || "");
+      setRole(user.role || "");
+      setProfileImageUrl(user.profileImageUrl || "");
+
+      localStorage.setItem("username", user.userName || "");
+      localStorage.setItem("firstname", user.firstName || "");
+      localStorage.setItem("lastname", user.lastName || "");
+      localStorage.setItem("fullname", user.fullName || "");
+      localStorage.setItem("email", user.email || "");
+      localStorage.setItem("role", user.role || "");
+      localStorage.setItem("village", user.village || "");
+      localStorage.setItem("profileImageUrl", user.profileImageUrl || "");
+    } catch {
+      setMessage("Failed to load profile.");
+    }
+  };
+
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  const profileImageSrc =
+    !profileImageUrl
+      ? "https://via.placeholder.com/120"
+      : profileImageUrl.startsWith("http")
+      ? profileImageUrl
+      : `${API_BASE_URL}${profileImageUrl}`;
 
   const handleSelectImage = () => {
     fileInputRef.current?.click();
   };
 
-  const handleImageChange = async (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
 
     const file = e.target.files[0];
@@ -43,7 +72,7 @@ function ProfileAdmin() {
     formData.append("file", file);
 
     try {
-      const username = localStorage.getItem("username") || "";
+      const username = localStorage.getItem("username") || userName || "";
 
       const response = await axios.post(
         `${API_BASE_URL}/api/users/profile-image`,
@@ -59,11 +88,18 @@ function ProfileAdmin() {
       const updatedUser = response.data;
 
       setProfileImageUrl(updatedUser.profileImageUrl || "");
+      setFirstName(updatedUser.firstName || "");
+      setLastName(updatedUser.lastName || "");
+      setFullName(updatedUser.fullName || "");
+      setUserName(updatedUser.userName || "");
+      setEmail(updatedUser.email || "");
+      setVillage(updatedUser.village || "");
+      setRole(updatedUser.role || "");
 
+      localStorage.setItem("username", updatedUser.userName || "");
       localStorage.setItem("firstname", updatedUser.firstName || "");
       localStorage.setItem("lastname", updatedUser.lastName || "");
       localStorage.setItem("fullname", updatedUser.fullName || "");
-      localStorage.setItem("username", updatedUser.userName || "");
       localStorage.setItem("email", updatedUser.email || "");
       localStorage.setItem("role", updatedUser.role || "");
       localStorage.setItem("village", updatedUser.village || "");
@@ -71,9 +107,7 @@ function ProfileAdmin() {
 
       setMessage("Profile image updated successfully.");
     } catch (error: any) {
-      setMessage(
-        error?.response?.data?.message || "Failed to update profile image."
-      );
+      setMessage(error?.response?.data?.message || "Failed to update profile image.");
     }
   };
 
@@ -129,9 +163,7 @@ function ProfileAdmin() {
               </div>
 
               <div>
-                <p className="text-uppercase text-primary fw-semibold mb-1">
-                  Admin Profile
-                </p>
+                <p className="text-uppercase text-primary fw-semibold mb-1">Admin Profile</p>
                 <h1 className="fw-bold mb-1">{fullName}</h1>
                 <p className="text-secondary mb-0">
                   {role} | Base Village: {village}
@@ -183,17 +215,14 @@ function ProfileAdmin() {
               <div className="p-4 border rounded-4 shadow-sm bg-white h-100">
                 <h2 className="fw-bold mb-4">Admin Actions</h2>
 
-                {message && <div className="alert alert-success">{message}</div>}
+                {message && <div className="alert alert-info">{message}</div>}
 
                 <div className="d-grid gap-3">
                   <Link to="/admin/profile/edit" className="btn btn-primary">
                     Edit My Profile
                   </Link>
 
-                  <Link
-                    to="/admin/profile/password"
-                    className="btn btn-outline-dark"
-                  >
+                  <Link to="/admin/profile/password" className="btn btn-outline-dark">
                     Change Password
                   </Link>
                 </div>

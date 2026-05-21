@@ -1,174 +1,167 @@
-import React, { useState, useEffect } from 'react'
-import { FaEye, FaEyeSlash } from 'react-icons/fa'
-import axios, { AxiosError } from 'axios'
-import { useNavigate } from 'react-router-dom'
-import Navbar from './navbar'
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import axios, { AxiosError } from "axios";
+import { FaUser, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
+import Navbar from "./navbar";
 
-interface LoginProps {
-  onLoginSuccess: () => void
-}
+type LoginProps = {
+  onLoginSuccess: () => void;
+};
 
-const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
-  const [userName, setUserName] = useState<string>('')
-  const [password, setPassword] = useState<string>('')
-  const [error, setError] = useState<string>('')
-  const [rememberMe, setRememberMe] = useState<boolean>(false)
-  const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [showPassword, setShowPassword] = useState<boolean>(false)
+function Login({ onLoginSuccess }: LoginProps) {
+  const navigate = useNavigate();
+  const API_BASE_URL = "http://localhost:5072";
 
-  const navigate = useNavigate()
+  const savedUserName = localStorage.getItem("rememberedUsername") || "";
 
-  useEffect(() => {
-    const savedUserName = localStorage.getItem('username')
-    if (savedUserName) {
-      setUserName(savedUserName)
-      setRememberMe(true)
-    }
-  }, [])
+  const [userName, setUserName] = useState(savedUserName);
+  const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(!!savedUserName);
+  const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
-  const handleLogin = async () => {
-    if (!userName || !password) {
-      setError('Please enter your username and password.')
-      return
-    }
-
-    setIsLoading(true)
-    setError('')
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
 
     try {
-      const response = await axios.post('http://localhost:5072/api/login', {
+      const response = await axios.post(`${API_BASE_URL}/api/login`, {
         userName,
         password,
-      })
+      });
 
-      if (response.data.message === 'Login successful') {
-        localStorage.setItem('username', response.data.userName || '')
-        localStorage.setItem('firstname', response.data.firstName || '')
-        localStorage.setItem('lastname', response.data.lastName || '')
-        localStorage.setItem('fullname', response.data.fullName || '')
-        localStorage.setItem('email', response.data.email || '')
-        localStorage.setItem('role', response.data.role || '')
-        localStorage.setItem('village', response.data.village || '')
-        localStorage.setItem(
-          'profileImageUrl',
-          response.data.profileImageUrl || '',
-        )
+      if (response.status === 200) {
+        localStorage.setItem("username", response.data.userName || "");
+        localStorage.setItem("firstname", response.data.firstName || "");
+        localStorage.setItem("lastname", response.data.lastName || "");
+        localStorage.setItem("fullname", response.data.fullName || "");
+        localStorage.setItem("email", response.data.email || "");
+        localStorage.setItem("role", response.data.role || "");
+        localStorage.setItem("village", response.data.village || "");
+        localStorage.setItem("profileImageUrl", response.data.profileImageUrl || "");
+
         if (rememberMe) {
-          localStorage.setItem('username', userName)
+          localStorage.setItem("rememberedUsername", userName);
         } else {
-          localStorage.removeItem('username')
+          localStorage.removeItem("rememberedUsername");
         }
 
-        onLoginSuccess()
+        onLoginSuccess();
 
-        const role = response.data.role
+        const role = response.data.role;
 
         if (
-          role === 'CompanySecretary' ||
-          role === 'FinancialAdvisor' ||
-          role === 'Chairman'
+          role === "CompanySecretary" ||
+          role === "FinancialAdvisor" ||
+          role === "Chairman"
         ) {
-          navigate('/admin')
+          navigate("/admin");
+        } else if (role === "VillageManager") {
+          navigate("/village-manager");
         } else {
-          navigate('/resident')
+          navigate("/resident");
         }
-      } else {
-        setError(response.data.message || 'Login failed. Please try again.')
       }
     } catch (err) {
-      const axiosError = err as AxiosError<{ message: string }>
+      const axiosError = err as AxiosError<{ message: string }>;
 
       if (axiosError.response?.data?.message) {
-        setError(axiosError.response.data.message)
+        setError(axiosError.response.data.message);
       } else if (axiosError.message) {
-        setError(axiosError.message)
+        setError(axiosError.message);
       } else {
-        setError('An unexpected error occurred. Please try again.')
+        setError("An unexpected error occurred. Please try again.");
       }
-    } finally {
-      setIsLoading(false)
     }
-  }
+  };
 
   return (
     <>
       <Navbar userType="public" />
-      <div
-        className="login-container d-flex justify-content-center align-items-center vh-100"
-        style={{ backgroundColor: '#F8F9FA' }}
-      >
-        <div
-          className="login-box p-4 shadow rounded bg-white"
-          style={{ width: '400px' }}
-        >
-          <h2 className="text-center mb-4 text-primary">
-            Welcome to SAMCT Portal
-          </h2>
-          <h3 className="text-center my-4">
-            <i>Login</i>
-          </h3>
 
-          <div className="form-group mb-3">
-            <label htmlFor="userName">Username</label>
-            <input
-              type="text"
-              id="userName"
-              className="form-control"
-              placeholder="Enter your username"
-              value={userName}
-              autoComplete="username"
-              onChange={(e) => setUserName(e.target.value)}
-            />
-          </div>
+      <main className="container py-5">
+        <div className="row justify-content-center">
+          <div className="col-lg-4">
+            <div className="p-4 border rounded-4 shadow-sm bg-white">
+              <h1 className="fw-bold text-center text-primary mb-4">
+                Welcome to SAMCT Portal
+              </h1>
 
-          <div className="form-group mb-3 position-relative">
-            <label htmlFor="password">Password</label>
-            <div className="input-group">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                id="password"
-                className="form-control"
-                placeholder="Enter your password"
-                value={password}
-                autoComplete="current-password"
-                onChange={(e) => setPassword(e.target.value)}
-              />
-              <button
-                type="button"
-                className="btn btn-outline-secondary"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? <FaEyeSlash /> : <FaEye />}
-              </button>
+              <h2 className="h3 text-center fst-italic mb-4">Login</h2>
+
+              <form onSubmit={handleLogin}>
+                <div className="mb-3">
+                  <label className="form-label fw-semibold">
+                    <FaUser className="me-2" />
+                    Username
+                  </label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={userName}
+                    onChange={(e) => setUserName(e.target.value)}
+                    autoComplete="username"
+                  />
+                </div>
+
+                <div className="mb-3">
+                  <label className="form-label fw-semibold">
+                    <FaLock className="me-2" />
+                    Password
+                  </label>
+
+                  <div className="input-group">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      className="form-control"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      autoComplete="current-password"
+                    />
+                    <button
+                      type="button"
+                      className="btn btn-outline-secondary"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <FaEyeSlash /> : <FaEye />}
+                    </button>
+                  </div>
+                </div>
+
+                {error && <div className="alert alert-danger">{error}</div>}
+
+                <div className="form-check mb-3">
+                  <input
+                    type="checkbox"
+                    className="form-check-input"
+                    id="rememberMe"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                  />
+                  <label className="form-check-label" htmlFor="rememberMe">
+                    Remember Me
+                  </label>
+                </div>
+
+                <button type="submit" className="btn btn-primary w-100">
+                  Login
+                </button>
+
+                <div className="text-center mt-3">
+                  <Link
+                    to="/forgot-password"
+                    className="text-decoration-none small"
+                  >
+                    Forgot Password?
+                  </Link>
+                </div>
+              </form>
             </div>
           </div>
-
-          {error && <div className="text-danger mb-2">{error}</div>}
-
-          <div className="form-check mb-3">
-            <input
-              type="checkbox"
-              id="rememberMe"
-              className="form-check-input"
-              checked={rememberMe}
-              onChange={() => setRememberMe(!rememberMe)}
-            />
-            <label htmlFor="rememberMe" className="form-check-label">
-              Remember Me
-            </label>
-          </div>
-
-          <button
-            className="btn btn-primary w-100"
-            onClick={handleLogin}
-            disabled={isLoading}
-          >
-            {isLoading ? 'Processing...' : 'Login'}
-          </button>
         </div>
-      </div>
+      </main>
     </>
-  )
+  );
 }
 
-export default Login
+export default Login;

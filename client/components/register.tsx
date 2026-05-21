@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import axios from 'axios'
+import { useState } from "react";
+import axios from "axios";
 import {
   FaUser,
   FaEnvelope,
@@ -8,316 +8,320 @@ import {
   FaLock,
   FaImage,
   FaBuilding,
-} from 'react-icons/fa'
-import { useNavigate } from 'react-router-dom'
-import Navbar from './navbar'
+} from "react-icons/fa";
+import Navbar from "./navbar";
 
 function Register() {
-  const navigate = useNavigate()
+  const API_BASE_URL = "http://localhost:5072";
 
   const [formData, setFormData] = useState({
-    userName: '',
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    role: 'Resident',
-    village: 'Papakura',
-  })
+    userName: "",
+    firstName: "",
+    lastName: "",
+    email: "",
+    role: "Resident",
+    village: "Papakura",
+    password: "",
+    confirmPassword: "",
+  });
 
-  const [profileImage, setProfileImage] = useState<File | null>(null)
-  const [notification, setNotification] = useState('')
-  const [isError, setIsError] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [profileImage, setProfileImage] = useState<File | null>(null);
+  const [notification, setNotification] = useState("");
+  const [isError, setIsError] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
-  }
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setProfileImage(e.target.files[0])
-    }
-  }
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
 
   const validateForm = () => {
     if (
-      !formData.userName ||
-      !formData.firstName ||
-      !formData.lastName ||
-      !formData.email ||
+      !formData.userName.trim() ||
+      !formData.firstName.trim() ||
+      !formData.lastName.trim() ||
+      !formData.email.trim() ||
+      !formData.role.trim() ||
       !formData.password ||
-      !formData.confirmPassword ||
-      !formData.role ||
-      !formData.village
+      !formData.confirmPassword
     ) {
-      return 'All required fields must be filled.'
-    }
-
-    if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      return 'Invalid email format.'
-    }
-
-    if (formData.password.length < 8) {
-      return 'Password must be at least 8 characters.'
+      return "Please fill in all required fields.";
     }
 
     if (formData.password !== formData.confirmPassword) {
-      return 'Passwords do not match.'
+      return "Passwords do not match.";
     }
 
-    return null
-  }
+    if (formData.password.length < 6) {
+      return "Password should be at least 6 characters.";
+    }
+
+    return "";
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    const error = validateForm()
+    const error = validateForm();
     if (error) {
-      setNotification(error)
-      setIsError(true)
-      return
+      setNotification(error);
+      setIsError(true);
+      return;
     }
 
     try {
-      setIsLoading(true)
-      setNotification('')
-      setIsError(false)
+      setLoading(true);
+      setNotification("");
+      setIsError(false);
 
-      const data = new FormData()
-      data.append('userName', formData.userName)
-      data.append('firstName', formData.firstName)
-      data.append('lastName', formData.lastName)
-      data.append('email', formData.email)
-      data.append('password', formData.password)
-      data.append('role', formData.role)
-      data.append('village', formData.village)
+      const submitData = new FormData();
+      submitData.append("UserName", formData.userName);
+      submitData.append("FirstName", formData.firstName);
+      submitData.append("LastName", formData.lastName);
+      submitData.append("Email", formData.email);
+      submitData.append("Role", formData.role);
+      submitData.append("Village", formData.village);
+      submitData.append("Password", formData.password);
 
       if (profileImage) {
-        data.append('profileImage', profileImage)
+        submitData.append("ProfileImage", profileImage);
       }
 
       const response = await axios.post(
-        'http://localhost:5072/api/register',
-        data,
+        `${API_BASE_URL}/api/register`,
+        submitData,
         {
           headers: {
-            'Content-Type': 'multipart/form-data',
+            "Content-Type": "multipart/form-data",
           },
-        },
-      )
+        }
+      );
 
-      setNotification(response.data.message || 'User registered successfully.')
-      setIsError(false)
+      setNotification(response.data.message || "User registered successfully.");
+      setIsError(false);
 
-      setTimeout(() => {
-        navigate('/login')
-      }, 1200)
+      setFormData({
+        userName: "",
+        firstName: "",
+        lastName: "",
+        email: "",
+        role: "Resident",
+        village: "Papakura",
+        password: "",
+        confirmPassword: "",
+      });
+      setProfileImage(null);
     } catch (error: any) {
       setNotification(
-        error?.response?.data?.message ||
-          error?.message ||
-          'Registration failed. Please check the entered details and try again.',
-      )
-      setIsError(true)
+        error?.response?.data?.message || "Failed to register user."
+      );
+      setIsError(true);
     } finally {
-      setIsLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <>
       <Navbar userType="public" />
 
-      <div
-        className="container d-flex justify-content-center align-items-center py-5"
-        style={{ minHeight: '100vh' }}
-      >
-        <div
-          className="card shadow p-4"
-          style={{ maxWidth: '550px', width: '100%' }}
-        >
-          <h2 className="text-center mb-4">Register User</h2>
+      <main className="container py-5">
+        <div className="row justify-content-center">
+          <div className="col-lg-6">
+            <div className="p-4 border rounded-4 shadow-sm bg-white">
+              <h1 className="fw-bold text-center mb-4">Register User</h1>
 
-          {notification && (
-            <div
-              className={`alert text-center ${isError ? 'alert-danger' : 'alert-info'}`}
-            >
-              {notification}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit}>
-            <div className="mb-3">
-              <label className="form-label">
-                <FaUser className="me-2" />
-                Username
-              </label>
-              <input
-                type="text"
-                className="form-control"
-                name="userName"
-                value={formData.userName}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div className="row">
-              <div className="col-md-6 mb-3">
-                <label className="form-label">
-                  <FaUser className="me-2" />
-                  First Name
-                </label>
-                <input
-                  type="text"
-                  className="form-control"
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div className="col-md-6 mb-3">
-                <label className="form-label">
-                  <FaUser className="me-2" />
-                  Last Name
-                </label>
-                <input
-                  type="text"
-                  className="form-control"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-
-            <div className="mb-3">
-              <label className="form-label">
-                <FaEnvelope className="me-2" />
-                Email
-              </label>
-              <input
-                type="email"
-                className="form-control"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div className="mb-3">
-              <label className="form-label">
-                <FaUser className="me-2" />
-                Role
-              </label>
-              <select
-                className="form-select"
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
-              >
-                <option value="Resident">Resident</option>
-                <option value="VillageManager">Village Manager</option>
-                <option value="CompanySecretary">Company Secretary</option>
-                <option value="FinancialAdvisor">Financial Advisor</option>
-                <option value="Chairman">Chairman</option>
-              </select>
-            </div>
-
-            <div className="mb-3">
-              <label className="form-label">
-                <FaBuilding className="me-2" />
-                Village
-              </label>
-              <select
-                className="form-select"
-                name="village"
-                value={formData.village}
-                onChange={handleChange}
-              >
-                <option value="Papakura">Papakura</option>
-                <option value="Ngatea">Ngatea</option>
-                <option value="Whitianga">Whitianga</option>
-              </select>
-            </div>
-
-            <div className="mb-3">
-              <label className="form-label">
-                <FaImage className="me-2" />
-                Profile Image
-              </label>
-              <input
-                type="file"
-                className="form-control"
-                accept="image/*"
-                onChange={handleImageChange}
-              />
-            </div>
-
-            <div className="mb-3">
-              <label className="form-label">
-                <FaLock className="me-2" />
-                Password
-              </label>
-              <div className="input-group">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  className="form-control"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                />
-                <button
-                  type="button"
-                  className="btn btn-outline-secondary"
-                  onClick={() => setShowPassword(!showPassword)}
+              {notification && (
+                <div
+                  className={`alert ${
+                    isError ? "alert-danger" : "alert-success"
+                  }`}
                 >
-                  {showPassword ? <FaEyeSlash /> : <FaEye />}
-                </button>
-              </div>
-            </div>
+                  {notification}
+                </div>
+              )}
 
-            <div className="mb-4">
-              <label className="form-label">
-                <FaLock className="me-2" />
-                Confirm Password
-              </label>
-              <div className="input-group">
-                <input
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  className="form-control"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                />
+              <form onSubmit={handleSubmit}>
+                <div className="mb-3">
+                  <label className="form-label fw-semibold">
+                    <FaUser className="me-2" />
+                    Username
+                  </label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    name="userName"
+                    value={formData.userName}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                <div className="row g-3">
+                  <div className="col-md-6">
+                    <label className="form-label fw-semibold">
+                      <FaUser className="me-2" />
+                      First Name
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  <div className="col-md-6">
+                    <label className="form-label fw-semibold">
+                      <FaUser className="me-2" />
+                      Last Name
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-3">
+                  <label className="form-label fw-semibold">
+                    <FaEnvelope className="me-2" />
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    className="form-control"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                <div className="row g-3 mt-1">
+                  <div className="col-md-6">
+                    <label className="form-label fw-semibold">
+                      <FaUser className="me-2" />
+                      Role
+                    </label>
+                    <select
+                      className="form-select"
+                      name="role"
+                      value={formData.role}
+                      onChange={handleChange}
+                    >
+                      <option value="Resident">Resident</option>
+                      <option value="VillageManager">Village Manager</option>
+                      <option value="CompanySecretary">Company Secretary</option>
+                      <option value="FinancialAdvisor">Financial Advisor</option>
+                      <option value="Chairman">Chairman</option>
+                    </select>
+                  </div>
+
+                  <div className="col-md-6">
+                    <label className="form-label fw-semibold">
+                      <FaBuilding className="me-2" />
+                      Village
+                    </label>
+                    <select
+                      className="form-select"
+                      name="village"
+                      value={formData.village}
+                      onChange={handleChange}
+                    >
+                      <option value="Papakura">Papakura</option>
+                      <option value="Ngatea">Ngatea</option>
+                      <option value="Whitianga">Whitianga</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="mt-3">
+                  <label className="form-label fw-semibold">
+                    <FaImage className="me-2" />
+                    Profile Image
+                  </label>
+                  <input
+                    type="file"
+                    className="form-control"
+                    accept="image/*"
+                    onChange={(e) =>
+                      setProfileImage(e.target.files?.[0] || null)
+                    }
+                  />
+                </div>
+
+                <div className="mt-3">
+                  <label className="form-label fw-semibold">
+                    <FaLock className="me-2" />
+                    Password
+                  </label>
+                  <div className="input-group">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      className="form-control"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                    />
+                    <button
+                      type="button"
+                      className="btn btn-outline-secondary"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <FaEyeSlash /> : <FaEye />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="mt-3">
+                  <label className="form-label fw-semibold">
+                    <FaLock className="me-2" />
+                    Confirm Password
+                  </label>
+                  <div className="input-group">
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      className="form-control"
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                    />
+                    <button
+                      type="button"
+                      className="btn btn-outline-secondary"
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
+                    >
+                      {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                    </button>
+                  </div>
+                </div>
+
                 <button
-                  type="button"
-                  className="btn btn-outline-secondary"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  type="submit"
+                  className="btn btn-primary w-100 mt-4"
+                  disabled={loading}
                 >
-                  {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                  {loading ? "Registering..." : "Register User"}
                 </button>
-              </div>
+              </form>
             </div>
-
-            <button
-              type="submit"
-              className="btn btn-primary w-100"
-              disabled={isLoading}
-            >
-              {isLoading ? 'Registering...' : 'Register User'}
-            </button>
-          </form>
+          </div>
         </div>
-      </div>
+      </main>
     </>
-  )
+  );
 }
 
-export default Register
+export default Register;

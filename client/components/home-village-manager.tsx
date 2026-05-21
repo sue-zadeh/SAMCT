@@ -13,7 +13,7 @@ function HomeVillageManager() {
   const villageStats = [
     { title: "Open Maintenance", value: "8", note: "Requests waiting for action" },
     { title: "Residents", value: "24", note: "Profiles in this village" },
-    { title: "Unread Notices", value: "3", note: "New updates to review" },
+    // { title: "Unread Notices", value: "3", note: "New updates to review" },
     { title: "Documents", value: "12", note: "Minutes, notices, village files" },
   ];
 
@@ -115,7 +115,7 @@ function HomeVillageManager() {
         <section className="mb-4">
           <div className="row g-3">
             {villageStats.map((item) => (
-              <div className="col-md-6 col-xl-3" key={item.title}>
+              <div className="col-md-6 col-xl-4" key={item.title}>
                 <div className="p-4 border rounded-4 shadow-sm bg-white h-100">
                   <p className="text-secondary mb-2">{item.title}</p>
                   <h2 className="fw-bold mb-1">{item.value}</h2>

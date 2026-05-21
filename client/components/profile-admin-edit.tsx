@@ -1,68 +1,56 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
-import Navbar from './navbar'
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import Navbar from "./navbar";
 
 function ProfileAdminEdit() {
-  const navigate = useNavigate()
-  const API_BASE_URL = 'http://localhost:5072'
+  const navigate = useNavigate();
+  const API_BASE_URL = "http://localhost:5072";
 
-  const [firstName, setFirstName] = useState(
-    localStorage.getItem('firstname') || 'Graeme',
-  )
-  const [lastName, setLastName] = useState(
-    localStorage.getItem('lastname') || 'Norton',
-  )
-  const [userName, setUserName] = useState(
-    localStorage.getItem('username') || 'graeme1',
-  )
-  const [email, setEmail] = useState(
-    localStorage.getItem('email') || 'graeme@example.com',
-  )
-  const [village, setVillage] = useState(
-    localStorage.getItem('village') || 'Papakura',
-  )
-  const [message, setMessage] = useState('')
-  const [error, setError] = useState('')
+  const [firstName, setFirstName] = useState(localStorage.getItem("firstname") || "");
+  const [lastName, setLastName] = useState(localStorage.getItem("lastname") || "");
+  const [userName, setUserName] = useState(localStorage.getItem("username") || "");
+  const [email, setEmail] = useState(localStorage.getItem("email") || "");
+  const [village, setVillage] = useState(localStorage.getItem("village") || "Papakura");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
   const handleSave = async () => {
     try {
-      setError('')
-      setMessage('')
+      setError("");
+      setMessage("");
 
-      console.log('currentUsername', localStorage.getItem('username'))
-      console.log('form username', userName)
-      const response = await axios.put(
-        'http://localhost:5072/api/users/profile',
-        {
-          currentUsername: localStorage.getItem('username') || userName,
-          firstName,
-          lastName,
-          email,
-          village,
-        },
-      )
+      const currentUsername = localStorage.getItem("username") || "";
 
-      const updatedUser = response.data
+      const response = await axios.put(`${API_BASE_URL}/api/users/profile`, {
+        currentUsername,
+        userName,
+        firstName,
+        lastName,
+        email,
+        village,
+      });
 
-      localStorage.setItem('firstname', updatedUser.firstName || '')
-      localStorage.setItem('lastname', updatedUser.lastName || '')
-      localStorage.setItem('fullname', updatedUser.fullName || '')
-      localStorage.setItem('username', updatedUser.userName || '')
-      localStorage.setItem('email', updatedUser.email || '')
-      localStorage.setItem('role', updatedUser.role || '')
-      localStorage.setItem('village', updatedUser.village || '')
-      localStorage.setItem('profileImageUrl', updatedUser.profileImageUrl || '')
+      const updatedUser = response.data;
 
-      setMessage('Profile updated successfully.')
+      localStorage.setItem("username", updatedUser.userName || "");
+      localStorage.setItem("firstname", updatedUser.firstName || "");
+      localStorage.setItem("lastname", updatedUser.lastName || "");
+      localStorage.setItem("fullname", updatedUser.fullName || "");
+      localStorage.setItem("email", updatedUser.email || "");
+      localStorage.setItem("role", updatedUser.role || "");
+      localStorage.setItem("village", updatedUser.village || "");
+      localStorage.setItem("profileImageUrl", updatedUser.profileImageUrl || "");
+
+      setMessage("Profile updated successfully.");
 
       setTimeout(() => {
-        navigate('/admin/profile')
-      }, 700)
+        navigate("/admin/profile");
+      }, 600);
     } catch (error: any) {
-      setError(error?.response?.data?.message || 'Failed to update profile.')
+      setError(error?.response?.data?.message || "Failed to update profile.");
     }
-  }
+  };
 
   return (
     <>
@@ -133,7 +121,7 @@ function ProfileAdminEdit() {
 
             <button
               className="btn btn-outline-secondary"
-              onClick={() => navigate('/admin/profile')}
+              onClick={() => navigate("/admin/profile")}
             >
               Cancel
             </button>
@@ -141,7 +129,7 @@ function ProfileAdminEdit() {
         </div>
       </main>
     </>
-  )
+  );
 }
 
-export default ProfileAdminEdit
+export default ProfileAdminEdit;

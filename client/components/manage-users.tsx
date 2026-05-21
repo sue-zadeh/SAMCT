@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import Navbar from "./navbar";
 
 type UserItem = {
@@ -6,6 +7,7 @@ type UserItem = {
   userName: string;
   firstName: string;
   lastName: string;
+  fullName: string;
   email: string;
   role: string;
   village: string;
@@ -14,58 +16,63 @@ type UserItem = {
 };
 
 function ManageUsers() {
-  const [users, setUsers] = useState<UserItem[]>([
-    {
-      id: 1,
-      userName: "joe1",
-      firstName: "Joe",
-      lastName: "J",
-      email: "joe@example.com",
-      role: "Resident",
-      village: "Ngatea",
-      isActive: true,
-      profileImageUrl: "https://via.placeholder.com/56",
-    },
-    {
-      id: 2,
-      userName: "graeme1",
-      firstName: "Graeme",
-      lastName: "Norton",
-      email: "graeme@example.com",
-      role: "CompanySecretary",
-      village: "Whitianga",
-      isActive: true,
-      profileImageUrl: "https://via.placeholder.com/56",
-    },
-    {
-      id: 3,
-      userName: "vmngatea1",
-      firstName: "David",
-      lastName: "Dindin",
-      email: "david@example.com",
-      role: "VillageManager",
-      village: "Ngatea",
-      isActive: false,
-      profileImageUrl: "https://via.placeholder.com/56",
-    },
-  ]);
+  const API_BASE_URL = "http://localhost:5072";
+  const [users, setUsers] = useState<UserItem[]>([]);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
+  const getImageSrc = (url: string) => {
+    if (!url) return "https://via.placeholder.com/56";
+    if (url.startsWith("http")) return url;
+    return `${API_BASE_URL}${url}`;
+  };
+
+  const loadUsers = async () => {
+    try {
+      setError("");
+      const response = await axios.get(`${API_BASE_URL}/api/users`);
+      setUsers(response.data);
+    } catch (error: any) {
+      setError(error?.response?.data?.message || "Failed to load users.");
+    }
+  };
+
+  useEffect(() => {
+    loadUsers();
+  }, []);
 
   const handleFieldChange = (
     id: number,
     field: keyof UserItem,
     value: string | boolean
   ) => {
-    const updated = users.map((user) =>
-      user.id === id ? { ...user, [field]: value } : user
+    setUsers((prev) =>
+      prev.map((user) => (user.id === id ? { ...user, [field]: value } : user))
     );
-    setUsers(updated);
   };
 
   const toggleActive = (id: number) => {
-    const updated = users.map((user) =>
-      user.id === id ? { ...user, isActive: !user.isActive } : user
+    setUsers((prev) =>
+      prev.map((user) =>
+        user.id === id ? { ...user, isActive: !user.isActive } : user
+      )
     );
-    setUsers(updated);
+  };
+
+  const handleSaveAll = async () => {
+    try {
+      setMessage("");
+      setError("");
+
+      for (const user of users) {
+        await axios.put(`${API_BASE_URL}/api/users/${user.id}`, user);
+      }
+
+      setMessage("All user changes saved successfully.");
+      loadUsers();
+    } catch (error: any) {
+      setError(error?.response?.data?.message || "Failed to save user changes.");
+    }
   };
 
   return (
@@ -80,6 +87,9 @@ function ManageUsers() {
             Admins can edit profiles, control usernames, and activate or deactivate users.
           </p>
 
+          {message && <div className="alert alert-success">{message}</div>}
+          {error && <div className="alert alert-danger">{error}</div>}
+
           <div className="table-responsive">
             <table className="table align-middle">
               <thead>
@@ -92,7 +102,7 @@ function ManageUsers() {
                   <th>Role</th>
                   <th>Village</th>
                   <th>Status</th>
-                  <th style={{ minWidth: "120px" }}>Actions</th>
+                  <th style={{ minWidth: "130px" }}>Actions</th>
                 </tr>
               </thead>
 
@@ -100,16 +110,14 @@ function ManageUsers() {
                 {users.map((user) => (
                   <tr key={user.id}>
                     <td>
-                      <div className="d-flex align-items-center gap-2">
-                        <img
-                          src={user.profileImageUrl}
-                          alt={user.firstName}
-                          width="48"
-                          height="48"
-                          className="rounded-circle border"
-                          style={{ objectFit: "cover" }}
-                        />
-                      </div>
+                      <img
+                        src={getImageSrc(user.profileImageUrl)}
+                        alt={user.firstName}
+                        width="48"
+                        height="48"
+                        className="rounded-circle border"
+                        style={{ objectFit: "cover" }}
+                      />
                     </td>
 
                     <td>
@@ -207,7 +215,9 @@ function ManageUsers() {
           </div>
 
           <div className="mt-4">
-            <button className="btn btn-primary">Save All Changes</button>
+            <button className="btn btn-primary" onClick={handleSaveAll}>
+              Save All Changes
+            </button>
           </div>
         </div>
       </main>

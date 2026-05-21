@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace server.Migrations
 {
     /// <inheritdoc />
-    public partial class UpdateUserProfileFields : Migration
+    public partial class StableAuthAndProfile : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
