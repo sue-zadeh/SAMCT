@@ -49,14 +49,14 @@ export default function Navbar({ userType }: NavbarProps) {
     { label: "Accounts", path: "/admin/accounts" },
     { label: "Website Content", path: "/admin/content" },
   ];
-const villageManagerLinks = [
-  { label: "Dashboard", path: "/village-manager" },
-  { label: "My Village", path: "/village-manager/village" },
-  { label: "Maintenance", path: "/village-manager/maintenance" },
-  { label: "Residents", path: "/village-manager/residents" },
-  { label: "Documents", path: "/village-manager/documents" },
-  { label: "Profile", path: "/village-manager/profile" },
-];
+
+  const villageManagerLinks = [
+    { label: "Dashboard", path: "/village-manager" },
+    { label: "My Village", path: "/village-manager/village" },
+    { label: "Maintenance", path: "/village-manager/maintenance" },
+    { label: "Residents", path: "/village-manager/residents" },
+    { label: "Documents & Notices", path: "/village-manager/documents" },
+  ];
 
   let links = publicLinks;
 
@@ -69,8 +69,96 @@ const villageManagerLinks = [
   }
 
   if (userType === "villageManager") {
-  links = villageManagerLinks;
-}
+    links = villageManagerLinks;
+  }
+
+  const renderProfileMenu = () => {
+    if (userType === "resident") {
+      return (
+        <div
+          style={styles.dropdownWrapper}
+          onMouseEnter={() => setShowProfileMenu(true)}
+          onMouseLeave={() => setShowProfileMenu(false)}
+        >
+          <button type="button" style={styles.dropdownButton}>
+            Profile
+          </button>
+
+          {showProfileMenu && (
+            <div style={styles.dropdownMenu}>
+              <Link to="/resident/profile" style={styles.dropdownItem}>
+                My Profile
+              </Link>
+              <Link to="/resident/profile/password" style={styles.dropdownItem}>
+                Change Password
+              </Link>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    if (userType === "admin") {
+      return (
+        <div
+          style={styles.dropdownWrapper}
+          onMouseEnter={() => setShowProfileMenu(true)}
+          onMouseLeave={() => setShowProfileMenu(false)}
+        >
+          <button type="button" style={styles.dropdownButton}>
+            Profile
+          </button>
+
+          {showProfileMenu && (
+            <div style={styles.dropdownMenu}>
+              <Link to="/admin/profile" style={styles.dropdownItem}>
+                My Profile
+              </Link>
+              <Link to="/admin/people" style={styles.dropdownItem}>
+                Manage Users
+              </Link>
+              <Link to="/admin/profile/password" style={styles.dropdownItem}>
+                Change Password
+              </Link>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    if (userType === "villageManager") {
+      return (
+        <div
+          style={styles.dropdownWrapper}
+          onMouseEnter={() => setShowProfileMenu(true)}
+          onMouseLeave={() => setShowProfileMenu(false)}
+        >
+          <button type="button" style={styles.dropdownButton}>
+            Profile
+          </button>
+
+          {showProfileMenu && (
+            <div style={styles.dropdownMenu}>
+              <Link to="/village-manager/profile" style={styles.dropdownItem}>
+                My Profile
+              </Link>
+              <Link to="/village-manager/residents" style={styles.dropdownItem}>
+                Manage Users
+              </Link>
+              <Link
+                to="/village-manager/profile/password"
+                style={styles.dropdownItem}
+              >
+                Change Password
+              </Link>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    return null;
+  };
 
   return (
     <nav style={styles.navbar}>
@@ -86,48 +174,7 @@ const villageManagerLinks = [
             </Link>
           ))}
 
-          {userType === "resident" && (
-            <div
-              style={styles.dropdownWrapper}
-              onMouseEnter={() => setShowProfileMenu(true)}
-              onMouseLeave={() => setShowProfileMenu(false)}
-            >
-              <button type="button" style={styles.dropdownButton}>
-                Profile
-              </button>
-
-              {showProfileMenu && (
-                <div style={styles.dropdownMenu}>
-                  <Link to="/resident/profile" style={styles.dropdownItem}>
-                    My Profile
-                  </Link>
-                </div>
-              )}
-            </div>
-          )}
-
-          {userType === "admin" && (
-            <div
-              style={styles.dropdownWrapper}
-              onMouseEnter={() => setShowProfileMenu(true)}
-              onMouseLeave={() => setShowProfileMenu(false)}
-            >
-              <button type="button" style={styles.dropdownButton}>
-                Profile
-              </button>
-
-              {showProfileMenu && (
-                <div style={styles.dropdownMenu}>
-                  <Link to="/admin/profile" style={styles.dropdownItem}>
-                    My Profile
-                  </Link>
-                  <Link to="/admin/people" style={styles.dropdownItem}>
-                    Manage Users
-                  </Link>
-                </div>
-              )}
-            </div>
-          )}
+          {userType !== "public" && renderProfileMenu()}
 
           {userType !== "public" && (
             <button onClick={handleLogout} style={styles.logoutButton}>
@@ -205,7 +252,7 @@ const styles: Record<string, React.CSSProperties> = {
     backgroundColor: "white",
     border: "1px solid #e5e7eb",
     borderRadius: "8px",
-    minWidth: "170px",
+    minWidth: "180px",
     boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
     padding: "0.5rem 0",
     zIndex: 1100,
