@@ -1,17 +1,19 @@
-import { Routes, Route } from "react-router-dom";
-import HomePublic from "./components/home-public";
-import HomeAdmins from "./components/home-admins";
-import HomeResidents from "./components/home-residents";
-import HomeVillageManager from "./components/home-village-manager";
-import Login from "./components/login";
-import Register from "./components/register";
-import Navbar from "./components/navbar";
-import Footer from "./components/footer";
-import ProfileAdmin from "./components/profile-admin";
-import ProfileAdminEdit from "./components/profile-admin-edit";
-import ProfileAdminPassword from "./components/profile-admin-password";
-import ProfileResident from "./components/profile-resident";
-import ManageUsers from "./components/manage-users";
+import { Routes, Route } from 'react-router-dom'
+import HomePublic from './components/home-public'
+import HomeAdmins from './components/home-admins'
+import HomeResidents from './components/home-residents'
+import HomeVillageManager from './components/home-village-manager'
+import Login from './components/login'
+import Register from './components/register'
+import Navbar from './components/navbar'
+import Footer from './components/footer'
+import ProfileAdmin from './components/profile-admin'
+import ProfileAdminEdit from './components/profile-admin-edit'
+import ProfileAdminPassword from './components/profile-admin-password'
+import ProfileResident from './components/profile-resident'
+import ManageUsers from './components/manage-users'
+import ProfileVillage from './components/profile-village'
+import ManageUsersVillage from './components/manage-users-village'
 
 function App() {
   return (
@@ -21,7 +23,13 @@ function App() {
         <Route path="/about" element={<HomePublic />} />
         <Route path="/availability" element={<HomePublic />} />
         <Route path="/contact" element={<HomePublic />} />
+
         <Route path="/village-manager" element={<HomeVillageManager />} />
+        <Route path="/village-manager/profile" element={<ProfileVillage />} />
+        <Route
+          path="/village-manager/residents"
+          element={<ManageUsersVillage />}
+        />
 
         <Route path="/login" element={<Login onLoginSuccess={() => {}} />} />
         <Route path="/register" element={<Register />} />
@@ -32,13 +40,16 @@ function App() {
         <Route path="/admin" element={<HomeAdmins />} />
         <Route path="/admin/profile" element={<ProfileAdmin />} />
         <Route path="/admin/profile/edit" element={<ProfileAdminEdit />} />
-        <Route path="/admin/profile/password" element={<ProfileAdminPassword />} />
+        <Route
+          path="/admin/profile/password"
+          element={<ProfileAdminPassword />}
+        />
         <Route path="/admin/people" element={<ManageUsers />} />
       </Routes>
 
       <Footer />
     </>
-  );
+  )
 }
 
-export default App;
+export default App
