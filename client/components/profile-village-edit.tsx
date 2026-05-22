@@ -2,15 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Navbar from "./navbar";
-import {
-  FaPen,
-  FaUser,
-  FaEnvelope,
-  FaMapMarkerAlt,
-  FaIdBadge,
-} from "react-icons/fa";
 
-function ProfileAdminEdit() {
+function ProfileVillageEdit() {
   const navigate = useNavigate();
   const API_BASE_URL = "http://localhost:5072";
 
@@ -24,8 +17,8 @@ function ProfileAdminEdit() {
 
   const handleSave = async () => {
     try {
-      setError("");
       setMessage("");
+      setError("");
 
       const currentUsername = localStorage.getItem("username") || "";
 
@@ -52,7 +45,7 @@ function ProfileAdminEdit() {
       setMessage("Profile updated successfully.");
 
       setTimeout(() => {
-        navigate("/admin/profile");
+        navigate("/village-manager/profile");
       }, 600);
     } catch (error: any) {
       setError(error?.response?.data?.message || "Failed to update profile.");
@@ -61,22 +54,18 @@ function ProfileAdminEdit() {
 
   return (
     <>
-      <Navbar userType="admin" />
+      <Navbar userType="villageManager" />
 
       <main className="container py-5">
         <div className="p-4 border rounded-4 shadow-sm bg-white">
-          <h1 className="fw-bold mb-4 d-flex align-items-center gap-2">
-  <FaIdBadge />Edit Admin Profile</h1>
+          <h1 className="fw-bold mb-4">Edit Village Manager Profile</h1>
 
           {message && <div className="alert alert-success">{message}</div>}
           {error && <div className="alert alert-danger">{error}</div>}
 
           <div className="row g-3">
             <div className="col-md-6">
-              <label className="form-label fw-semibold d-flex align-items-center gap-2">
-    <FaUser />
-    First Name
-  </label>
+              <label className="form-label fw-semibold">First Name</label>
               <input
                 className="form-control"
                 value={firstName}
@@ -85,11 +74,7 @@ function ProfileAdminEdit() {
             </div>
 
             <div className="col-md-6">
-                <label className="form-label fw-semibold d-flex align-items-center gap-2">
-    <FaUser />
-    Last Name
-  </label>
-
+              <label className="form-label fw-semibold">Last Name</label>
               <input
                 className="form-control"
                 value={lastName}
@@ -98,11 +83,7 @@ function ProfileAdminEdit() {
             </div>
 
             <div className="col-md-6">
-                <label className="form-label fw-semibold d-flex align-items-center gap-2">
-    <FaIdBadge />
-    Username
-  </label>
-
+              <label className="form-label fw-semibold">Username</label>
               <input
                 className="form-control"
                 value={userName}
@@ -111,10 +92,7 @@ function ProfileAdminEdit() {
             </div>
 
             <div className="col-md-6">
-             <label className="form-label fw-semibold d-flex align-items-center gap-2">
-    <FaEnvelope />
-    Email
-  </label>
+              <label className="form-label fw-semibold">Email</label>
               <input
                 className="form-control"
                 value={email}
@@ -123,10 +101,7 @@ function ProfileAdminEdit() {
             </div>
 
             <div className="col-md-6">
-               <label className="form-label fw-semibold d-flex align-items-center gap-2">
-    <FaMapMarkerAlt />
-    Village
-  </label>
+              <label className="form-label fw-semibold">Village</label>
               <select
                 className="form-select"
                 value={village}
@@ -146,7 +121,7 @@ function ProfileAdminEdit() {
 
             <button
               className="btn btn-outline-secondary"
-              onClick={() => navigate("/admin/profile")}
+              onClick={() => navigate("/village-manager/profile")}
             >
               Cancel
             </button>
@@ -157,4 +132,4 @@ function ProfileAdminEdit() {
   );
 }
 
-export default ProfileAdminEdit;
+export default ProfileVillageEdit;

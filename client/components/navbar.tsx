@@ -89,6 +89,9 @@ export default function Navbar({ userType }: NavbarProps) {
               <Link to="/resident/profile" style={styles.dropdownItem}>
                 My Profile
               </Link>
+              <Link to="/resident/profile/edit" style={styles.dropdownItem}>
+                Edit Profile
+              </Link>
               <Link to="/resident/profile/password" style={styles.dropdownItem}>
                 Change Password
               </Link>
@@ -114,11 +117,14 @@ export default function Navbar({ userType }: NavbarProps) {
               <Link to="/admin/profile" style={styles.dropdownItem}>
                 My Profile
               </Link>
-              <Link to="/admin/people" style={styles.dropdownItem}>
-                Manage Users
+              <Link to="/admin/profile/edit" style={styles.dropdownItem}>
+                Edit Profile
               </Link>
               <Link to="/admin/profile/password" style={styles.dropdownItem}>
                 Change Password
+              </Link>
+              <Link to="/admin/people" style={styles.dropdownItem}>
+                Manage Users
               </Link>
             </div>
           )}
@@ -142,14 +148,17 @@ export default function Navbar({ userType }: NavbarProps) {
               <Link to="/village-manager/profile" style={styles.dropdownItem}>
                 My Profile
               </Link>
-              <Link to="/village-manager/residents" style={styles.dropdownItem}>
-                Manage Users
+              <Link to="/village-manager/profile/edit" style={styles.dropdownItem}>
+                Edit Profile
               </Link>
               <Link
                 to="/village-manager/profile/password"
                 style={styles.dropdownItem}
               >
                 Change Password
+              </Link>
+              <Link to="/village-manager/residents" style={styles.dropdownItem}>
+                Manage Users
               </Link>
             </div>
           )}
@@ -252,7 +261,7 @@ const styles: Record<string, React.CSSProperties> = {
     backgroundColor: "white",
     border: "1px solid #e5e7eb",
     borderRadius: "8px",
-    minWidth: "180px",
+    minWidth: "190px",
     boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
     padding: "0.5rem 0",
     zIndex: 1100,

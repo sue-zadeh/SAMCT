@@ -4,7 +4,15 @@ import axios from "axios";
 import { FaEye, FaEyeSlash, FaLock } from "react-icons/fa";
 import Navbar from "./navbar";
 
-function ProfileAdminPassword() {
+type UserType = "resident" | "admin" | "villageManager";
+
+type ProfilePasswordProps = {
+  userType: UserType;
+  backPath: string;
+  title: string;
+};
+
+function ProfilePassword({ userType, backPath, title }: ProfilePasswordProps) {
   const navigate = useNavigate();
   const API_BASE_URL = "http://localhost:5072";
 
@@ -20,8 +28,8 @@ function ProfileAdminPassword() {
 
   const handleSave = async () => {
     try {
-      setError("");
       setMessage("");
+      setError("");
 
       if (!currentPassword || !newPassword || !confirmPassword) {
         setError("Please fill all password fields.");
@@ -52,8 +60,8 @@ function ProfileAdminPassword() {
       setConfirmPassword("");
 
       setTimeout(() => {
-        navigate("/admin/profile");
-      }, 600);
+        navigate(backPath);
+      }, 700);
     } catch (error: any) {
       setError(error?.response?.data?.message || "Failed to update password.");
     }
@@ -61,11 +69,11 @@ function ProfileAdminPassword() {
 
   return (
     <>
-      <Navbar userType="admin" />
+      <Navbar userType={userType} />
 
       <main className="container py-5">
         <div className="p-4 border rounded-4 shadow-sm bg-white">
-          <h1 className="fw-bold mb-4">Change Password</h1>
+          <h1 className="fw-bold mb-4">{title}</h1>
 
           {message && <div className="alert alert-success">{message}</div>}
           {error && <div className="alert alert-danger">{error}</div>}
@@ -142,7 +150,7 @@ function ProfileAdminPassword() {
             </button>
             <button
               className="btn btn-outline-secondary"
-              onClick={() => navigate("/admin/profile")}
+              onClick={() => navigate(backPath)}
             >
               Cancel
             </button>
@@ -153,4 +161,4 @@ function ProfileAdminPassword() {
   );
 }
 
-export default ProfileAdminPassword;
+export default ProfilePassword;

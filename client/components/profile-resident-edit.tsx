@@ -1,36 +1,29 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import Navbar from "./navbar";
-import {
-  FaPen,
-  FaUser,
-  FaEnvelope,
-  FaMapMarkerAlt,
-  FaIdBadge,
-} from "react-icons/fa";
 
-function ProfileAdminEdit() {
+import Navbar from "./navbar";
+
+function ProfileResidentEdit() {
   const navigate = useNavigate();
   const API_BASE_URL = "http://localhost:5072";
 
   const [firstName, setFirstName] = useState(localStorage.getItem("firstname") || "");
   const [lastName, setLastName] = useState(localStorage.getItem("lastname") || "");
-  const [userName, setUserName] = useState(localStorage.getItem("username") || "");
   const [email, setEmail] = useState(localStorage.getItem("email") || "");
   const [village, setVillage] = useState(localStorage.getItem("village") || "Papakura");
+  const userName = localStorage.getItem("username") || "";
+
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
   const handleSave = async () => {
     try {
-      setError("");
       setMessage("");
-
-      const currentUsername = localStorage.getItem("username") || "";
+      setError("");
 
       const response = await axios.put(`${API_BASE_URL}/api/users/profile`, {
-        currentUsername,
+        currentUsername: userName,
         userName,
         firstName,
         lastName,
@@ -40,7 +33,6 @@ function ProfileAdminEdit() {
 
       const updatedUser = response.data;
 
-      localStorage.setItem("username", updatedUser.userName || "");
       localStorage.setItem("firstname", updatedUser.firstName || "");
       localStorage.setItem("lastname", updatedUser.lastName || "");
       localStorage.setItem("fullname", updatedUser.fullName || "");
@@ -52,7 +44,7 @@ function ProfileAdminEdit() {
       setMessage("Profile updated successfully.");
 
       setTimeout(() => {
-        navigate("/admin/profile");
+        navigate("/resident/profile");
       }, 600);
     } catch (error: any) {
       setError(error?.response?.data?.message || "Failed to update profile.");
@@ -61,22 +53,18 @@ function ProfileAdminEdit() {
 
   return (
     <>
-      <Navbar userType="admin" />
+      <Navbar userType="resident" />
 
       <main className="container py-5">
         <div className="p-4 border rounded-4 shadow-sm bg-white">
-          <h1 className="fw-bold mb-4 d-flex align-items-center gap-2">
-  <FaIdBadge />Edit Admin Profile</h1>
+          <h1 className="fw-bold mb-4">Edit Resident Profile</h1>
 
           {message && <div className="alert alert-success">{message}</div>}
           {error && <div className="alert alert-danger">{error}</div>}
 
           <div className="row g-3">
             <div className="col-md-6">
-              <label className="form-label fw-semibold d-flex align-items-center gap-2">
-    <FaUser />
-    First Name
-  </label>
+              <label className="form-label fw-semibold">First Name</label>
               <input
                 className="form-control"
                 value={firstName}
@@ -85,11 +73,7 @@ function ProfileAdminEdit() {
             </div>
 
             <div className="col-md-6">
-                <label className="form-label fw-semibold d-flex align-items-center gap-2">
-    <FaUser />
-    Last Name
-  </label>
-
+              <label className="form-label fw-semibold">Last Name</label>
               <input
                 className="form-control"
                 value={lastName}
@@ -98,23 +82,13 @@ function ProfileAdminEdit() {
             </div>
 
             <div className="col-md-6">
-                <label className="form-label fw-semibold d-flex align-items-center gap-2">
-    <FaIdBadge />
-    Username
-  </label>
-
-              <input
-                className="form-control"
-                value={userName}
-                onChange={(e) => setUserName(e.target.value)}
-              />
+              <label className="form-label fw-semibold">Username</label>
+              <input className="form-control" value={userName} readOnly />
+              <div className="form-text">Residents cannot change username.</div>
             </div>
 
             <div className="col-md-6">
-             <label className="form-label fw-semibold d-flex align-items-center gap-2">
-    <FaEnvelope />
-    Email
-  </label>
+              <label className="form-label fw-semibold">Email</label>
               <input
                 className="form-control"
                 value={email}
@@ -123,19 +97,8 @@ function ProfileAdminEdit() {
             </div>
 
             <div className="col-md-6">
-               <label className="form-label fw-semibold d-flex align-items-center gap-2">
-    <FaMapMarkerAlt />
-    Village
-  </label>
-              <select
-                className="form-select"
-                value={village}
-                onChange={(e) => setVillage(e.target.value)}
-              >
-                <option value="Papakura">Papakura</option>
-                <option value="Ngatea">Ngatea</option>
-                <option value="Whitianga">Whitianga</option>
-              </select>
+              <label className="form-label fw-semibold">Village</label>
+              <input className="form-control" value={village} readOnly />
             </div>
           </div>
 
@@ -146,7 +109,7 @@ function ProfileAdminEdit() {
 
             <button
               className="btn btn-outline-secondary"
-              onClick={() => navigate("/admin/profile")}
+              onClick={() => navigate("/resident/profile")}
             >
               Cancel
             </button>
@@ -157,4 +120,4 @@ function ProfileAdminEdit() {
   );
 }
 
-export default ProfileAdminEdit;
+export default ProfileResidentEdit;
