@@ -67,14 +67,16 @@ function ProfileVillageEdit() {
 
       <main className="container py-5">
         <div className="p-4 border rounded-4 shadow-sm bg-white">
-          <h1 className="fw-bold mb-4">Edit Village Manager Profile</h1>
+          <h1 className="fw-bold mb-4 d-flex align-items-center gap-2">
+             <FaIdBadge />Edit Village Manager Profile</h1>
 
           {message && <div className="alert alert-success">{message}</div>}
           {error && <div className="alert alert-danger">{error}</div>}
 
           <div className="row g-3">
             <div className="col-md-6">
-              <label className="form-label fw-semibold">First Name</label>
+              <label className="form-label fw-semibold d-flex align-items-center gap-2">
+               <FaUser />First Name</label>
               <input
                 className="form-control"
                 value={firstName}
@@ -83,7 +85,8 @@ function ProfileVillageEdit() {
             </div>
 
             <div className="col-md-6">
-              <label className="form-label fw-semibold">Last Name</label>
+              <label className="form-label fw-semibold d-flex align-items-center gap-2">
+               <FaUser />Last Name</label>
               <input
                 className="form-control"
                 value={lastName}
@@ -92,7 +95,8 @@ function ProfileVillageEdit() {
             </div>
 
             <div className="col-md-6">
-              <label className="form-label fw-semibold">Username</label>
+              <label className="form-label fw-semibold d-flex align-items-center gap-2">
+               <FaIdBadge />Username</label>
               <input
                 className="form-control"
                 value={userName}
@@ -101,7 +105,8 @@ function ProfileVillageEdit() {
             </div>
 
             <div className="col-md-6">
-              <label className="form-label fw-semibold">Email</label>
+              <label className="form-label fw-semibold d-flex align-items-center gap-2">
+               <FaEnvelope />Email</label>
               <input
                 className="form-control"
                 value={email}
@@ -110,7 +115,8 @@ function ProfileVillageEdit() {
             </div>
 
             <div className="col-md-6">
-              <label className="form-label fw-semibold">Village</label>
+              <label className="form-label fw-semibold d-flex align-items-center gap-2">
+               <FaMapMarkerAlt />Village</label>
               <select
                 className="form-select"
                 value={village}
