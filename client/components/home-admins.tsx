@@ -8,9 +8,12 @@ function HomeAdmins() {
   const firstName = localStorage.getItem("firstname") || "Graeme";
   const role = localStorage.getItem("role") || "CompanySecretary";
   const village = localStorage.getItem("village") || "Papakura";
-  const profileImageUrl =
-    localStorage.getItem("profileImageUrl") || "https://via.placeholder.com/80";
+const savedImage =
+  localStorage.getItem("profileImageUrl") ||
+  "https://via.placeholder.com/100";
 
+const profileImageUrl = `${savedImage}?t=${Date.now()}`;
+      
   const profileImageSrc = profileImageUrl.startsWith("http")
     ? profileImageUrl
     : `${API_BASE_URL}${profileImageUrl}`;

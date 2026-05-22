@@ -7,8 +7,11 @@ function HomeVillageManager() {
     localStorage.getItem("fullname") || `${firstName} ${lastName}`;
   const village = localStorage.getItem("village") || "Ngatea";
   const role = localStorage.getItem("role") || "VillageManager";
-  const profileImageUrl =
-    localStorage.getItem("profileImageUrl") || "https://via.placeholder.com/100";
+const savedImage =
+  localStorage.getItem("profileImageUrl") ||
+  "https://via.placeholder.com/100";
+
+const profileImageUrl = `${savedImage}?t=${Date.now()}`;
 
   const villageStats = [
     { title: "Open Maintenance", value: "8", note: "Requests waiting for action" },
