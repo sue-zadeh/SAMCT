@@ -2,6 +2,15 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Navbar from "./navbar";
+import {
+  FaPen,
+  FaUser,
+  FaEnvelope,
+  FaBuilding,
+  FaMapMarkerAlt,
+  FaIdBadge,
+} from "react-icons/fa";
+
 
 function ProfileVillageEdit() {
   const navigate = useNavigate();

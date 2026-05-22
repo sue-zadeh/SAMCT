@@ -1,7 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-
+import {
+  FaPen,
+  FaUser,
+  FaEnvelope,
+  FaBuilding,
+  FaMapMarkerAlt,
+  FaIdBadge,
+} from "react-icons/fa";
 import Navbar from "./navbar";
 
 function ProfileResidentEdit() {
@@ -57,14 +64,17 @@ function ProfileResidentEdit() {
 
       <main className="container py-5">
         <div className="p-4 border rounded-4 shadow-sm bg-white">
-          <h1 className="fw-bold mb-4">Edit Resident Profile</h1>
+          <h1 className="fw-bold mb-4 d-flex align-items-center gap-2">
+            <FaIdBadge />Edit Resident Profile
+            </h1>
 
           {message && <div className="alert alert-success">{message}</div>}
           {error && <div className="alert alert-danger">{error}</div>}
 
           <div className="row g-3">
             <div className="col-md-6">
-              <label className="form-label fw-semibold">First Name</label>
+              <label className="form-label fw-semibold d-flex align-items-center gap-2">
+             <FaUser /> First Name</label>
               <input
                 className="form-control"
                 value={firstName}
@@ -73,7 +83,8 @@ function ProfileResidentEdit() {
             </div>
 
             <div className="col-md-6">
-              <label className="form-label fw-semibold">Last Name</label>
+              <label className="form-label fw-semibold d-flex align-items-center gap-2">
+               <FaUser />Last Name</label>
               <input
                 className="form-control"
                 value={lastName}
@@ -82,13 +93,15 @@ function ProfileResidentEdit() {
             </div>
 
             <div className="col-md-6">
-              <label className="form-label fw-semibold">Username</label>
+              <label className="form-label fw-semibold d-flex align-items-center gap-2">
+               <FaIdBadge />Username</label>
               <input className="form-control" value={userName} readOnly />
               <div className="form-text">Residents cannot change username.</div>
             </div>
 
             <div className="col-md-6">
-              <label className="form-label fw-semibold">Email</label>
+              <label className="form-label fw-semibold d-flex align-items-center gap-2">
+               <FaEnvelope />Email</label>
               <input
                 className="form-control"
                 value={email}
@@ -97,7 +110,8 @@ function ProfileResidentEdit() {
             </div>
 
             <div className="col-md-6">
-              <label className="form-label fw-semibold">Village</label>
+              <label className="form-label fw-semibold d-flex align-items-center gap-2">
+               <FaMapMarkerAlt />Village</label>
               <input className="form-control" value={village} readOnly />
             </div>
           </div>

@@ -1,8 +1,16 @@
 import { Link } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
-import { FaPen } from "react-icons/fa";
 import axios from "axios";
 import Navbar from "./navbar";
+import {
+  FaPen,
+  FaUser,
+  FaEnvelope,
+  FaBuilding,
+  FaMapMarkerAlt,
+  FaIdBadge,
+} from "react-icons/fa";
+
 
 function ProfileVillage() {
   const API_BASE_URL = "http://localhost:5072";
@@ -151,14 +159,20 @@ function ProfileVillage() {
           <div className="row g-4">
             <div className="col-lg-6">
               <div className="p-4 border rounded-4 shadow-sm bg-white h-100">
-                <h2 className="fw-bold mb-4">My Details</h2>
+                <h2 className="fw-bold mb-4 d-flex align-items-center gap-2"><FaIdBadge />My Details</h2>
 
-                <div className="mb-3"><label className="form-label fw-semibold">First Name</label><input className="form-control" value={firstName} readOnly /></div>
-                <div className="mb-3"><label className="form-label fw-semibold">Last Name</label><input className="form-control" value={lastName} readOnly /></div>
-                <div className="mb-3"><label className="form-label fw-semibold">Username</label><input className="form-control" value={userName} readOnly /></div>
-                <div className="mb-3"><label className="form-label fw-semibold">Email</label><input className="form-control" value={email} readOnly /></div>
-                <div className="mb-3"><label className="form-label fw-semibold">Role</label><input className="form-control" value={role} readOnly /></div>
-                <div className="mb-0"><label className="form-label fw-semibold">Village</label><input className="form-control" value={village} readOnly /></div>
+                <div className="mb-3"><label className="form-label fw-semibold d-flex align-items-center gap-2">
+                 <FaUser />First Name</label><input className="form-control" value={firstName} readOnly /></div>
+                <div className="mb-3"><label className="form-label fw-semibold d-flex align-items-center gap-2">
+                  <FaUser />Last Name</label><input className="form-control" value={lastName} readOnly /></div>
+                <div className="mb-3"><label className="form-label fw-semibold d-flex align-items-center gap-2">
+                 <FaIdBadge />Username</label><input className="form-control" value={userName} readOnly /></div>
+                <div className="mb-3"><label className="form-label fw-semibold d-flex align-items-center gap-2">
+                 <FaEnvelope />Email</label><input className="form-control" value={email} readOnly /></div>
+                <div className="mb-3"><label className="form-label fw-semibold d-flex align-items-center gap-2">
+                 <FaBuilding />Role</label><input className="form-control" value={role} readOnly /></div>
+                <div className="mb-0"><label className="form-label fw-semibold d-flex align-items-center gap-2">
+                 <FaMapMarkerAlt />Village</label><input className="form-control" value={village} readOnly /></div>
               </div>
             </div>
 
