@@ -12,12 +12,11 @@ const savedImage =
   localStorage.getItem("profileImageUrl") ||
   "https://via.placeholder.com/100";
 
-const profileImageUrl = `${savedImage}?t=${Date.now()}`;
-      
-  const profileImageSrc = profileImageUrl.startsWith("http")
-    ? profileImageUrl
-    : `${API_BASE_URL}${profileImageUrl}`;
+const profileImageSrc = savedImage.startsWith("http")
+  ? `${savedImage}?t=${Date.now()}`
+  : `${API_BASE_URL}${savedImage}?t=${Date.now()}`;
 
+  
   return (
     <>
       <Navbar userType="admin" />

@@ -7,11 +7,15 @@ function HomeVillageManager() {
     localStorage.getItem("fullname") || `${firstName} ${lastName}`;
   const village = localStorage.getItem("village") || "Ngatea";
   const role = localStorage.getItem("role") || "VillageManager";
-const savedImage =
+  // image in welcome area
+  const API_BASE_URL = "http://localhost:5072";
+  const savedImage =
   localStorage.getItem("profileImageUrl") ||
   "https://via.placeholder.com/100";
 
-const profileImageUrl = `${savedImage}?t=${Date.now()}`;
+const profileImageUrl = savedImage.startsWith("http")
+  ? `${savedImage}?t=${Date.now()}`
+  : `${API_BASE_URL}${savedImage}?t=${Date.now()}`;
 
   const villageStats = [
     { title: "Open Maintenance", value: "8", note: "Requests waiting for action" },

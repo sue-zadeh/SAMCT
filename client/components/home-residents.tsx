@@ -6,9 +6,16 @@ function HomeResidents() {
   const firstName = localStorage.getItem('firstname') || 'Resident'
   const village = localStorage.getItem('village') || 'Papakura'
   const role = localStorage.getItem('role') || 'Resident'
-  const profileImageUrl =
-    localStorage.getItem('profileImageUrl') || 'https://via.placeholder.com/80'
+  // image in welcome area
+  const API_BASE_URL = "http://localhost:5072";
 
+const savedImage =
+  localStorage.getItem("profileImageUrl") ||
+  "https://via.placeholder.com/80";
+
+const profileImageUrl = savedImage.startsWith("http")
+  ? `${savedImage}?t=${Date.now()}`
+  : `${API_BASE_URL}${savedImage}?t=${Date.now()}`;
   return (
     <>
       <Navbar userType="resident" />
