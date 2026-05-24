@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
+import Navbar from './navbar'
 interface MaintenanceRequest {
   id: number;
   title: string;
@@ -43,6 +43,8 @@ export const ResidentMaintenance: React.FC = () => {
   };
 
   return (
+    <>
+      <Navbar userType="resident" />
     <div className="max-w-6xl mx-auto p-6 space-y-8 bg-gray-50 min-h-screen">
       {/* Header Banner */}
       <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
@@ -138,5 +140,6 @@ export const ResidentMaintenance: React.FC = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
