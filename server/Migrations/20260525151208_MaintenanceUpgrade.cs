@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace server.Migrations
 {
     /// <inheritdoc />
-    public partial class StableAuthAndProfile : Migration
+    public partial class MaintenanceUpgrade : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -58,14 +58,27 @@ namespace server.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Title = table.Column<string>(type: "text", nullable: false),
+                    UnitOrAddress = table.Column<string>(type: "text", nullable: false),
+                    Priority = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
                     Status = table.Column<string>(type: "text", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UserId = table.Column<int>(type: "integer", nullable: false)
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Village = table.Column<string>(type: "text", nullable: false),
+                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    ManagerAnswer = table.Column<string>(type: "text", nullable: true),
+                    HandledById = table.Column<int>(type: "integer", nullable: true),
+                    IsReadByResident = table.Column<bool>(type: "boolean", nullable: false),
+                    IsReadByManager = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_MaintenanceRequests", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_MaintenanceRequests_Users_HandledById",
+                        column: x => x.HandledById,
+                        principalTable: "Users",
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_MaintenanceRequests_Users_UserId",
                         column: x => x.UserId,
@@ -73,6 +86,11 @@ namespace server.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MaintenanceRequests_HandledById",
+                table: "MaintenanceRequests",
+                column: "HandledById");
 
             migrationBuilder.CreateIndex(
                 name: "IX_MaintenanceRequests_UserId",

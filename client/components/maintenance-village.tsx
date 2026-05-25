@@ -1,96 +1,247 @@
-import React, { useState } from 'react';
+import { useEffect, useState } from "react";
+import Navbar from "./navbar";
 
-interface MaintenanceRequest {
+type MaintenanceRequest = {
   id: number;
   residentName: string;
-  unit: string;
+  residentUserName: string;
   title: string;
   description: string;
-  status: 'Pending' | 'Completed';
+  unitOrAddress: string;
+  priority: string;
+  status: string;
   managerAnswer?: string;
-}
+  createdAt: string;
+};
 
-export const ManagerMaintenance: React.FC = () => {
-  // Simulating data isolated to this manager's village scope (e.g., Papakura area)
-  const [requests, setRequests] = useState<MaintenanceRequest[]>([
-    { id: 201, residentName: 'Sarah Jenkins', unit: 'Villa 14', title: 'Hot water cylinder leak', description: 'Small pool of water forming under cupboard.', status: 'Pending' }
-  ]);
-  const [answers, setAnswers] = useState<{ [key: number]: string }>({});
+function MaintenanceVillage() {
+  const API_BASE_URL = "http://localhost:5072";
+  const village = localStorage.getItem("village") || "Papakura";
+  const managerUserName = localStorage.getItem("username") || "";
 
-  const handleActionRequest = (id: number) => {
-    const responseText = answers[id] || "Plumber dispatched. Issue resolved.";
-    
-    setRequests(requests.map(req => 
-      req.id === id ? { ...req, status: 'Completed', managerAnswer: responseText } : req
-    ));
-    
-    // In your finished logic, you will make a C# PUT request here:
-    // axios.put(`/api/maintenance/${id}/resolve`, { answer: responseText });
+  const [requests, setRequests] = useState<MaintenanceRequest[]>([]);
+  const [answers, setAnswers] = useState<Record<number, string>>({});
+  const [statuses, setStatuses] = useState<Record<number, string>>({});
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
+  const loadRequests = async () => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/maintenance/village/${encodeURIComponent(village)}`
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to load village requests.");
+      }
+
+      setRequests(data);
+    } catch (err: any) {
+      setError(err.message || "Failed to load village requests.");
+    }
+  };
+
+  useEffect(() => {
+    loadRequests();
+  }, [village]);
+
+  const handleSaveResponse = async (id: number) => {
+    setMessage("");
+    setError("");
+
+    const managerAnswer = answers[id] || "";
+    const status = statuses[id] || "Completed";
+
+    if (!managerAnswer.trim()) {
+      setError("Please write a manager answer before saving.");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/maintenance/${id}/manager-response`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            managerUserName,
+            managerAnswer,
+            status,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to update request.");
+      }
+
+      setMessage("Maintenance request updated successfully.");
+      setAnswers((prev) => ({ ...prev, [id]: "" }));
+
+      await loadRequests();
+    } catch (err: any) {
+      setError(err.message || "Failed to update request.");
+    }
+  };
+
+  const getStatusClass = (status: string) => {
+    if (status === "Completed") return "bg-success";
+    if (status === "In Progress") return "bg-info text-dark";
+    return "bg-warning text-dark";
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-6 bg-gray-50 min-h-screen">
-      <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-        <h1 className="text-2xl font-bold text-gray-900">Village Maintenance Queue</h1>
-        <p className="text-gray-500 text-sm mt-1">Review, authorize, and resolve privacy-compliant tickets registered within your local village boundary.</p>
-      </div>
+    <>
+      <Navbar userType="villageManager" />
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-gray-50 text-gray-500 text-xs uppercase font-medium border-b border-gray-100">
-              <th className="p-4">Resident / Address</th>
-              <th className="p-4">Issue Description</th>
-              <th className="p-4">Status</th>
-              <th className="p-4">Resolution Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100 text-sm">
-            {requests.map(req => (
-              <tr key={req.id} className="hover:bg-gray-50/40 transition">
-                <td className="p-4">
-                  <div className="font-semibold text-gray-900">{req.residentName}</div>
-                  <div className="text-xs text-gray-400">{req.unit}</div>
-                </td>
-                <td className="p-4 max-w-sm">
-                  <div className="font-medium text-gray-800">{req.title}</div>
-                  <div className="text-xs text-gray-500 mt-0.5">{req.description}</div>
-                </td>
-                <td className="p-4">
-                  <span className={`px-2.5 py-0.5 text-xs font-semibold rounded-full border ${
-                    req.status === 'Completed' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-amber-100 text-amber-800 border-amber-200'
-                  }`}>
-                    {req.status}
-                  </span>
-                </td>
-                <td className="p-4">
-                  {req.status === 'Pending' ? (
-                    <div className="flex gap-2 items-center">
-                      <input 
-                        type="text"
-                        placeholder="Type solution notes..."
-                        value={answers[req.id] || ''}
-                        onChange={e => setAnswers({ ...answers, [req.id]: e.target.value })}
-                        className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-blue-500 w-48 transition"
-                      />
-                      <button 
-                        onClick={() => handleActionRequest(req.id)}
-                        className="bg-green-600 hover:bg-green-700 text-white font-semibold text-xs py-1.5 px-3 rounded-xl transition shadow-sm"
-                      >
-                        Complete Task
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="text-xs text-gray-500 italic max-w-xs bg-gray-50 border p-2 rounded-lg">
-                      Signed off: "{req.managerAnswer}"
-                    </div>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+      <main className="container py-5">
+        <section className="mb-4">
+          <div className="p-4 border rounded-4 shadow-sm bg-white">
+            <p className="text-uppercase text-primary fw-semibold mb-1">
+              Village Manager Maintenance
+            </p>
+            <h1 className="fw-bold mb-2">
+              Maintenance Requests - {village}
+            </h1>
+            <p className="text-secondary mb-0">
+              View and respond to private resident maintenance requests for your
+              village.
+            </p>
+          </div>
+        </section>
+
+        {message && <div className="alert alert-success">{message}</div>}
+        {error && <div className="alert alert-danger">{error}</div>}
+
+        <section>
+          <div className="p-4 border rounded-4 shadow-sm bg-white">
+            <div className="d-flex justify-content-between align-items-center mb-4">
+              <div>
+                <h2 className="h4 fw-bold mb-1">Request Queue</h2>
+                <p className="text-secondary mb-0">
+                  Pending and completed maintenance requests.
+                </p>
+              </div>
+
+              <button className="btn btn-outline-primary" onClick={loadRequests}>
+                Refresh
+              </button>
+            </div>
+
+            {requests.length === 0 ? (
+              <p className="text-secondary mb-0">
+                No maintenance requests for this village yet.
+              </p>
+            ) : (
+              <div className="table-responsive">
+                <table className="table align-middle">
+                  <thead>
+                    <tr>
+                      <th>Resident</th>
+                      <th>Issue</th>
+                      <th>Priority</th>
+                      <th>Status</th>
+                      <th>Response</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {requests.map((request) => (
+                      <tr key={request.id}>
+                        <td>
+                          <strong>{request.residentName}</strong>
+                          <div className="small text-secondary">
+                            {request.unitOrAddress || "No unit added"}
+                          </div>
+                        </td>
+
+                        <td>
+                          <strong>{request.title}</strong>
+                          <div className="small text-secondary">
+                            {request.description}
+                          </div>
+                          <div className="small text-secondary mt-1">
+                            Submitted:{" "}
+                            {new Date(request.createdAt).toLocaleDateString(
+                              "en-NZ"
+                            )}
+                          </div>
+                        </td>
+
+                        <td>{request.priority}</td>
+
+                        <td>
+                          <span
+                            className={`badge ${getStatusClass(
+                              request.status
+                            )}`}
+                          >
+                            {request.status}
+                          </span>
+                        </td>
+
+                        <td style={{ minWidth: "260px" }}>
+                          {request.managerAnswer && (
+                            <div className="p-2 bg-light border rounded-3 small mb-2">
+                              {request.managerAnswer}
+                            </div>
+                          )}
+
+                          <textarea
+                            className="form-control"
+                            rows={2}
+                            placeholder="Write update or resolution..."
+                            value={answers[request.id] || ""}
+                            onChange={(e) =>
+                              setAnswers((prev) => ({
+                                ...prev,
+                                [request.id]: e.target.value,
+                              }))
+                            }
+                          />
+                        </td>
+
+                        <td style={{ minWidth: "160px" }}>
+                          <select
+                            className="form-select form-select-sm mb-2"
+                            value={statuses[request.id] || request.status}
+                            onChange={(e) =>
+                              setStatuses((prev) => ({
+                                ...prev,
+                                [request.id]: e.target.value,
+                              }))
+                            }
+                          >
+                            <option value="Pending">Pending</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                          </select>
+
+                          <button
+                            className="btn btn-primary btn-sm w-100"
+                            onClick={() => handleSaveResponse(request.id)}
+                          >
+                            Save Response
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </section>
+      </main>
+    </>
   );
-};
+}
+
+export default MaintenanceVillage;

@@ -12,8 +12,8 @@ using server.Data;
 namespace server.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260520101753_StableAuthAndProfile")]
-    partial class StableAuthAndProfile
+    [Migration("20260525161645_AddMaintenanceWorkflow")]
+    partial class AddMaintenanceWorkflow
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -72,6 +72,22 @@ namespace server.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int?>("HandledById")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsReadByManager")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsReadByResident")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ManagerAnswer")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Priority")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("text");
@@ -80,10 +96,23 @@ namespace server.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("UnitOrAddress")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
 
+                    b.Property<string>("Village")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("HandledById");
 
                     b.HasIndex("UserId");
 
@@ -144,11 +173,17 @@ namespace server.Migrations
 
             modelBuilder.Entity("server.Models.MaintenanceRequest", b =>
                 {
+                    b.HasOne("server.Models.User", "HandledBy")
+                        .WithMany()
+                        .HasForeignKey("HandledById");
+
                     b.HasOne("server.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("HandledBy");
 
                     b.Navigation("User");
                 });

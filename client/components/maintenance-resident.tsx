@@ -1,145 +1,253 @@
-import React, { useState, useEffect } from 'react';
-import Navbar from './navbar'
-interface MaintenanceRequest {
+import { useEffect, useState } from "react";
+import Navbar from "./navbar";
+
+type MaintenanceRequest = {
   id: number;
   title: string;
   description: string;
-  status: 'Pending' | 'In Progress' | 'Completed';
-  createdAt: string;
+  unitOrAddress: string;
+  priority: string;
+  status: string;
   managerAnswer?: string;
-}
+  createdAt: string;
+  updatedAt?: string;
+};
 
-export const ResidentMaintenance: React.FC = () => {
+function MaintenanceResident() {
+  const API_BASE_URL = "http://localhost:5072";
+  const userName = localStorage.getItem("username") || "";
+  const village = localStorage.getItem("village") || "";
+
   const [requests, setRequests] = useState<MaintenanceRequest[]>([]);
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [unitOrAddress, setUnitOrAddress] = useState("");
+  const [priority, setPriority] = useState("Normal");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
-  // In production, fetch current resident's request history here
+  const loadRequests = async () => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/maintenance/resident/${userName}`
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to load maintenance requests.");
+      }
+
+      setRequests(data);
+    } catch (err: any) {
+      setError(err.message || "Failed to load maintenance requests.");
+    }
+  };
+
   useEffect(() => {
-    // axios.get('/api/maintenance/my-requests').then(res => setRequests(res.data));
-  }, []);
+    if (userName) {
+      loadRequests();
+    }
+  }, [userName]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !description.trim()) return;
-    setIsSubmitting(true);
+    setMessage("");
+    setError("");
 
-    // Mock API post request response
-    const mockNewRequest: MaintenanceRequest = {
-      id: Date.now(),
-      title,
-      description,
-      status: 'Pending',
-      createdAt: new Date().toISOString()
-    };
+    if (!title.trim() || !description.trim()) {
+      setError("Please add a title and description.");
+      return;
+    }
 
-    setTimeout(() => {
-      setRequests([mockNewRequest, ...requests]);
-      setTitle('');
-      setDescription('');
-      setIsSubmitting(false);
-    }, 600);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/maintenance/resident`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userName,
+          title,
+          description,
+          unitOrAddress,
+          priority,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to submit request.");
+      }
+
+      setMessage("Maintenance request submitted successfully.");
+      setTitle("");
+      setDescription("");
+      setUnitOrAddress("");
+      setPriority("Normal");
+
+      await loadRequests();
+    } catch (err: any) {
+      setError(err.message || "Failed to submit request.");
+    }
+  };
+
+  const getStatusClass = (status: string) => {
+    if (status === "Completed") return "bg-success";
+    if (status === "In Progress") return "bg-info text-dark";
+    return "bg-warning text-dark";
   };
 
   return (
     <>
       <Navbar userType="resident" />
-    <div className="max-w-6xl mx-auto p-6 space-y-8 bg-gray-50 min-h-screen">
-      {/* Header Banner */}
-      <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-        <h1 className="text-2xl font-bold text-gray-900">Maintenance Portal</h1>
-        <p className="text-gray-500 text-sm mt-1">Log internal or external property issues. Your logs are kept strictly private with your Village Manager.</p>
-      </div>
 
-      {/* Top Form Section */}
-      <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">Report a New Issue</h2>
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-          <div className="md:col-span-1">
-            <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Issue Item / Location</label>
-            <input 
-              type="text" 
-              placeholder="e.g., Broken heat pump in lounge" 
-              value={title}
-              onChange={e => setTitle(e.target.value)}
-              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition text-sm"
-              required
-            />
+      <main className="container py-5">
+        <section className="mb-4">
+          <div className="p-4 border rounded-4 shadow-sm bg-white">
+            <p className="text-uppercase text-primary fw-semibold mb-1">
+              Resident Maintenance
+            </p>
+            <h1 className="fw-bold mb-2">Maintenance Requests</h1>
+            <p className="text-secondary mb-0">
+              Submit a private maintenance request for your village: {village}.
+            </p>
           </div>
-          <div className="md:col-span-1">
-            <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Detailed Description</label>
-            <input 
-              type="text" 
-              placeholder="Provide context, timeline, or urgency levels..." 
-              value={description}
-              onChange={e => setDescription(e.target.value)}
-              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition text-sm"
-              required
-            />
-          </div>
-          <button 
-            type="submit" 
-            disabled={isSubmitting}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-xl shadow-sm transition duration-200 disabled:opacity-50 text-sm"
-          >
-            {isSubmitting ? 'Submitting Request...' : 'Submit to Manager'}
-          </button>
-        </form>
-      </div>
+        </section>
 
-      {/* Bottom Tracking History */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
-          <h2 className="text-base font-semibold text-gray-800">Your Maintenance Log History</h2>
-        </div>
-        <div className="overflow-x-auto">
-          {requests.length === 0 ? (
-            <div className="p-12 text-center text-gray-400 text-sm">No requests logged yet. Use the form above to submit an issue.</div>
-          ) : (
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-gray-50 text-gray-500 text-xs uppercase font-medium border-b border-gray-100">
-                  <th className="p-4">Date Filed</th>
-                  <th className="p-4">Issue Details</th>
-                  <th className="p-4">Status</th>
-                  <th className="p-4">Manager Resolution Note</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 text-sm">
-                {requests.map((req) => (
-                  <tr key={req.id} className="hover:bg-gray-50/50 transition">
-                    <td className="p-4 text-gray-500 whitespace-nowrap">
-                      {new Date(req.createdAt).toLocaleDateString('en-NZ')}
-                    </td>
-                    <td className="p-4">
-                      <div className="font-semibold text-gray-900">{req.title}</div>
-                      <div className="text-gray-400 text-xs mt-0.5">{req.description}</div>
-                    </td>
-                    <td className="p-4">
-                      <span className={`px-2.5 py-0.5 text-xs font-semibold rounded-full border ${
-                        req.status === 'Completed' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-amber-50 text-amber-700 border-amber-200'
-                      }`}>
-                        {req.status}
-                      </span>
-                    </td>
-                    <td className="p-4">
-                      {req.managerAnswer ? (
-                        <div className="bg-gray-50 border border-gray-100 p-2.5 rounded-xl text-xs text-gray-700 font-medium">
-                          💡 "{req.managerAnswer}"
-                        </div>
-                      ) : (
-                        <span className="text-gray-400 text-xs italic">Awaiting site inspection</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      </div>
-    </div>
+        {message && <div className="alert alert-success">{message}</div>}
+        {error && <div className="alert alert-danger">{error}</div>}
+
+        <section className="mb-4">
+          <div className="p-4 border rounded-4 shadow-sm bg-white">
+            <h2 className="h4 fw-bold mb-4">New Maintenance Request</h2>
+
+            <form onSubmit={handleSubmit}>
+              <div className="row g-3">
+                <div className="col-md-6">
+                  <label className="form-label fw-semibold">Issue Title</label>
+                  <input
+                    className="form-control"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Example: Leaking tap"
+                  />
+                </div>
+
+                <div className="col-md-3">
+                  <label className="form-label fw-semibold">
+                    Unit / Address
+                  </label>
+                  <input
+                    className="form-control"
+                    value={unitOrAddress}
+                    onChange={(e) => setUnitOrAddress(e.target.value)}
+                    placeholder="Example: Unit 6"
+                  />
+                </div>
+
+                <div className="col-md-3">
+                  <label className="form-label fw-semibold">Priority</label>
+                  <select
+                    className="form-select"
+                    value={priority}
+                    onChange={(e) => setPriority(e.target.value)}
+                  >
+                    <option value="Low">Low</option>
+                    <option value="Normal">Normal</option>
+                    <option value="Urgent">Urgent</option>
+                  </select>
+                </div>
+
+                <div className="col-12">
+                  <label className="form-label fw-semibold">Description</label>
+                  <textarea
+                    className="form-control"
+                    rows={4}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Write the issue clearly..."
+                  />
+                </div>
+              </div>
+
+              <button className="btn btn-primary mt-4" type="submit">
+                Submit Request
+              </button>
+            </form>
+          </div>
+        </section>
+
+        <section>
+          <div className="p-4 border rounded-4 shadow-sm bg-white">
+            <h2 className="h4 fw-bold mb-4">My Requests</h2>
+
+            {requests.length === 0 ? (
+              <p className="text-secondary mb-0">
+                No maintenance requests submitted yet.
+              </p>
+            ) : (
+              <div className="table-responsive">
+                <table className="table align-middle">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Issue</th>
+                      <th>Location</th>
+                      <th>Priority</th>
+                      <th>Status</th>
+                      <th>Manager Answer</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {requests.map((request) => (
+                      <tr key={request.id}>
+                        <td>
+                          {new Date(request.createdAt).toLocaleDateString(
+                            "en-NZ"
+                          )}
+                        </td>
+                        <td>
+                          <strong>{request.title}</strong>
+                          <div className="small text-secondary">
+                            {request.description}
+                          </div>
+                        </td>
+                        <td>{request.unitOrAddress || "-"}</td>
+                        <td>{request.priority}</td>
+                        <td>
+                          <span
+                            className={`badge ${getStatusClass(
+                              request.status
+                            )}`}
+                          >
+                            {request.status}
+                          </span>
+                        </td>
+                        <td>
+                          {request.managerAnswer ? (
+                            <div className="p-2 bg-light border rounded-3 small">
+                              {request.managerAnswer}
+                            </div>
+                          ) : (
+                            <span className="text-secondary small">
+                              Waiting for manager response
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </section>
+      </main>
     </>
   );
-};
+}
+
+export default MaintenanceResident;

@@ -12,8 +12,8 @@ using server.Data;
 namespace server.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260525143232_UpdateMaintenanceRequestFields")]
-    partial class UpdateMaintenanceRequestFields
+    [Migration("20260525151208_MaintenanceUpgrade")]
+    partial class MaintenanceUpgrade
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
