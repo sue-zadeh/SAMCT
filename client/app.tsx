@@ -16,12 +16,13 @@ import ProfileResidentEdit from "./components/profile-resident-edit";
 import ProfileVillage from "./components/profile-village";
 import ProfileVillageEdit from "./components/profile-village-edit";
 import {ManagerMaintenance} from "./components/manager-maintenance";
-import {ResidentMaintenance} from "./components/resident-maintenance";
+import {ResidentMaintenance} from "./components/maintenance-resident";
 
 import ProfilePassword from "./components/profile-password";
 
 import ManageUsers from "./components/manage-users";
 import ManageUsersVillage from "./components/manage-users-village";
+import MaintenanceVillage from "./components/maintenant-village"
 
 function App() {
   return (
@@ -39,8 +40,8 @@ function App() {
         <Route path="/resident/profile" element={<ProfileResident />} />
         <Route path="/resident/profile/edit" element={<ProfileResidentEdit />} />
         <Route path="/maintenance/request" element={<ManagerMaintenance />} />
-        <Route path="/resident/maintenance" element={< ResidentMaintenance/>} />
-
+        <Route path="/resident/maintenance" element={<MaintenanceResident />} />
+        <Route path="/village-manager/maintenance" element={<MaintenanceVillage />} />
 
         <Route
           path="/resident/profile/password"

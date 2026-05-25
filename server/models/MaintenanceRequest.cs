@@ -6,6 +6,9 @@ namespace server.Models
     {
         public int Id { get; set; }
         public string Title { get; set; } = "";
+        public string UnitOrAddress { get; set; } = "";
+        public string Priority { get; set; } = "Normal";
+
         public string Description { get; set; } = "";
         
         // Status tracking: "Pending", "In Progress", "Completed"
@@ -24,5 +27,7 @@ namespace server.Models
         public string? ManagerAnswer { get; set; }
         public int? HandledById { get; set; } // Tracks which VM resolved it
         public User? HandledBy { get; set; }
+        public bool IsReadByResident { get; set; } = true;
+        public bool IsReadByManager { get; set; } = false;
     }
 }
