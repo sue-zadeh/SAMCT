@@ -12,8 +12,8 @@ using server.Data;
 namespace server.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260525151208_MaintenanceUpgrade")]
-    partial class MaintenanceUpgrade
+    [Migration("20260526060829_AddMaintenanceWorkflow")]
+    partial class AddMaintenanceWorkflow
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -168,6 +168,9 @@ namespace server.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("UserName")
+                        .IsUnique();
+
                     b.ToTable("Users");
                 });
 
@@ -175,12 +178,13 @@ namespace server.Migrations
                 {
                     b.HasOne("server.Models.User", "HandledBy")
                         .WithMany()
-                        .HasForeignKey("HandledById");
+                        .HasForeignKey("HandledById")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("server.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("HandledBy");

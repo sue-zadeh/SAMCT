@@ -165,6 +165,9 @@ namespace server.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("UserName")
+                        .IsUnique();
+
                     b.ToTable("Users");
                 });
 
@@ -172,12 +175,13 @@ namespace server.Migrations
                 {
                     b.HasOne("server.Models.User", "HandledBy")
                         .WithMany()
-                        .HasForeignKey("HandledById");
+                        .HasForeignKey("HandledById")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("server.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("HandledBy");

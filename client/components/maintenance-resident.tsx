@@ -32,8 +32,13 @@ function MaintenanceResident() {
         `${API_BASE_URL}/api/maintenance/resident/${userName}`
       );
 
-      const data = await response.json();
+let data;
 
+try {
+  data = await response.json();
+} catch {
+  throw new Error("Server returned invalid response.");
+}
       if (!response.ok) {
         throw new Error(data.message || "Failed to load maintenance requests.");
       }

@@ -18,27 +18,22 @@ namespace server.Controllers
         }
 
         [HttpPost("resident")]
-        public async Task<IActionResult> CreateRequest(
-            [FromBody] CreateMaintenanceRequestDto request
-        )
+        public async Task<IActionResult> CreateRequest([FromBody] CreateMaintenanceRequestDto request)
         {
-            if (
-                string.IsNullOrWhiteSpace(request.UserName) ||
-                string.IsNullOrWhiteSpace(request.Title) ||
-                string.IsNullOrWhiteSpace(request.Description)
-            )
-            {
-                return BadRequest(new { message = "Title and description are required." });
-            }
+            if (string.IsNullOrWhiteSpace(request.UserName))
+                return BadRequest(new { message = "Username is required." });
 
-            var resident = await _context.Users.FirstOrDefaultAsync(
-                u => u.UserName == request.UserName.Trim() && u.IsActive
-            );
+            if (string.IsNullOrWhiteSpace(request.Title))
+                return BadRequest(new { message = "Issue title is required." });
+
+            if (string.IsNullOrWhiteSpace(request.Description))
+                return BadRequest(new { message = "Description is required." });
+
+            var resident = await _context.Users
+                .FirstOrDefaultAsync(u => u.UserName == request.UserName.Trim() && u.IsActive);
 
             if (resident == null)
-            {
                 return NotFound(new { message = "Resident not found or inactive." });
-            }
 
             var maintenance = new MaintenanceRequest
             {
@@ -67,14 +62,11 @@ namespace server.Controllers
         [HttpGet("resident/{username}")]
         public async Task<IActionResult> GetResidentRequests(string username)
         {
-            var resident = await _context.Users.FirstOrDefaultAsync(
-                u => u.UserName == username.Trim()
-            );
+            var resident = await _context.Users
+                .FirstOrDefaultAsync(u => u.UserName == username.Trim());
 
             if (resident == null)
-            {
                 return NotFound(new { message = "Resident not found." });
-            }
 
             var requests = await _context.MaintenanceRequests
                 .Where(r => r.UserId == resident.Id)
@@ -132,36 +124,24 @@ namespace server.Controllers
         )
         {
             if (string.IsNullOrWhiteSpace(request.ManagerUserName))
-            {
                 return BadRequest(new { message = "Manager username is required." });
-            }
 
             if (string.IsNullOrWhiteSpace(request.ManagerAnswer))
-            {
                 return BadRequest(new { message = "Manager answer is required." });
-            }
 
-            var manager = await _context.Users.FirstOrDefaultAsync(
-                u => u.UserName == request.ManagerUserName.Trim() && u.IsActive
-            );
+            var manager = await _context.Users
+                .FirstOrDefaultAsync(u => u.UserName == request.ManagerUserName.Trim() && u.IsActive);
 
             if (manager == null)
-            {
                 return NotFound(new { message = "Manager not found or inactive." });
-            }
 
             var maintenance = await _context.MaintenanceRequests
                 .FirstOrDefaultAsync(r => r.Id == id);
 
             if (maintenance == null)
-            {
                 return NotFound(new { message = "Maintenance request not found." });
-            }
 
-            if (
-                manager.Role == "VillageManager" &&
-                maintenance.Village != manager.Village
-            )
+            if (manager.Role == "VillageManager" && maintenance.Village != manager.Village)
             {
                 return BadRequest(new
                 {
