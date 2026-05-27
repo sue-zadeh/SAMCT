@@ -1,60 +1,46 @@
-import React, { useEffect, useState } from "react";
 import Navbar from "./navbar";
-
-interface DashboardStats {
-  openMaintenanceCount: number;
-  totalResidentsCount: number;
-  documentCount: number;
-}
+import { useEffect, useState } from "react";
 
 function HomeVillageManager() {
   const firstName = localStorage.getItem("firstname") || "David";
   const lastName = localStorage.getItem("lastname") || "Craddock";
-  const fullName = localStorage.getItem("fullname") || `${firstName} ${lastName}`;
+  const fullName =
+    localStorage.getItem("fullname") || `${firstName} ${lastName}`;
   const village = localStorage.getItem("village") || "Ngatea";
   const role = localStorage.getItem("role") || "VillageManager";
-  
+  // image in welcome area
   const API_BASE_URL = "http://localhost:5072";
-  const savedImage = localStorage.getItem("profileImageUrl") || "https://via.placeholder.com/100";
+  const savedImage =
+  localStorage.getItem("profileImageUrl") ||
+  "https://via.placeholder.com/100";
 
-  const profileImageUrl = savedImage.startsWith("http")
-    ? `${savedImage}?t=${Date.now()}`
-    : `${API_BASE_URL}${savedImage}?t=${Date.now()}`;
+const profileImageUrl = savedImage.startsWith("http")
+  ? `${savedImage}?t=${Date.now()}`
+  : `${API_BASE_URL}${savedImage}?t=${Date.now()}`;
 
-  // 1. Setup local state management to store API calculation values
-  const [stats, setStats] = useState<DashboardStats>({
-    openMaintenanceCount: 0,
-    totalResidentsCount: 0,
-    documentCount: 0,
-  });
+  const [maintenanceSummary, setMaintenanceSummary] = useState({
+  total: 0,
+  pending: 0,
+  inProgress: 0,
+  completed: 0,
+});
 
-  // 2. Fetch data automatically via side-effect hook on layout mount
-  useEffect(() => {
-    const encodedVillage = encodeURIComponent(village);
-    fetch(`${API_BASE_URL}/api/village-manager/dashboard-stats/${encodedVillage}`)
-      .then((res) => {
-        if (!res.ok) throw new Error("Backend offline or missing route configuration");
-        return res.json();
-      })
-      .then((data: DashboardStats) => {
-        setStats(data);
-      })
-      .catch((err) => {
-        console.warn("Could not load dynamic LINQ counters, using layout fallbacks:", err);
-        // Fallback placeholders if backend service is rebuilding
-        setStats({
-          openMaintenanceCount: 8,
-          totalResidentsCount: 24,
-          documentCount: 12,
-        });
-      });
-  }, [village]);
+useEffect(() => {
+  fetch(`http://localhost:5072/api/maintenance/summary/village/${village}`)
+    .then((res) => res.json())
+    .then((data) => setMaintenanceSummary({
+      total: data.total,
+      pending: data.pending,
+      inProgress: data.inProgress,
+      completed: data.completed,
+    }));
+}, [village]);
 
-  // 3. Map dynamic state array directly onto your Bootstrap columns
   const villageStats = [
-    { title: "Open Maintenance", value: stats.openMaintenanceCount, note: "Requests waiting for action" },
-    { title: "Residents", value: stats.totalResidentsCount, note: "Profiles in this village" },
-    { title: "Documents", value: stats.documentCount, note: "Minutes, notices, village files" },
+    { title: "Open Maintenance", value: maintenanceSummary.pending, note: "Requests waiting for action" },
+    { title: "Residents", value: "24", note: "Profiles in this village" },
+    // { title: "Unread Notices", value: "3", note: "New updates to review" },
+    { title: "Documents", value: "12", note: "Minutes, notices, village files" },
   ];
 
   const quickActions = [
@@ -99,9 +85,18 @@ function HomeVillageManager() {
   ];
 
   const statusStyles: Record<string, React.CSSProperties> = {
-    Pending: { backgroundColor: "#fef3c7", color: "#92400e" },
-    Completed: { backgroundColor: "#dcfce7", color: "#166534" },
-    "In Review": { backgroundColor: "#dbeafe", color: "#1d4ed8" },
+    Pending: {
+      backgroundColor: "#fef3c7",
+      color: "#92400e",
+    },
+    Completed: {
+      backgroundColor: "#dcfce7",
+      color: "#166534",
+    },
+    "In Review": {
+      backgroundColor: "#dbeafe",
+      color: "#1d4ed8",
+    },
   };
 
   return (
@@ -142,7 +137,7 @@ function HomeVillageManager() {
           </div>
         </section>
 
-        {/* Dynamic Stats Section */}
+        {/* Stats */}
         <section className="mb-4">
           <div className="row g-3">
             {villageStats.map((item) => (

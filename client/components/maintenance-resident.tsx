@@ -200,6 +200,7 @@ try {
                       <th>Date</th>
                       <th>Issue</th>
                       <th>Location</th>
+                      <th>Village</th>
                       <th>Priority</th>
                       <th>Status</th>
                       <th>Manager Answer</th>
@@ -223,6 +224,7 @@ try {
                         <td>{request.unitOrAddress || "-"}</td>
                         <td>{request.priority}</td>
                         <td>
+                        <td>{village}</td>
                           <span
                             className={`badge ${getStatusClass(
                               request.status
