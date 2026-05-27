@@ -10,6 +10,7 @@ type MaintenanceRequest = {
   unitOrAddress: string;
   priority: string;
   status: string;
+  village: string;
   managerAnswer?: string;
   createdAt: string;
 };
@@ -27,17 +28,13 @@ function MaintenanceVillage() {
 
   const loadRequests = async () => {
     try {
+      setError("");
+
       const response = await fetch(
         `${API_BASE_URL}/api/maintenance/village/${encodeURIComponent(village)}`
       );
 
-let data;
-
-try {
-  data = await response.json();
-} catch {
-  throw new Error("Server returned invalid response.");
-}
+      const data = await response.json();
 
       if (!response.ok) {
         throw new Error(data.message || "Failed to load village requests.");
@@ -54,25 +51,23 @@ try {
   }, [village]);
 
   const handleSaveResponse = async (id: number) => {
-    setMessage("");
-    setError("");
-
-    const managerAnswer = answers[id] || "";
-    const status = statuses[id] || "Completed";
-
-    if (!managerAnswer.trim()) {
-      setError("Please write a manager answer before saving.");
-      return;
-    }
-
     try {
+      setMessage("");
+      setError("");
+
+      const managerAnswer = answers[id] || "";
+      const status = statuses[id] || "Completed";
+
+      if (!managerAnswer.trim()) {
+        setError("Please write a manager answer before saving.");
+        return;
+      }
+
       const response = await fetch(
         `${API_BASE_URL}/api/maintenance/${id}/manager-response`,
         {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             managerUserName,
             managerAnswer,
@@ -81,13 +76,7 @@ try {
         }
       );
 
-let data;
-
-try {
-  data = await response.json();
-} catch {
-  throw new Error("Server returned invalid response.");
-}
+      const data = await response.json();
 
       if (!response.ok) {
         throw new Error(data.message || "Failed to update request.");
@@ -95,7 +84,6 @@ try {
 
       setMessage("Maintenance request updated successfully.");
       setAnswers((prev) => ({ ...prev, [id]: "" }));
-
       await loadRequests();
     } catch (err: any) {
       setError(err.message || "Failed to update request.");
@@ -118,12 +106,9 @@ try {
             <p className="text-uppercase text-primary fw-semibold mb-1">
               Village Manager Maintenance
             </p>
-            <h1 className="fw-bold mb-2">
-              Maintenance Requests - {village}
-            </h1>
+            <h1 className="fw-bold mb-2">Maintenance Requests - {village}</h1>
             <p className="text-secondary mb-0">
-              View and respond to private resident maintenance requests for your
-              village.
+              View and respond to private resident maintenance requests for your village.
             </p>
           </div>
         </section>
@@ -157,9 +142,10 @@ try {
                     <tr>
                       <th>Resident</th>
                       <th>Issue</th>
+                      <th>Village</th>
                       <th>Priority</th>
                       <th>Status</th>
-                      <th>Response</th>
+                      <th>Manager Response</th>
                       <th>Action</th>
                     </tr>
                   </thead>
@@ -181,20 +167,15 @@ try {
                           </div>
                           <div className="small text-secondary mt-1">
                             Submitted:{" "}
-                            {new Date(request.createdAt).toLocaleDateString(
-                              "en-NZ"
-                            )}
+                            {new Date(request.createdAt).toLocaleDateString("en-NZ")}
                           </div>
                         </td>
 
+                        <td>{request.village}</td>
                         <td>{request.priority}</td>
 
                         <td>
-                          <span
-                            className={`badge ${getStatusClass(
-                              request.status
-                            )}`}
-                          >
+                          <span className={`badge ${getStatusClass(request.status)}`}>
                             {request.status}
                           </span>
                         </td>

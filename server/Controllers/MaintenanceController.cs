@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using server.Data;
 using server.DTOs;
 using server.Models;
+
 namespace server.Controllers
 {
     [ApiController]
@@ -16,115 +17,153 @@ namespace server.Controllers
             _context = context;
         }
 
-        [HttpGet("summary/admin")]
-        public async Task<IActionResult> GetAdminMaintenanceSummary()
+        [HttpGet("resident/{userName}")]
+        public async Task<IActionResult> GetResidentRequests(string userName)
         {
-            var summary = await _context.MaintenanceRequests
-                .GroupBy(m => m.Village)
-                .Select(g => new
+            var requests = await _context.MaintenanceRequests
+                .Include(r => r.User)
+                .Where(r => r.User != null && r.User.UserName == userName)
+                .OrderByDescending(r => r.CreatedAt)
+                .Select(r => new
                 {
-                    village = g.Key,
-                    total = g.Count(),
-                    pending = g.Count(x => x.Status == "Pending"),
-                    inProgress = g.Count(x => x.Status == "In Progress"),
-                    completed = g.Count(x => x.Status == "Completed")
+                    r.Id,
+                    ResidentName = r.User!.FullName,
+                    ResidentUserName = r.User.UserName,
+                    r.Title,
+                    r.Description,
+                    r.UnitOrAddress,
+                    r.Priority,
+                    r.Status,
+                    r.Village,
+                    r.ManagerAnswer,
+                    r.CreatedAt,
+                    r.UpdatedAt
                 })
                 .ToListAsync();
 
-            return Ok(summary);
+            return Ok(requests);
         }
 
-        [HttpGet("summary/village/{village}")]
-        public async Task<IActionResult> GetVillageMaintenanceSummary(string village)
-        {
-            var requests = _context.MaintenanceRequests
-                .Where(m => m.Village == village);
-
-            var summary = new
-            {
-                total = await requests.CountAsync(),
-                pending = await requests.CountAsync(x => x.Status == "Pending"),
-                inProgress = await requests.CountAsync(x => x.Status == "In Progress"),
-                completed = await requests.CountAsync(x => x.Status == "Completed")
-            };
-
-            return Ok(summary);
-        }
-
-        [HttpGet("summary/resident/{username}")]
-        public async Task<IActionResult> GetResidentMaintenanceSummary(string username)
+        [HttpPost("resident")]
+        public async Task<IActionResult> CreateResidentRequest([FromBody] CreateMaintenanceRequestDto request)
         {
             var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.UserName == username);
+                .FirstOrDefaultAsync(u => u.UserName == request.UserName && u.IsActive);
 
             if (user == null)
             {
                 return NotFound(new { message = "Resident user not found." });
             }
 
-            var requests = _context.MaintenanceRequests
-                .Where(m => m.UserId == user.Id);
-
-            var summary = new
+            var maintenance = new MaintenanceRequest
             {
-                total = await requests.CountAsync(),
-                pending = await requests.CountAsync(x => x.Status == "Pending"),
-                inProgress = await requests.CountAsync(x => x.Status == "In Progress"),
-                completed = await requests.CountAsync(x => x.Status == "Completed"),
-                newResponses = await requests.CountAsync(x =>
-                    x.IsReadByResident == false &&
-                    !string.IsNullOrEmpty(x.ManagerAnswer))
+                UserId = user.Id,
+                Village = string.IsNullOrWhiteSpace(request.Village) ? user.Village : request.Village,
+                Title = request.Title,
+                Description = request.Description,
+                UnitOrAddress = request.UnitOrAddress,
+                Priority = request.Priority,
+                Status = "Pending",
+                CreatedAt = DateTime.UtcNow,
+                IsReadByResident = true,
+                IsReadByManager = false
             };
 
-            return Ok(summary);
+            _context.MaintenanceRequests.Add(maintenance);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Maintenance request submitted successfully." });
         }
-    [HttpGet("resident/{userName}")]
-public async Task<IActionResult> GetResidentRequests(string userName)
-{
-    var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userName);
 
-    if (user == null)
-    {
-        return NotFound(new { message = "Resident user not found." });
+        [HttpGet("village/{village}")]
+        public async Task<IActionResult> GetVillageRequests(string village)
+        {
+            var decodedVillage = Uri.UnescapeDataString(village);
+
+            var requests = await _context.MaintenanceRequests
+                .Include(r => r.User)
+                .Where(r => r.Village == decodedVillage)
+                .OrderByDescending(r => r.CreatedAt)
+                .Select(r => new
+                {
+                    r.Id,
+                    ResidentName = r.User != null ? r.User.FullName : "",
+                    ResidentUserName = r.User != null ? r.User.UserName : "",
+                    r.Title,
+                    r.Description,
+                    r.UnitOrAddress,
+                    r.Priority,
+                    r.Status,
+                    r.Village,
+                    r.ManagerAnswer,
+                    r.CreatedAt,
+                    r.UpdatedAt
+                })
+                .ToListAsync();
+
+            return Ok(requests);
+        }
+
+        [HttpPut("{id}/manager-response")]
+        public async Task<IActionResult> UpdateManagerResponse(int id, [FromBody] UpdateMaintenanceRequestDto request)
+        {
+            var maintenance = await _context.MaintenanceRequests.FindAsync(id);
+
+            if (maintenance == null)
+            {
+                return NotFound(new { message = "Maintenance request not found." });
+            }
+
+            var manager = await _context.Users
+                .FirstOrDefaultAsync(u => u.UserName == request.ManagerUserName && u.IsActive);
+
+            maintenance.ManagerAnswer = request.ManagerAnswer;
+            maintenance.Status = request.Status;
+            maintenance.UpdatedAt = DateTime.UtcNow;
+            maintenance.IsReadByResident = false;
+            maintenance.IsReadByManager = true;
+
+            if (manager != null)
+            {
+                maintenance.HandledById = manager.Id;
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Maintenance request updated successfully." });
+        }
+
+        [HttpGet("summary/resident/{userName}")]
+        public async Task<IActionResult> GetResidentSummary(string userName)
+        {
+            var requests = _context.MaintenanceRequests
+                .Include(r => r.User)
+                .Where(r => r.User != null && r.User.UserName == userName);
+
+            return Ok(new
+            {
+                totalRequests = await requests.CountAsync(),
+                pending = await requests.CountAsync(r => r.Status == "Pending"),
+                inProgress = await requests.CountAsync(r => r.Status == "In Progress"),
+                completed = await requests.CountAsync(r => r.Status == "Completed")
+            });
+        }
+
+        [HttpGet("summary/village/{village}")]
+        public async Task<IActionResult> GetVillageSummary(string village)
+        {
+            var decodedVillage = Uri.UnescapeDataString(village);
+
+            var requests = _context.MaintenanceRequests
+                .Where(r => r.Village == decodedVillage);
+
+            return Ok(new
+            {
+                openMaintenanceCount = await requests.CountAsync(r => r.Status != "Completed"),
+                pending = await requests.CountAsync(r => r.Status == "Pending"),
+                inProgress = await requests.CountAsync(r => r.Status == "In Progress"),
+                completed = await requests.CountAsync(r => r.Status == "Completed")
+            });
+        }
     }
-
-    var requests = await _context.MaintenanceRequests
-        .Where(r => r.UserId == user.Id)
-        .OrderByDescending(r => r.CreatedAt)
-        .ToListAsync();
-
-    return Ok(requests);
-    }
-
-    //submit backend
-    [HttpPost("resident")]
-public async Task<IActionResult> CreateResidentRequest([FromBody] CreateMaintenanceRequestDto request)
-{
-    var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == request.UserName);
-
-    if (user == null)
-    {
-        return NotFound(new { message = "Resident user not found." });
-    }
-
-    var maintenance = new MaintenanceRequest
-    {
-        UserId = user.Id,
-        Village = request.Village,
-        Title = request.Title,
-        Description = request.Description,
-        UnitOrAddress = request.UnitOrAddress,
-        Priority = request.Priority,
-        Status = "Pending",
-        CreatedAt = DateTime.UtcNow,
-        IsReadByManager = false,
-        IsReadByResident = true
-    };
-
-    _context.MaintenanceRequests.Add(maintenance);
-    await _context.SaveChangesAsync();
-
-    return Ok(maintenance);
-}
-}
 }

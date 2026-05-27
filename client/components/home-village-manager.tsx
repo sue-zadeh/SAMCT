@@ -124,10 +124,11 @@ function HomeVillageManager() {
                 />
 
                 <div>
-                  <p className="text-uppercase text-primary fw-semibold mb-1">
+                 <p className="text-uppercase text-primary fw-semibold mb-1">
                     Village Manager Portal
-                  </p>
-                  <h1 className="fw-bold mb-1">Welcome, {firstName}</h1>
+                </p>
+                
+                  <h3 className="fw-semibold mb-1">Welcome, {firstName}</h3>
                   <p className="text-secondary mb-0">
                     {fullName} | {role} | Village: {village}
                   </p>

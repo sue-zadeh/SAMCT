@@ -4,8 +4,6 @@ namespace server.DTOs
     {
         public string ManagerUserName { get; set; } = "";
         public string ManagerAnswer { get; set; } = "";
-        public string UnitOrAddress { get; set; } = "";
-        public string Status { get; set; } = "Completed";
-
+        public string Status { get; set; } = "Pending";
     }
 }
