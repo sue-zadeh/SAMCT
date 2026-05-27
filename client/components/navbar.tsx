@@ -35,7 +35,7 @@ export default function Navbar({ userType }: NavbarProps) {
   const residentLinks = [
     { label: "Dashboard", path: "/resident" },
     { label: "Maintenance", path: "/resident/maintenance" },
-    { label: "My Requests", path: "/resident/requests" },
+    // { label: "My Requests", path: "/resident/requests" },
     { label: "Documents & Notices", path: "/resident/documents" },
   ];
 
