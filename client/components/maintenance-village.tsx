@@ -156,7 +156,6 @@ try {
                   <thead>
                     <tr>
                       <th>Resident</th>
-                      <th>Village</th>
                       <th>Issue</th>
                       <th>Priority</th>
                       <th>Status</th>
@@ -174,8 +173,7 @@ try {
                             {request.unitOrAddress || "No unit added"}
                           </div>
                         </td>
-                        <td>{village}</td>
-                        
+
                         <td>
                           <strong>{request.title}</strong>
                           <div className="small text-secondary">
