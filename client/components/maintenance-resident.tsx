@@ -1,108 +1,109 @@
-import { useEffect, useState } from "react";
-import Navbar from "./navbar";
+import { useEffect, useState } from 'react'
+import Navbar from './navbar'
 
 type MaintenanceRequest = {
-  id: number;
-  title: string;
-  description: string;
-  unitOrAddress: string;
-  priority: string;
-  status: string;
-  managerAnswer?: string;
-  createdAt: string;
-  updatedAt?: string;
-};
+  id: number
+  title: string
+  description: string
+  unitOrAddress: string
+  priority: string
+  status: string
+  managerAnswer?: string
+  createdAt: string
+  updatedAt?: string
+}
 
 function MaintenanceResident() {
-  const API_BASE_URL = "http://localhost:5072";
-  const userName = localStorage.getItem("username") || "";
-  const village = localStorage.getItem("village") || "";
+  const API_BASE_URL = 'http://localhost:5072'
+  const userName = localStorage.getItem('username') || ''
+  const village = localStorage.getItem('village') || ''
 
-  const [requests, setRequests] = useState<MaintenanceRequest[]>([]);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [unitOrAddress, setUnitOrAddress] = useState("");
-  const [priority, setPriority] = useState("Normal");
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
+  const [requests, setRequests] = useState<MaintenanceRequest[]>([])
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
+  const [unitOrAddress, setUnitOrAddress] = useState('')
+  const [priority, setPriority] = useState('Normal')
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
 
   const loadRequests = async () => {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/maintenance/resident/${userName}`
-      );
+        `${API_BASE_URL}/api/maintenance/resident/${userName}`,
+      )
 
-let data;
+      let data
 
-try {
-  data = await response.json();
-} catch {
-  throw new Error("Server returned invalid response.");
-}
+      try {
+        data = await response.json()
+      } catch {
+        throw new Error('Server returned invalid response.')
+      }
       if (!response.ok) {
-        throw new Error(data.message || "Failed to load maintenance requests.");
+        throw new Error(data.message || 'Failed to load maintenance requests.')
       }
 
-      setRequests(data);
+      setRequests(data)
     } catch (err: any) {
-      setError(err.message || "Failed to load maintenance requests.");
+      setError(err.message || 'Failed to load maintenance requests.')
     }
-  };
+  }
 
   useEffect(() => {
     if (userName) {
-      loadRequests();
+      loadRequests()
     }
-  }, [userName]);
+  }, [userName])
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setMessage("");
-    setError("");
+    e.preventDefault()
+    setMessage('')
+    setError('')
 
     if (!title.trim() || !description.trim()) {
-      setError("Please add a title and description.");
-      return;
+      setError('Please add a title and description.')
+      return
     }
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/maintenance/resident`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           userName,
+          village,
           title,
           description,
           unitOrAddress,
           priority,
         }),
-      });
+      })
 
-      const data = await response.json();
+      const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.message || "Failed to submit request.");
+        throw new Error(data.message || 'Failed to submit request.')
       }
 
-      setMessage("Maintenance request submitted successfully.");
-      setTitle("");
-      setDescription("");
-      setUnitOrAddress("");
-      setPriority("Normal");
+      setMessage('Maintenance request submitted successfully.')
+      setTitle('')
+      setDescription('')
+      setUnitOrAddress('')
+      setPriority('Normal')
 
-      await loadRequests();
+      await loadRequests()
     } catch (err: any) {
-      setError(err.message || "Failed to submit request.");
+      setError(err.message || 'Failed to submit request.')
     }
-  };
+  }
 
   const getStatusClass = (status: string) => {
-    if (status === "Completed") return "bg-success";
-    if (status === "In Progress") return "bg-info text-dark";
-    return "bg-warning text-dark";
-  };
+    if (status === 'Completed') return 'bg-success'
+    if (status === 'In Progress') return 'bg-info text-dark'
+    return 'bg-warning text-dark'
+  }
 
   return (
     <>
@@ -212,7 +213,7 @@ try {
                       <tr key={request.id}>
                         <td>
                           {new Date(request.createdAt).toLocaleDateString(
-                            "en-NZ"
+                            'en-NZ',
                           )}
                         </td>
                         <td>
@@ -221,13 +222,13 @@ try {
                             {request.description}
                           </div>
                         </td>
-                        <td>{request.unitOrAddress || "-"}</td>
+                        <td>{request.unitOrAddress || '-'}</td>
                         <td>{request.priority}</td>
                         <td>
-                        <td>{village}</td>
+                          <td>{village}</td>
                           <span
                             className={`badge ${getStatusClass(
-                              request.status
+                              request.status,
                             )}`}
                           >
                             {request.status}
@@ -254,7 +255,7 @@ try {
         </section>
       </main>
     </>
-  );
+  )
 }
 
-export default MaintenanceResident;
+export default MaintenanceResident

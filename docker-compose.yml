@@ -2,14 +2,15 @@ services:
   postgres:
     image: postgres:16
     container_name: samct-postgres
+    restart: unless-stopped
     environment:
-      POSTGRES_DB: samctdb
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres123
+      POSTGRES_DB: samctdb
     ports:
       - "5433:5432"
     volumes:
-      - samct_data:/var/lib/postgresql/data
+      - samct_postgres_data:/var/lib/postgresql/data
 
 volumes:
-  samct_data:
+  samct_postgres_data:
