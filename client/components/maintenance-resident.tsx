@@ -81,7 +81,13 @@ function MaintenanceResident() {
         }),
       })
 
-      const data = await response.json()
+      let data = null;
+
+      const text = await response.text();
+
+      if (text) {
+        data = JSON.parse(text);
+      }
 
       if (!response.ok) {
         throw new Error(data.message || 'Failed to submit request.')
@@ -222,11 +228,10 @@ function MaintenanceResident() {
                             {request.description}
                           </div>
                         </td>
-                        <td>{request.unitOrAddress || '-'}</td>
+                        <td>{request.unitOrAddress || "-"}</td>
+                        <td>{village}</td>
                         <td>{request.priority}</td>
-                        <td>
-                          <td>{village}</td>
-                          <span
+                        <td>                          <span
                             className={`badge ${getStatusClass(
                               request.status,
                             )}`}
