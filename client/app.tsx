@@ -1,30 +1,35 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route } from 'react-router-dom'
 
-import HomePublic from "./components/home-public";
-import HomeAdmins from "./components/home-admins";
-import HomeResidents from "./components/home-residents";
-import HomeVillageManager from "./components/home-village-manager";
+import HomePublic from './components/home-public'
+import HomeAdmins from './components/home-admins'
+import HomeResidents from './components/home-residents'
+import HomeVillageManager from './components/home-village-manager'
 
-import Login from "./components/login";
-import Register from "./components/register";
-import Footer from "./components/footer";
+import Login from './components/login'
+import Register from './components/register'
+import Footer from './components/footer'
 
-import ProfileAdmin from "./components/profile-admin";
-import ProfileAdminEdit from "./components/profile-admin-edit";
+import ProfileAdmin from './components/profile-admin'
+import ProfileAdminEdit from './components/profile-admin-edit'
 
-import ProfileResident from "./components/profile-resident";
-import ProfileResidentEdit from "./components/profile-resident-edit";
+import ProfileResident from './components/profile-resident'
+import ProfileResidentEdit from './components/profile-resident-edit'
 
-import ProfileVillage from "./components/profile-village";
-import ProfileVillageEdit from "./components/profile-village-edit";
+import ProfileVillage from './components/profile-village'
+import ProfileVillageEdit from './components/profile-village-edit'
 
-import ProfilePassword from "./components/profile-password";
+import ProfilePassword from './components/profile-password'
 
-import ManageUsers from "./components/manage-users";
-import ManageUsersVillage from "./components/manage-users-village";
+import ManageUsers from './components/manage-users'
+import ManageUsersVillage from './components/manage-users-village'
 
-import ResidentMaintenance from "./components/maintenance-resident";
-import MaintenanceVillage from "./components/maintenance-village";
+import ResidentMaintenance from './components/maintenance-resident'
+import MaintenanceVillage from './components/maintenance-village'
+
+import DocumentsVillage from './components/documents-village'
+import DocumentsResident from './components/documents-resident'
+import DocumentsAdmin from './components/documents-admin'
+import MaintenanceAdmin from './components/maintenance-admin'
 
 function App() {
   return (
@@ -43,8 +48,21 @@ function App() {
         {/* Resident */}
         <Route path="/resident" element={<HomeResidents />} />
         <Route path="/resident/profile" element={<ProfileResident />} />
-        <Route path="/resident/profile/edit" element={<ProfileResidentEdit />} />
+        <Route
+          path="/resident/profile/edit"
+          element={<ProfileResidentEdit />}
+        />
         <Route path="/resident/maintenance" element={<ResidentMaintenance />} />
+
+        <Route path="/admin/maintenance" element={<MaintenanceAdmin />} />
+        <Route path="/admin/documents" element={<DocumentsAdmin />} />
+
+        <Route path="/resident/documents" element={<DocumentsResident />} />
+
+        <Route
+          path="/village-manager/documents"
+          element={<DocumentsVillage />}
+        />
 
         <Route
           path="/resident/profile/password"
@@ -104,7 +122,7 @@ function App() {
 
       <Footer />
     </>
-  );
+  )
 }
 
-export default App;
+export default App
