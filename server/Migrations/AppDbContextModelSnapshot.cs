@@ -51,54 +51,7 @@ namespace server.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ContactMessages");
-                });
-
-            modelBuilder.Entity("server.Models.DocumentNotice", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("CreatedByUserId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("FileUrl")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsVisibleToResidents")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Village")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CreatedByUserId");
-
-                    b.ToTable("DocumentNotices");
+                    b.ToTable("ContactMessages", (string)null);
                 });
 
             modelBuilder.Entity("server.Models.MaintenanceRequest", b =>
@@ -160,7 +113,7 @@ namespace server.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("MaintenanceRequests");
+                    b.ToTable("MaintenanceRequests", (string)null);
                 });
 
             modelBuilder.Entity("server.Models.User", b =>
@@ -212,30 +165,23 @@ namespace server.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
-                });
+                    b.HasIndex("UserName")
+                        .IsUnique();
 
-            modelBuilder.Entity("server.Models.DocumentNotice", b =>
-                {
-                    b.HasOne("server.Models.User", "CreatedByUser")
-                        .WithMany()
-                        .HasForeignKey("CreatedByUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CreatedByUser");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("server.Models.MaintenanceRequest", b =>
                 {
                     b.HasOne("server.Models.User", "HandledBy")
                         .WithMany()
-                        .HasForeignKey("HandledById");
+                        .HasForeignKey("HandledById")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("server.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("HandledBy");
