@@ -1,108 +1,132 @@
-import React, { useEffect, useState } from "react";
-import Navbar from "./navbar";
+import React, { useEffect, useState } from 'react'
+import Navbar from './navbar'
 
 interface DashboardStats {
-  openMaintenanceCount: number;
-  totalResidentsCount: number;
-  documentCount: number;
+  openMaintenanceCount: number
+  totalResidentsCount: number
+  documentCount: number
 }
 
 function HomeVillageManager() {
-  const firstName = localStorage.getItem("firstname") || "David";
-  const lastName = localStorage.getItem("lastname") || "Craddock";
-  const fullName = localStorage.getItem("fullname") || `${firstName} ${lastName}`;
-  const village = localStorage.getItem("village") || "Ngatea";
-  const role = localStorage.getItem("role") || "VillageManager";
-  
-  const API_BASE_URL = "http://localhost:5072";
-  const savedImage = localStorage.getItem("profileImageUrl") || "https://via.placeholder.com/100";
+  const firstName = localStorage.getItem('firstname') || 'David'
+  const lastName = localStorage.getItem('lastname') || 'Craddock'
+  const fullName =
+    localStorage.getItem('fullname') || `${firstName} ${lastName}`
+  const village = localStorage.getItem('village') || 'Ngatea'
+  const role = localStorage.getItem('role') || 'VillageManager'
 
-  const profileImageUrl = savedImage.startsWith("http")
+  const API_BASE_URL = 'http://localhost:5072'
+  const savedImage =
+    localStorage.getItem('profileImageUrl') || 'https://via.placeholder.com/100'
+
+  const profileImageUrl = savedImage.startsWith('http')
     ? `${savedImage}?t=${Date.now()}`
-    : `${API_BASE_URL}${savedImage}?t=${Date.now()}`;
+    : `${API_BASE_URL}${savedImage}?t=${Date.now()}`
 
   // 1. Setup local state management to store API calculation values
   const [stats, setStats] = useState<DashboardStats>({
     openMaintenanceCount: 0,
     totalResidentsCount: 0,
     documentCount: 0,
-  });
+  })
+  const [recentItems, setRecentItems] = useState<any[]>([])
 
   // 2. Fetch data automatically via side-effect hook on layout mount
   useEffect(() => {
-    const encodedVillage = encodeURIComponent(village);
-    fetch(`${API_BASE_URL}/api/village-manager/dashboard-stats/${encodedVillage}`)
+    const encodedVillage = encodeURIComponent(village)
+
+    fetch(
+      `${API_BASE_URL}/api/village-manager/dashboard-stats/${encodedVillage}`,
+    )
       .then((res) => {
-        if (!res.ok) throw new Error("Backend offline or missing route configuration");
-        return res.json();
+        if (!res.ok) throw new Error('Failed dashboard stats')
+        return res.json()
       })
       .then((data: DashboardStats) => {
-        setStats(data);
+        setStats(data)
       })
       .catch((err) => {
-        console.warn("Could not load dynamic LINQ counters, using layout fallbacks:", err);
-        // Fallback placeholders if backend service is rebuilding
-        setStats({
-          openMaintenanceCount: 8,
-          totalResidentsCount: 24,
-          documentCount: 12,
-        });
-      });
-  }, [village]);
+        console.error(err)
+      })
+
+    fetch(`${API_BASE_URL}/api/maintenance/village/${encodedVillage}`)
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed maintenance feed')
+        return res.json()
+      })
+      .then((data) => {
+        setRecentItems(data.slice(0, 5))
+      })
+      .catch((err) => {
+        console.error(err)
+      })
+  }, [village])
 
   // 3. Map dynamic state array directly onto your Bootstrap columns
   const villageStats = [
-    { title: "Open Maintenance", value: stats.openMaintenanceCount, note: "Requests waiting for action" },
-    { title: "Residents", value: stats.totalResidentsCount, note: "Profiles in this village" },
-    { title: "Documents", value: stats.documentCount, note: "Minutes, notices, village files" },
-  ];
+    {
+      title: 'Open Maintenance',
+      value: stats.openMaintenanceCount,
+      note: 'Requests waiting for action',
+    },
+    {
+      title: 'Residents',
+      value: stats.totalResidentsCount,
+      note: 'Profiles in this village',
+    },
+    {
+      title: 'Documents',
+      value: stats.documentCount,
+      note: 'Minutes, notices, village files',
+    },
+  ]
 
   const quickActions = [
     {
-      title: "Village Data",
-      text: "View and manage information related only to your village.",
-      button: "Open Village Data",
+      title: 'Village Data',
+      text: 'View and manage information related only to your village.',
+      button: 'Open Village Data',
     },
     {
-      title: "Maintenance Requests",
-      text: "Review private maintenance issues between residents and management.",
-      button: "View Maintenance",
+      title: 'Maintenance Requests',
+      text: 'Review private maintenance issues between residents and management.',
+      button: 'View Maintenance',
     },
     {
-      title: "Residents",
-      text: "See resident profiles and information for your village only.",
-      button: "View Residents",
+      title: 'Residents',
+      text: 'See resident profiles and information for your village only.',
+      button: 'View Residents',
     },
     {
-      title: "Documents & Notices",
-      text: "Access village notices, minutes, and Code of Practice documents.",
-      button: "Open Documents",
+      title: 'Documents & Notices',
+      text: 'Access village notices, minutes, and Code of Practice documents.',
+      button: 'Open Documents',
     },
-  ];
+  ]
 
   const recentItems = [
     {
-      title: "Leaking tap - Unit 6",
-      status: "Pending",
-      date: "20 May 2026",
+      title: 'Leaking tap - Unit 6',
+      status: 'Pending',
+      date: '20 May 2026',
     },
     {
-      title: "Notice uploaded - Water shutdown",
-      status: "Completed",
-      date: "19 May 2026",
+      title: 'Notice uploaded - Water shutdown',
+      status: 'Completed',
+      date: '19 May 2026',
     },
     {
-      title: "Resident update - Unit 12",
-      status: "In Review",
-      date: "18 May 2026",
+      title: 'Resident update - Unit 12',
+      status: 'In Review',
+      date: '18 May 2026',
     },
-  ];
+  ]
 
   const statusStyles: Record<string, React.CSSProperties> = {
-    Pending: { backgroundColor: "#fef3c7", color: "#92400e" },
-    Completed: { backgroundColor: "#dcfce7", color: "#166534" },
-    "In Review": { backgroundColor: "#dbeafe", color: "#1d4ed8" },
-  };
+    Pending: { backgroundColor: '#fef3c7', color: '#92400e' },
+    Completed: { backgroundColor: '#dcfce7', color: '#166534' },
+    'In Review': { backgroundColor: '#dbeafe', color: '#1d4ed8' },
+  }
 
   return (
     <>
@@ -120,14 +144,14 @@ function HomeVillageManager() {
                   width="90"
                   height="90"
                   className="rounded-circle border"
-                  style={{ objectFit: "cover" }}
+                  style={{ objectFit: 'cover' }}
                 />
 
                 <div>
-                 <p className="text-uppercase text-primary fw-semibold mb-1">
+                  <p className="text-uppercase text-primary fw-semibold mb-1">
                     Village Manager Portal
-                </p>
-                
+                  </p>
+
                   <h3 className="fw-semibold mb-1">Welcome, {firstName}</h3>
                   <p className="text-secondary mb-0">
                     {fullName} | {role} | Village: {village}
@@ -137,7 +161,9 @@ function HomeVillageManager() {
 
               <div className="d-flex flex-wrap gap-2">
                 <button className="btn btn-primary">View Village Data</button>
-                <button className="btn btn-outline-dark">Open Maintenance</button>
+                <button className="btn btn-outline-dark">
+                  Open Maintenance
+                </button>
               </div>
             </div>
           </div>
@@ -199,19 +225,28 @@ function HomeVillageManager() {
                 <div className="d-grid gap-3">
                   {recentItems.map((item) => (
                     <div
-                      key={item.title}
+                      key={item.id}
                       className="p-3 border rounded-3 d-flex justify-content-between align-items-start flex-column flex-md-row gap-3"
+                      style={{ cursor: 'pointer' }}
+                      onClick={() =>
+                        (window.location.href = '/village-manager/maintenance')
+                      }
                     >
                       <div>
                         <h3 className="h6 fw-bold mb-1">{item.title}</h3>
+
+                        <p className="text-secondary small mb-1">
+                          {item.description}
+                        </p>
+
                         <p className="text-secondary small mb-0">
-                          Updated: {item.date}
+                          Unit: {item.unitOrAddress || 'N/A'}
                         </p>
                       </div>
 
                       <span
                         className="badge rounded-pill px-3 py-2"
-                        style={statusStyles[item.status]}
+                        style={statusStyles[item.status] || {}}
                       >
                         {item.status}
                       </span>
@@ -230,17 +265,20 @@ function HomeVillageManager() {
 
                 <ul className="text-secondary ps-3 mb-0">
                   <li className="mb-2">
-                    You should manage only data related to <strong>{village}</strong>.
+                    You should manage only data related to{' '}
+                    <strong>{village}</strong>.
                   </li>
                   <li className="mb-2">
-                    Maintenance requests are private between village management and admin.
+                    Maintenance requests are private between village management
+                    and admin.
                   </li>
                   <li className="mb-2">
-                    Residents should be able to view notices, minutes, and Code of Practice
-                    documents related to their own village.
+                    Residents should be able to view notices, minutes, and Code
+                    of Practice documents related to their own village.
                   </li>
                   <li className="mb-2">
-                    You may need a separate email account for village-related communication.
+                    You may need a separate email account for village-related
+                    communication.
                   </li>
                 </ul>
               </div>
@@ -249,7 +287,7 @@ function HomeVillageManager() {
         </section>
       </main>
     </>
-  );
+  )
 }
 
-export default HomeVillageManager;
+export default HomeVillageManager

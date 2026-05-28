@@ -149,21 +149,22 @@ namespace server.Controllers
             });
         }
 
-        [HttpGet("summary/village/{village}")]
-        public async Task<IActionResult> GetVillageSummary(string village)
-        {
-            var decodedVillage = Uri.UnescapeDataString(village);
+         [HttpGet("summary/village/{village}")]
+         public async Task<IActionResult> GetVillageSummary(string village)
+         {
+             var decodedVillage = Uri.UnescapeDataString(village);
 
-            var requests = _context.MaintenanceRequests
-                .Where(r => r.Village == decodedVillage);
+             var requests = await _context.MaintenanceRequests
+                 .Where(r => r.Village == decodedVillage)
+                 .ToListAsync();
 
-            return Ok(new
-            {
-                openMaintenanceCount = await requests.CountAsync(r => r.Status != "Completed"),
-                pending = await requests.CountAsync(r => r.Status == "Pending"),
-                inProgress = await requests.CountAsync(r => r.Status == "In Progress"),
-                completed = await requests.CountAsync(r => r.Status == "Completed")
-            });
-        }
-    }
+             return Ok(new
+             {
+                 openMaintenanceCount = requests.Count,
+                 pending = requests.Count(r => r.Status == "Pending"),
+                 inProgress = requests.Count(r => r.Status == "In Progress"),
+                 completed = requests.Count(r => r.Status == "Completed")
+             });
+         } 
+   }
 }
