@@ -104,7 +104,6 @@ function HomeVillageManager() {
     },
   ]
 
-  
   const statusStyles: Record<string, React.CSSProperties> = {
     Pending: { backgroundColor: '#fef3c7', color: '#92400e' },
     Completed: { backgroundColor: '#dcfce7', color: '#166534' },
@@ -144,9 +143,14 @@ function HomeVillageManager() {
 
               <div className="d-flex flex-wrap gap-2">
                 <button className="btn btn-primary">View Village Data</button>
-                <button className="btn btn-outline-dark">
+                <button
+                  className="btn btn-outline-dark"
+                  onClick={() =>
+                    (window.location.href = '/village-manager/maintenance')
+                  }
+                >
                   Open Maintenance
-                </button>
+                </button>{' '}
               </div>
             </div>
           </div>
@@ -235,7 +239,6 @@ function HomeVillageManager() {
                       </span>
                     </div>
                   ))}
-
                 </div>
               </div>
             </div>
