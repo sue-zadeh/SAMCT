@@ -104,24 +104,7 @@ function HomeVillageManager() {
     },
   ]
 
-  const recentItems = [
-    {
-      title: 'Leaking tap - Unit 6',
-      status: 'Pending',
-      date: '20 May 2026',
-    },
-    {
-      title: 'Notice uploaded - Water shutdown',
-      status: 'Completed',
-      date: '19 May 2026',
-    },
-    {
-      title: 'Resident update - Unit 12',
-      status: 'In Review',
-      date: '18 May 2026',
-    },
-  ]
-
+  
   const statusStyles: Record<string, React.CSSProperties> = {
     Pending: { backgroundColor: '#fef3c7', color: '#92400e' },
     Completed: { backgroundColor: '#dcfce7', color: '#166534' },
@@ -252,6 +235,7 @@ function HomeVillageManager() {
                       </span>
                     </div>
                   ))}
+
                 </div>
               </div>
             </div>
