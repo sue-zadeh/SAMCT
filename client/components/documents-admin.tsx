@@ -19,6 +19,11 @@ function DocumentsAdmin() {
   const [documents, setDocuments] = useState<DocumentNotice[]>([])
   const [error, setError] = useState('')
 
+  const getFileLink = (fileUrl: string) => {
+    if (!fileUrl) return ''
+    return fileUrl.startsWith('http') ? fileUrl : `${API_BASE_URL}${fileUrl}`
+  }
+
   const loadDocuments = async () => {
     try {
       setError('')
@@ -61,6 +66,8 @@ function DocumentsAdmin() {
 
         <section>
           <div className="p-4 border rounded-4 shadow-sm bg-white">
+            <h2 className="h4 fw-bold mb-3">Uploaded Documents & Notices</h2>
+
             {documents.length === 0 ? (
               <p className="text-secondary mb-0">
                 No documents or notices saved yet.
@@ -74,8 +81,8 @@ function DocumentsAdmin() {
                       <th>Village</th>
                       <th>Title</th>
                       <th>Type</th>
-                      <th>Created By</th>
-                      <th>Visible</th>
+                      <th>Uploaded By</th>
+                      <th>Resident Access</th>
                       <th>File</th>
                     </tr>
                   </thead>
@@ -83,39 +90,38 @@ function DocumentsAdmin() {
                   <tbody>
                     {documents.map((doc) => (
                       <tr key={doc.id}>
-                        <td>
-                          {new Date(doc.createdAt).toLocaleDateString('en-NZ')}
-                        </td>
+                        <td>{new Date(doc.createdAt).toLocaleDateString('en-NZ')}</td>
+
                         <td>{doc.village}</td>
+
                         <td>
                           <strong>{doc.title}</strong>
-                          <div className="small text-secondary">
-                            {doc.description}
-                          </div>
+                          <div className="small text-secondary">{doc.description}</div>
                         </td>
+
                         <td>{doc.type}</td>
-                        <td>{doc.createdBy}</td>
+
+                        <td>{doc.createdBy || 'Unknown'}</td>
+
                         <td>
                           <span
                             className={`badge ${
-                              doc.isVisibleToResidents
-                                ? 'bg-success'
-                                : 'bg-secondary'
+                              doc.isVisibleToResidents ? 'bg-success' : 'bg-secondary'
                             }`}
                           >
-                            {doc.isVisibleToResidents
-                              ? 'Resident View'
-                              : 'Internal'}
+                            {doc.isVisibleToResidents ? 'Visible to residents' : 'Internal only'}
                           </span>
                         </td>
+
                         <td>
                           {doc.fileUrl ? (
                             <a
-                              href={doc.fileUrl}
+                              className="btn btn-outline-primary btn-sm"
+                              href={getFileLink(doc.fileUrl)}
                               target="_blank"
                               rel="noreferrer"
                             >
-                              Open
+                              Open / Download
                             </a>
                           ) : (
                             <span className="text-secondary">No file</span>

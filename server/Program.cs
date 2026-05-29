@@ -21,8 +21,8 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-app.UseCors("AllowFrontend");
 app.UseStaticFiles();
+app.UseCors("AllowFrontend");
 app.UseAuthorization();
 app.MapControllers();
 

@@ -95,14 +95,22 @@ namespace server.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateDocument([FromForm] string title, [FromForm] string type, [FromForm] string description, [FromForm] string village, [FromForm] string createdByUserName, [FromForm] bool isVisibleToResidents, IFormFile? file)
+        public async Task<IActionResult> CreateDocument(
+            [FromForm] string title,
+            [FromForm] string type,
+            [FromForm] string description,
+            [FromForm] string village,
+            [FromForm] string createdByUserName,
+            [FromForm] bool isVisibleToResidents,
+            IFormFile? file)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == createdByUserName && u.IsActive);
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.UserName == createdByUserName && u.IsActive);
 
             if (user == null)
                 return NotFound(new { message = "User not found." });
 
-            var fileUrl = "";
+            string fileUrl = "";
 
             if (file != null && file.Length > 0)
             {
@@ -128,7 +136,13 @@ namespace server.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateDocument(int id, [FromForm] string title, [FromForm] string type, [FromForm] string description, [FromForm] bool isVisibleToResidents, IFormFile? file)
+        public async Task<IActionResult> UpdateDocument(
+            int id,
+            [FromForm] string title,
+            [FromForm] string type,
+            [FromForm] string description,
+            [FromForm] bool isVisibleToResidents,
+            IFormFile? file)
         {
             var document = await _context.DocumentNotices.FindAsync(id);
 
@@ -183,13 +197,24 @@ namespace server.Controllers
 
         private async Task<string> SaveFile(IFormFile file)
         {
-            var allowedExtensions = new[] { ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".jpg", ".jpeg", ".png" };
+            var allowedExtensions = new[]
+            {
+                ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".jpg", ".jpeg", ".png"
+            };
+
             var extension = Path.GetExtension(file.FileName).ToLower();
 
             if (!allowedExtensions.Contains(extension))
                 throw new InvalidOperationException("File type is not allowed.");
 
-            var uploadFolder = Path.Combine(_environment.WebRootPath, "uploads", "documents");
+            var webRoot = _environment.WebRootPath;
+
+            if (string.IsNullOrEmpty(webRoot))
+            {
+                webRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+            }
+
+            var uploadFolder = Path.Combine(webRoot, "uploads", "documents");
 
             if (!Directory.Exists(uploadFolder))
                 Directory.CreateDirectory(uploadFolder);
@@ -201,17 +226,6 @@ namespace server.Controllers
             await file.CopyToAsync(stream);
 
             return $"/uploads/documents/{fileName}";
-        }
-
-        [HttpGet("summary/village/{village}")]
-        public async Task<IActionResult> GetVillageDocumentSummary(string village)
-        {
-            var decodedVillage = Uri.UnescapeDataString(village);
-
-            var count = await _context.DocumentNotices
-                .CountAsync(d => d.Village == decodedVillage);
-
-            return Ok(new { totalDocuments = count });
         }
     }
 }

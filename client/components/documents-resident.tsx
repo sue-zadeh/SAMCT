@@ -19,6 +19,11 @@ function DocumentsResident() {
   const [documents, setDocuments] = useState<DocumentNotice[]>([])
   const [error, setError] = useState('')
 
+  const getFileLink = (fileUrl: string) => {
+    if (!fileUrl) return ''
+    return fileUrl.startsWith('http') ? fileUrl : `${API_BASE_URL}${fileUrl}`
+  }
+
   const loadDocuments = async () => {
     try {
       setError('')
@@ -55,7 +60,7 @@ function DocumentsResident() {
             </p>
             <h1 className="fw-bold mb-2">Documents & Notices - {village}</h1>
             <p className="text-secondary mb-0">
-              View notices, minutes, and documents shared for your village.
+              View notices, minutes, Code of Practice documents, and shared village files.
             </p>
           </div>
         </section>
@@ -64,6 +69,8 @@ function DocumentsResident() {
 
         <section>
           <div className="p-4 border rounded-4 shadow-sm bg-white">
+            <h2 className="h4 fw-bold mb-3">Available Documents & Notices</h2>
+
             {documents.length === 0 ? (
               <p className="text-secondary mb-0">
                 No documents or notices available yet.
@@ -74,22 +81,32 @@ function DocumentsResident() {
                   <div className="col-md-6" key={doc.id}>
                     <div className="p-4 border rounded-4 h-100">
                       <span className="badge bg-primary mb-2">{doc.type}</span>
-                      <h2 className="h5 fw-bold">{doc.title}</h2>
+
+                      <h3 className="h5 fw-bold">{doc.title}</h3>
+
                       <p className="text-secondary">{doc.description}</p>
+
                       <p className="small text-secondary mb-2">
-                        Posted:{' '}
-                        {new Date(doc.createdAt).toLocaleDateString('en-NZ')}
+                        Posted: {new Date(doc.createdAt).toLocaleDateString('en-NZ')}
                       </p>
 
-                      {doc.fileUrl && (
+                      {doc.createdBy && (
+                        <p className="small text-secondary mb-3">
+                          Uploaded by: {doc.createdBy}
+                        </p>
+                      )}
+
+                      {doc.fileUrl ? (
                         <a
                           className="btn btn-outline-primary btn-sm"
-                          href={doc.fileUrl}
+                          href={getFileLink(doc.fileUrl)}
                           target="_blank"
                           rel="noreferrer"
                         >
-                          Open File
+                          Open / Download File
                         </a>
+                      ) : (
+                        <span className="text-secondary small">No file attached</span>
                       )}
                     </div>
                   </div>
