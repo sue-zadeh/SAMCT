@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using server.Data;
-using server.DTOs;
 using server.Models;
 
 namespace server.Controllers
@@ -11,10 +10,12 @@ namespace server.Controllers
     public class DocumentNoticeController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly IWebHostEnvironment _environment;
 
-        public DocumentNoticeController(AppDbContext context)
+        public DocumentNoticeController(AppDbContext context, IWebHostEnvironment environment)
         {
             _context = context;
+            _environment = environment;
         }
 
         [HttpGet("admin")]
@@ -94,24 +95,28 @@ namespace server.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateDocument([FromBody] CreateDocumentNoticeDto request)
+        public async Task<IActionResult> CreateDocument([FromForm] string title, [FromForm] string type, [FromForm] string description, [FromForm] string village, [FromForm] string createdByUserName, [FromForm] bool isVisibleToResidents, IFormFile? file)
         {
-            var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.UserName == request.CreatedByUserName && u.IsActive);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == createdByUserName && u.IsActive);
 
             if (user == null)
-            {
                 return NotFound(new { message = "User not found." });
+
+            var fileUrl = "";
+
+            if (file != null && file.Length > 0)
+            {
+                fileUrl = await SaveFile(file);
             }
 
             var document = new DocumentNotice
             {
-                Title = request.Title,
-                Type = request.Type,
-                Description = request.Description,
-                Village = request.Village,
-                FileUrl = request.FileUrl,
-                IsVisibleToResidents = request.IsVisibleToResidents,
+                Title = title,
+                Type = type,
+                Description = description,
+                Village = village,
+                FileUrl = fileUrl,
+                IsVisibleToResidents = isVisibleToResidents,
                 CreatedByUserId = user.Id,
                 CreatedAt = DateTime.UtcNow
             };
@@ -122,6 +127,82 @@ namespace server.Controllers
             return Ok(new { message = "Document or notice saved successfully." });
         }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateDocument(int id, [FromForm] string title, [FromForm] string type, [FromForm] string description, [FromForm] bool isVisibleToResidents, IFormFile? file)
+        {
+            var document = await _context.DocumentNotices.FindAsync(id);
+
+            if (document == null)
+                return NotFound(new { message = "Document not found." });
+
+            document.Title = title;
+            document.Type = type;
+            document.Description = description;
+            document.IsVisibleToResidents = isVisibleToResidents;
+            document.UpdatedAt = DateTime.UtcNow;
+
+            if (file != null && file.Length > 0)
+            {
+                document.FileUrl = await SaveFile(file);
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Document updated successfully." });
+        }
+
+        [HttpPut("{id}/visibility")]
+        public async Task<IActionResult> UpdateVisibility(int id, [FromBody] bool isVisibleToResidents)
+        {
+            var document = await _context.DocumentNotices.FindAsync(id);
+
+            if (document == null)
+                return NotFound(new { message = "Document not found." });
+
+            document.IsVisibleToResidents = isVisibleToResidents;
+            document.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Visibility updated successfully." });
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteDocument(int id)
+        {
+            var document = await _context.DocumentNotices.FindAsync(id);
+
+            if (document == null)
+                return NotFound(new { message = "Document not found." });
+
+            _context.DocumentNotices.Remove(document);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Document deleted successfully." });
+        }
+
+        private async Task<string> SaveFile(IFormFile file)
+        {
+            var allowedExtensions = new[] { ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".jpg", ".jpeg", ".png" };
+            var extension = Path.GetExtension(file.FileName).ToLower();
+
+            if (!allowedExtensions.Contains(extension))
+                throw new InvalidOperationException("File type is not allowed.");
+
+            var uploadFolder = Path.Combine(_environment.WebRootPath, "uploads", "documents");
+
+            if (!Directory.Exists(uploadFolder))
+                Directory.CreateDirectory(uploadFolder);
+
+            var fileName = $"{Guid.NewGuid()}{extension}";
+            var fullPath = Path.Combine(uploadFolder, fileName);
+
+            using var stream = new FileStream(fullPath, FileMode.Create);
+            await file.CopyToAsync(stream);
+
+            return $"/uploads/documents/{fileName}";
+        }
+
         [HttpGet("summary/village/{village}")]
         public async Task<IActionResult> GetVillageDocumentSummary(string village)
         {
@@ -129,14 +210,6 @@ namespace server.Controllers
 
             var count = await _context.DocumentNotices
                 .CountAsync(d => d.Village == decodedVillage);
-
-            return Ok(new { totalDocuments = count });
-        }
-
-        [HttpGet("summary/admin")]
-        public async Task<IActionResult> GetAdminDocumentSummary()
-        {
-            var count = await _context.DocumentNotices.CountAsync();
 
             return Ok(new { totalDocuments = count });
         }
