@@ -23,6 +23,7 @@ function DocumentsVillage() {
   const [type, setType] = useState('Notice')
   const [description, setDescription] = useState('')
   const [fileUrl, setFileUrl] = useState('')
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [isVisibleToResidents, setIsVisibleToResidents] = useState(true)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
@@ -86,6 +87,7 @@ function DocumentsVillage() {
       setType('Notice')
       setDescription('')
       setFileUrl('')
+      setSelectedFile(null)
       setIsVisibleToResidents(true)
 
       await loadDocuments()
@@ -120,6 +122,7 @@ function DocumentsVillage() {
 
             <div className="row g-3">
               <div className="col-md-6">
+                <option value="Notice">Notice</option>
                 <label className="form-label fw-semibold">Title</label>
                 <input
                   className="form-control"
@@ -138,7 +141,11 @@ function DocumentsVillage() {
                 >
                   <option value="Notice">Notice</option>
                   <option value="Minutes">Minutes</option>
+                  <option value="Consultation Minutes">
+                    Consultation Minutes
+                  </option>
                   <option value="Code of Practice">Code of Practice</option>
+                  <option value="Village Data">Village Data</option>
                   <option value="General Document">General Document</option>
                 </select>
               </div>
@@ -146,6 +153,18 @@ function DocumentsVillage() {
               <div className="col-md-3">
                 <label className="form-label fw-semibold">Village</label>
                 <input className="form-control" value={village} readOnly />
+              </div>
+              
+              <div className="col-md-8">
+                <label className="form-label fw-semibold">
+                  File URL optional
+                </label>
+                <input
+                  type="file"
+                  className="form-control"
+                  accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
+                  onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                />
               </div>
 
               <div className="col-12">
@@ -159,17 +178,6 @@ function DocumentsVillage() {
                 />
               </div>
 
-              <div className="col-md-8">
-                <label className="form-label fw-semibold">
-                  File URL optional
-                </label>
-                <input
-                  className="form-control"
-                  value={fileUrl}
-                  onChange={(e) => setFileUrl(e.target.value)}
-                  placeholder="/uploads/document.pdf or website link"
-                />
-              </div>
 
               <div className="col-md-4 d-flex align-items-end">
                 <div className="form-check mb-2">
