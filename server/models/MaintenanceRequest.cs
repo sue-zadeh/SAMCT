@@ -25,6 +25,9 @@ namespace server.Models
         public bool IsReadByResident { get; set; } = true;
         public bool IsReadByManager { get; set; } = false;
 
+        public string ImageUrl1 { get; set; } = "";
+        public string ImageUrl2 { get; set; } = "";
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
     }

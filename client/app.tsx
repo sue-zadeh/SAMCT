@@ -31,6 +31,8 @@ import DocumentsResident from './components/documents-resident'
 import DocumentsAdmin from './components/documents-admin'
 import MaintenanceAdmin from './components/maintenance-admin'
 
+import MyVillage from './components/my-village'
+
 function App() {
   return (
     <>
@@ -63,6 +65,8 @@ function App() {
           path="/village-manager/documents"
           element={<DocumentsVillage />}
         />
+
+        <Route path="/village-manager/my-village" element={<MyVillage />} />
 
         <Route
           path="/resident/profile/password"

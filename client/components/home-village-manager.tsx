@@ -15,12 +15,15 @@ type MaintenanceRequest = {
 }
 
 type UserProfile = {
-  id: number
-  role: string
-  village: string
-  isActive: boolean
+  id?: number
+  Id?: number
+  role?: string
+  Role?: string
+  village?: string
+  Village?: string
+  isActive?: boolean
+  IsActive?: boolean
 }
-
 type DocumentNotice = {
   id: number
   title: string
@@ -33,7 +36,8 @@ function HomeVillageManager() {
 
   const firstName = localStorage.getItem('firstname') || 'Village'
   const lastName = localStorage.getItem('lastname') || 'Manager'
-  const fullName = localStorage.getItem('fullname') || `${firstName} ${lastName}`
+  const fullName =
+    localStorage.getItem('fullname') || `${firstName} ${lastName}`
   const village = localStorage.getItem('village') || 'Papakura'
   const role = localStorage.getItem('role') || 'VillageManager'
 
@@ -44,7 +48,9 @@ function HomeVillageManager() {
     ? `${savedImage}?t=${Date.now()}`
     : `${API_BASE_URL}${savedImage}?t=${Date.now()}`
 
-  const [maintenanceItems, setMaintenanceItems] = useState<MaintenanceRequest[]>([])
+  const [maintenanceItems, setMaintenanceItems] = useState<
+    MaintenanceRequest[]
+  >([])
   const [residentCount, setResidentCount] = useState(0)
   const [documentCount, setDocumentCount] = useState(0)
 
@@ -66,27 +72,33 @@ function HomeVillageManager() {
       }
     }
 
-    async function loadResidents() {
-      try {
-        const response = await fetch(
-          `${API_BASE_URL}/api/users/village/${encodedVillage}`,
-        )
+async function loadResidents() {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/api/users/village/${encodedVillage}`,
+    )
 
-        if (!response.ok) return
+    if (!response.ok) return
 
-        const data: UserProfile[] = await response.json()
+    const rawData = await response.json()
+    const data: UserProfile[] = Array.isArray(rawData)
+      ? rawData
+      : rawData.users || rawData.data || []
 
-        const residents = data.filter(
-          (user) => user.role === 'Resident' && user.isActive,
-        )
+    const residents = data.filter((user: any) => {
+      const role = String(user.role ?? user.Role ?? '').toLowerCase()
+      const active = user.isActive ?? user.IsActive
 
-        setResidentCount(residents.length)
-      } catch {
-        setResidentCount(0)
-      }
-    }
+      return role.includes('resident') && active !== false
+    })
 
-    async function loadDocuments() {
+    setResidentCount(residents.length)
+  } catch {
+    setResidentCount(0)
+  }
+}
+
+async function loadDocuments() {
       try {
         const response = await fetch(
           `${API_BASE_URL}/api/documents/village/${encodedVillage}`,
@@ -106,8 +118,15 @@ function HomeVillageManager() {
     loadDocuments()
   }, [village])
 
-  const openMaintenanceCount = maintenanceItems.filter(
-    (item) => item.status !== 'Completed',
+  const totalMaintenance = maintenanceItems.length
+  const pendingCount = maintenanceItems.filter(
+    (item) => item.status === 'Pending',
+  ).length
+  const inProgressCount = maintenanceItems.filter(
+    (item) => item.status === 'In Progress',
+  ).length
+  const completedCount = maintenanceItems.filter(
+    (item) => item.status === 'Completed',
   ).length
 
   const recentItems = maintenanceItems.slice(0, 5)
@@ -149,7 +168,7 @@ function HomeVillageManager() {
 
               <div className="d-flex flex-wrap gap-2">
                 <Link
-                  to="/village-manager/residents"
+                  to="/village-manager/my-village"
                   className="btn btn-primary"
                 >
                   View Village Data
@@ -168,22 +187,61 @@ function HomeVillageManager() {
 
         <section className="mb-4">
           <div className="row g-3">
-            <div className="col-md-4">
+            <div className="col-md-6 col-xl-2">
               <Link
                 to="/village-manager/maintenance"
                 className="text-decoration-none text-dark"
               >
                 <div className="p-4 border rounded-4 shadow-sm bg-white h-100">
-                  <p className="text-secondary mb-2">Open Maintenance</p>
-                  <h2 className="fw-bold mb-1">{openMaintenanceCount}</h2>
-                  <p className="small text-secondary mb-0">
-                    Requests waiting for action
-                  </p>
+                  <p className="text-secondary mb-2">Total Maintenance</p>
+                  <h2 className="fw-bold mb-1">{totalMaintenance}</h2>
+                  <p className="small text-secondary mb-0">All requests</p>
                 </div>
               </Link>
             </div>
 
-            <div className="col-md-4">
+            <div className="col-md-6 col-xl-2">
+              <Link
+                to="/village-manager/maintenance"
+                className="text-decoration-none text-dark"
+              >
+                <div className="p-4 border rounded-4 shadow-sm bg-white h-100">
+                  <p className="text-secondary mb-2">Pending</p>
+                  <h2 className="fw-bold text-warning mb-1">{pendingCount}</h2>
+                  <p className="small text-secondary mb-0">Waiting action</p>
+                </div>
+              </Link>
+            </div>
+
+            <div className="col-md-6 col-xl-2">
+              <Link
+                to="/village-manager/maintenance"
+                className="text-decoration-none text-dark"
+              >
+                <div className="p-4 border rounded-4 shadow-sm bg-white h-100">
+                  <p className="text-secondary mb-2">In Progress</p>
+                  <h2 className="fw-bold text-info mb-1">{inProgressCount}</h2>
+                  <p className="small text-secondary mb-0">Being handled</p>
+                </div>
+              </Link>
+            </div>
+
+            <div className="col-md-6 col-xl-2">
+              <Link
+                to="/village-manager/maintenance"
+                className="text-decoration-none text-dark"
+              >
+                <div className="p-4 border rounded-4 shadow-sm bg-white h-100">
+                  <p className="text-secondary mb-2">Completed</p>
+                  <h2 className="fw-bold text-success mb-1">
+                    {completedCount}
+                  </h2>
+                  <p className="small text-secondary mb-0">Resolved</p>
+                </div>
+              </Link>
+            </div>
+
+            <div className="col-md-6 col-xl-2">
               <Link
                 to="/village-manager/residents"
                 className="text-decoration-none text-dark"
@@ -191,24 +249,20 @@ function HomeVillageManager() {
                 <div className="p-4 border rounded-4 shadow-sm bg-white h-100">
                   <p className="text-secondary mb-2">Residents</p>
                   <h2 className="fw-bold mb-1">{residentCount}</h2>
-                  <p className="small text-secondary mb-0">
-                    Active resident profiles in this village
-                  </p>
+                  <p className="small text-secondary mb-0">Active profiles</p>
                 </div>
               </Link>
             </div>
 
-            <div className="col-md-4">
+            <div className="col-md-6 col-xl-2">
               <Link
                 to="/village-manager/documents"
                 className="text-decoration-none text-dark"
               >
                 <div className="p-4 border rounded-4 shadow-sm bg-white h-100">
                   <p className="text-secondary mb-2">Documents</p>
-                  <h2 className="fw-bold mb-1">{documentCount}</h2>
-                  <p className="small text-secondary mb-0">
-                    Real saved notices and village files
-                  </p>
+                  <h2 className="fw-bold text-primary mb-1">{documentCount}</h2>
+                  <p className="small text-secondary mb-0">Saved files</p>
                 </div>
               </Link>
             </div>
@@ -230,7 +284,7 @@ function HomeVillageManager() {
                     View village-related resident and profile data.
                   </p>
                   <Link
-                    to="/village-manager/residents"
+                    to="/village-manager/my-village"
                     className="btn btn-sm btn-outline-primary"
                   >
                     Open Village Data
@@ -291,9 +345,9 @@ function HomeVillageManager() {
             <div className="col-lg-7">
               <div className="p-4 border rounded-4 shadow-sm bg-white h-100">
                 <p className="text-uppercase text-primary fw-semibold mb-1">
-                  Recent Activity
+                  Recent Maintenance Activity
                 </p>
-                <h2 className="fw-bold mb-3">Latest village updates</h2>
+                <h2 className="fw-bold mb-3">Latest requests</h2>
 
                 {recentItems.length === 0 ? (
                   <p className="text-secondary mb-0">
@@ -341,12 +395,10 @@ function HomeVillageManager() {
 
                 <ul className="text-secondary ps-3 mb-0">
                   <li className="mb-2">
-                    You should manage only data related to{' '}
-                    <strong>{village}</strong>.
+                    You manage only data related to <strong>{village}</strong>.
                   </li>
                   <li className="mb-2">
-                    Maintenance requests are private between residents,
-                    village management, and admin visibility.
+                    Maintenance requests are visible only for your village.
                   </li>
                   <li className="mb-2">
                     Documents can be visible or hidden from residents.
