@@ -72,33 +72,33 @@ function HomeVillageManager() {
       }
     }
 
-async function loadResidents() {
-  try {
-    const response = await fetch(
-      `${API_BASE_URL}/api/users/village/${encodedVillage}`,
-    )
+    async function loadResidents() {
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/api/users/village/${encodedVillage}`,
+        )
+        if (!response.ok) return
 
-    if (!response.ok) return
+        const rawData = await response.json()
+        console.log(rawData)
+        const data: UserProfile[] = Array.isArray(rawData)
+          ? rawData
+          : rawData.users || rawData.data || []
 
-    const rawData = await response.json()
-    const data: UserProfile[] = Array.isArray(rawData)
-      ? rawData
-      : rawData.users || rawData.data || []
+        const residents = data.filter((user: any) => {
+          const role = String(user.role ?? user.Role ?? '').toLowerCase()
+          const active = user.isActive ?? user.IsActive
 
-    const residents = data.filter((user: any) => {
-      const role = String(user.role ?? user.Role ?? '').toLowerCase()
-      const active = user.isActive ?? user.IsActive
+          return role.includes('resident') && active !== false
+        })
 
-      return role.includes('resident') && active !== false
-    })
+        setResidentCount(residents.length)
+      } catch {
+        setResidentCount(0)
+      }
+    }
 
-    setResidentCount(residents.length)
-  } catch {
-    setResidentCount(0)
-  }
-}
-
-async function loadDocuments() {
+    async function loadDocuments() {
       try {
         const response = await fetch(
           `${API_BASE_URL}/api/documents/village/${encodedVillage}`,

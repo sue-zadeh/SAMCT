@@ -45,35 +45,76 @@ namespace server.Controllers
         }
 
         [HttpPost("resident")]
-        public async Task<IActionResult> CreateResidentRequest([FromBody] CreateMaintenanceRequestDto request)
-        {
-            var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.UserName == request.UserName && u.IsActive);
+public async Task<IActionResult> CreateResidentMaintenance(
+    [FromForm] CreateMaintenanceRequestDto request
+)
+{
+    var user = await _context.Users
+        .FirstOrDefaultAsync(u => u.UserName == request.UserName && u.IsActive);
 
-            if (user == null)
-            {
-                return NotFound(new { message = "Resident user not found." });
-            }
+    if (user == null)
+    {
+        return NotFound(new { message = "Resident user not found." });
+    }
 
-            var maintenance = new MaintenanceRequest
-            {
-                UserId = user.Id,
-                Village = string.IsNullOrWhiteSpace(request.Village) ? user.Village : request.Village,
-                Title = request.Title,
-                Description = request.Description,
-                UnitOrAddress = request.UnitOrAddress,
-                Priority = request.Priority,
-                Status = "Pending",
-                CreatedAt = DateTime.UtcNow,
-                IsReadByResident = true,
-                IsReadByManager = false
-            };
+    string imageUrl1 = "";
+    string imageUrl2 = "";
 
-            _context.MaintenanceRequests.Add(maintenance);
-            await _context.SaveChangesAsync();
+    var uploadFolder = Path.Combine(
+        Directory.GetCurrentDirectory(),
+        "wwwroot",
+        "uploads",
+        "maintenance"
+    );
 
-            return Ok(new { message = "Maintenance request submitted successfully." });
-        }
+    if (!Directory.Exists(uploadFolder))
+    {
+        Directory.CreateDirectory(uploadFolder);
+    }
+
+    async Task<string> SaveImage(IFormFile file)
+    {
+        var extension = Path.GetExtension(file.FileName);
+        var fileName = $"{Guid.NewGuid()}{extension}";
+        var path = Path.Combine(uploadFolder, fileName);
+
+        using var stream = new FileStream(path, FileMode.Create);
+        await file.CopyToAsync(stream);
+
+        return $"/uploads/maintenance/{fileName}";
+    }
+
+    if (request.Image1 != null)
+    {
+        imageUrl1 = await SaveImage(request.Image1);
+    }
+
+    if (request.Image2 != null)
+    {
+        imageUrl2 = await SaveImage(request.Image2);
+    }
+
+    var maintenance = new MaintenanceRequest
+    {
+        UserId = user.Id,
+        Village = request.Village,
+        Title = request.Title,
+        Description = request.Description,
+        UnitOrAddress = request.UnitOrAddress,
+        Priority = request.Priority,
+        Status = "Pending",
+        ImageUrl1 = imageUrl1,
+        ImageUrl2 = imageUrl2,
+        CreatedAt = DateTime.UtcNow,
+        IsReadByManager = false,
+        IsReadByResident = true
+    };
+
+    _context.MaintenanceRequests.Add(maintenance);
+    await _context.SaveChangesAsync();
+
+    return Ok(new { message = "Maintenance request submitted successfully." });
+}
 
         [HttpGet("village/{village}")]
         public async Task<IActionResult> GetVillageRequests(string village)
@@ -105,7 +146,7 @@ namespace server.Controllers
         }
 
         [HttpPut("{id}/manager-response")]
-        public async Task<IActionResult> UpdateManagerResponse(int id, [FromBody] UpdateMaintenanceRequestDto request)
+        public async Task<IActionResult> UpdateManagerResponse(int id, [FromForm] UpdateMaintenanceRequestDto request)
         {
             var maintenance = await _context.MaintenanceRequests.FindAsync(id);
 

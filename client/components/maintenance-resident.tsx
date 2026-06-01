@@ -25,6 +25,8 @@ function MaintenanceResident() {
   const [priority, setPriority] = useState('Normal')
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
+  const [image1, setImage1] = useState<File | null>(null)
+  const [image2, setImage2] = useState<File | null>(null)
 
   const loadRequests = async () => {
     try {
@@ -81,12 +83,12 @@ function MaintenanceResident() {
         }),
       })
 
-      let data = null;
+      let data = null
 
-      const text = await response.text();
+      const text = await response.text()
 
       if (text) {
-        data = JSON.parse(text);
+        data = JSON.parse(text)
       }
 
       if (!response.ok) {
@@ -182,6 +184,30 @@ function MaintenanceResident() {
                     placeholder="Write the issue clearly..."
                   />
                 </div>
+
+                <div className="col-md-6">
+                  <label className="form-label fw-semibold">
+                    Photo 1 optional
+                  </label>
+                  <input
+                    type="file"
+                    className="form-control"
+                    accept=".jpg,.jpeg,.png"
+                    onChange={(e) => setImage1(e.target.files?.[0] || null)}
+                  />
+                </div>
+
+                <div className="col-md-6">
+                  <label className="form-label fw-semibold">
+                    Photo 2 optional
+                  </label>
+                  <input
+                    type="file"
+                    className="form-control"
+                    accept=".jpg,.jpeg,.png"
+                    onChange={(e) => setImage2(e.target.files?.[0] || null)}
+                  />
+                </div>
               </div>
 
               <button className="btn btn-primary mt-4" type="submit">
@@ -228,10 +254,12 @@ function MaintenanceResident() {
                             {request.description}
                           </div>
                         </td>
-                        <td>{request.unitOrAddress || "-"}</td>
+                        <td>{request.unitOrAddress || '-'}</td>
                         <td>{village}</td>
                         <td>{request.priority}</td>
-                        <td>                          <span
+                        <td>
+                          {' '}
+                          <span
                             className={`badge ${getStatusClass(
                               request.status,
                             )}`}
