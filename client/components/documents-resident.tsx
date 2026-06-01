@@ -8,6 +8,7 @@ type DocumentNotice = {
   description: string
   village: string
   fileUrl: string
+  fileName: string
   createdBy: string
   createdAt: string
 }
@@ -76,41 +77,72 @@ function DocumentsResident() {
                 No documents or notices available yet.
               </p>
             ) : (
-              <div className="row g-3">
-                {documents.map((doc) => (
-                  <div className="col-md-6" key={doc.id}>
-                    <div className="p-4 border rounded-4 h-100">
-                      <span className="badge bg-primary mb-2">{doc.type}</span>
+              <div className="table-responsive">
+                <table className="table align-middle">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Document</th>
+                      <th>Type</th>
+                      <th>Uploaded By</th>
+                      <th>File</th>
+                    </tr>
+                  </thead>
 
-                      <h3 className="h5 fw-bold">{doc.title}</h3>
+                  <tbody>
+                    {documents.map((doc) => (
+                      <tr key={doc.id}>
+                        <td>
+                          {new Date(doc.createdAt).toLocaleDateString('en-NZ')}
+                        </td>
 
-                      <p className="text-secondary">{doc.description}</p>
+                        <td>
+                          <strong>{doc.title}</strong>
+                          <div className="small text-secondary mt-1">
+                            {doc.description || 'No description'}
+                          </div>
+                        </td>
 
-                      <p className="small text-secondary mb-2">
-                        Posted: {new Date(doc.createdAt).toLocaleDateString('en-NZ')}
-                      </p>
+                        <td>
+                          <span className="badge bg-primary">{doc.type}</span>
+                        </td>
 
-                      {doc.createdBy && (
-                        <p className="small text-secondary mb-3">
-                          Uploaded by: {doc.createdBy}
-                        </p>
-                      )}
+                        <td>{doc.createdBy || 'Unknown'}</td>
 
-                      {doc.fileUrl ? (
-                        <a
-                          className="btn btn-outline-primary btn-sm"
-                          href={getFileLink(doc.fileUrl)}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          Open / Download File
-                        </a>
-                      ) : (
-                        <span className="text-secondary small">No file attached</span>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                        <td>
+                          {doc.fileUrl ? (
+                            <div className="d-grid gap-2">
+                              <span className="small text-secondary">
+                                {doc.fileName || 'Attached file'}
+                              </span>
+
+                              <div className="d-flex flex-wrap gap-2">
+                                <a
+                                  className="btn btn-outline-primary btn-sm"
+                                  href={getFileLink(doc.fileUrl)}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                >
+                                  Open
+                                </a>
+
+                                <a
+                                  className="btn btn-outline-dark btn-sm"
+                                  href={getFileLink(doc.fileUrl)}
+                                  download={doc.fileName || true}
+                                >
+                                  Download
+                                </a>
+                              </div>
+                            </div>
+                          ) : (
+                            <span className="text-secondary">No file</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>

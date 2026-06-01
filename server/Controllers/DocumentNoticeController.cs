@@ -114,10 +114,13 @@ namespace server.Controllers
                 return NotFound(new { message = "User not found." });
 
             string fileUrl = "";
+            string fileName = "";
 
             if (file != null && file.Length > 0)
             {
                 fileUrl = await SaveFile(file);
+                fileName = file.FileName;
+
             }
 
             var document = new DocumentNotice
@@ -127,6 +130,7 @@ namespace server.Controllers
                 Description = description,
                 Village = village,
                 FileUrl = fileUrl,
+                FileName = fileName,
                 IsVisibleToResidents = isVisibleToResidents,
                 CreatedByUserId = user.Id,
                 CreatedAt = DateTime.UtcNow
@@ -161,6 +165,7 @@ namespace server.Controllers
             if (file != null && file.Length > 0)
             {
                 document.FileUrl = await SaveFile(file);
+                document.FileName = file.FileName;
             }
 
             await _context.SaveChangesAsync();
