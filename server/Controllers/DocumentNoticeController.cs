@@ -235,5 +235,21 @@ namespace server.Controllers
 
             return $"/uploads/documents/{fileName}";
         }
+
+        [HttpGet("summary/resident/{village}")]
+public async Task<IActionResult> GetResidentDocumentSummary(string village)
+{
+    var decodedVillage = Uri.UnescapeDataString(village);
+
+    var count = await _context.DocumentNotices
+        .CountAsync(d =>
+            d.Village == decodedVillage &&
+            d.IsVisibleToResidents);
+
+    return Ok(new
+    {
+        totalDocuments = count
+    });
+}
     }
 }
