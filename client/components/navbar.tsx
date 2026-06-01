@@ -48,6 +48,8 @@ export default function Navbar({ userType }: NavbarProps) {
     { label: "Orders", path: "/admin/orders" },
     { label: "Accounts", path: "/admin/accounts" },
     { label: "Website Content", path: "/admin/content" },
+    { label: "Register", path: "/register" },
+
   ];
 
   const villageManagerLinks = [
@@ -56,6 +58,8 @@ export default function Navbar({ userType }: NavbarProps) {
     { label: "Maintenance", path: "/village-manager/maintenance" },
     { label: "Residents", path: "/village-manager/residents" },
     { label: "Documents & Notices", path: "/village-manager/documents" },
+    { label: "Register", path: "/register" },
+
   ];
 
   let links = publicLinks;

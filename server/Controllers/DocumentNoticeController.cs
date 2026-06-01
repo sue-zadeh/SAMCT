@@ -32,6 +32,7 @@ namespace server.Controllers
                     d.Description,
                     d.Village,
                     d.FileUrl,
+                    d.FileName,
                     d.IsVisibleToResidents,
                     CreatedBy = d.CreatedByUser != null ? d.CreatedByUser.FullName : "",
                     d.CreatedAt,
@@ -59,6 +60,7 @@ namespace server.Controllers
                     d.Description,
                     d.Village,
                     d.FileUrl,
+                    d.FileName,
                     d.IsVisibleToResidents,
                     CreatedBy = d.CreatedByUser != null ? d.CreatedByUser.FullName : "",
                     d.CreatedAt,
@@ -86,6 +88,7 @@ namespace server.Controllers
                     d.Description,
                     d.Village,
                     d.FileUrl,
+                    d.FileName,
                     CreatedBy = d.CreatedByUser != null ? d.CreatedByUser.FullName : "",
                     d.CreatedAt
                 })

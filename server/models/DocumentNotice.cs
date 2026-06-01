@@ -12,6 +12,7 @@ namespace server.Models
         public string Village { get; set; } = "";
 
         public string FileUrl { get; set; } = "";
+        public string FileName { get; set; } = "";
         public bool IsVisibleToResidents { get; set; } = true;
 
         public int CreatedByUserId { get; set; }
