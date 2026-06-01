@@ -51,7 +51,7 @@ function MyVillage() {
 
     async function loadData() {
       const usersResponse = await fetch(
-        `${API_BASE_URL}/api/users/village/${encodedVillage}`,
+        `${API_BASE_URL}/api/users/by-village/${encodedVillage}`,
       )
       const maintenanceResponse = await fetch(
         `${API_BASE_URL}/api/maintenance/village/${encodedVillage}`,

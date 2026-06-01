@@ -75,7 +75,7 @@ function HomeVillageManager() {
     async function loadResidents() {
       try {
         const response = await fetch(
-          `${API_BASE_URL}/api/users/village/${encodedVillage}`,
+          `${API_BASE_URL}/api/users/by-village/${encodedVillage}`,
         )
         if (!response.ok) return
 
