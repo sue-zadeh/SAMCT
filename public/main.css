@@ -1,0 +1,37 @@
+.contact-hero {
+  animation: fadeDown 0.7s ease both;
+}
+
+.contact-card {
+  animation: fadeUp 0.8s ease both;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.contact-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12) !important;
+}
+
+@keyframes fadeDown {
+  from {
+    opacity: 0;
+    transform: translateY(-18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

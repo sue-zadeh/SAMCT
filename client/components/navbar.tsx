@@ -27,7 +27,7 @@ export default function Navbar({ userType }: NavbarProps) {
     { label: 'Home', path: '/' },
     { label: 'About', path: '/about' },
     { label: 'Availability', path: '/availability' },
-    { label: 'Contact', path: '/contact' },
+    { label: 'Contact', path: '/contactUs' },
     { label: 'Login', path: '/login' },
     { label: 'Register', path: '/register' },
   ]

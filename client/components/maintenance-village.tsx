@@ -25,6 +25,7 @@ function MaintenanceVillage() {
   const [requests, setRequests] = useState<MaintenanceRequest[]>([])
   const [answers, setAnswers] = useState<Record<number, string>>({})
   const [statuses, setStatuses] = useState<Record<number, string>>({})
+  const [searchText, setSearchText] = useState('')
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
 
@@ -116,6 +117,19 @@ function MaintenanceVillage() {
     return url.startsWith('http') ? url : `${API_BASE_URL}${url}`
   }
 
+  const filteredRequests = requests.filter((request) => {
+    const text = searchText.trim().toLowerCase()
+
+    if (!text) return true
+
+    return (
+      request.unitOrAddress.toLowerCase().includes(text) ||
+      request.title.toLowerCase().includes(text) ||
+      request.description.toLowerCase().includes(text) ||
+      request.residentName.toLowerCase().includes(text)
+    )
+  })
+
   return (
     <>
       <Navbar userType="villageManager" />
@@ -139,26 +153,28 @@ function MaintenanceVillage() {
 
         <section>
           <div className="p-4 border rounded-4 shadow-sm bg-white">
-            <div className="d-flex justify-content-between align-items-center mb-4">
-              <div>
-                <h2 className="h4 fw-bold mb-1">Request Queue</h2>
-                <p className="text-secondary mb-0">
-                  Pending, in progress, and completed maintenance requests.
-                </p>
-              </div>
+            <div className="text-center mb-4">
+              <h2 className="h4 fw-bold mb-1">Request Queue</h2>
+              <p className="text-secondary mb-3">
+                Search by unit number, resident name, issue title, or
+                description.
+              </p>
 
-              <button
-                className="btn btn-outline-primary"
-                onClick={loadRequests}
-              >
-                Refresh
-              </button>
+              <div className="d-flex justify-content-center">
+                <input
+                  className="form-control text-center"
+                  style={{ maxWidth: '420px' }}
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  placeholder="Search maintenance requests..."
+                />
+              </div>
             </div>
 
-            {requests.length === 0 ? (
-              <p className="text-secondary mb-0">
-                No maintenance requests for this village yet.
-              </p>
+            {filteredRequests.length === 0 ? (
+              <div className="alert alert-warning text-center">
+                No maintenance request matched your search.
+              </div>
             ) : (
               <div className="table-responsive">
                 <table className="table align-middle">
@@ -176,7 +192,7 @@ function MaintenanceVillage() {
                   </thead>
 
                   <tbody>
-                    {requests.map((request) => (
+                    {filteredRequests.map((request) => (
                       <tr key={request.id}>
                         <td style={{ minWidth: '160px' }}>
                           <strong>{request.residentName}</strong>
@@ -238,7 +254,9 @@ function MaintenanceVillage() {
 
                         <td>
                           <span
-                            className={`badge ${getStatusClass(request.status)}`}
+                            className={`badge ${getStatusClass(
+                              request.status,
+                            )}`}
                           >
                             {request.status}
                           </span>

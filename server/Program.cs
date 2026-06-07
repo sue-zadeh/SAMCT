@@ -1,9 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using server.Data;
+using server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services.AddScoped<EmailService>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
