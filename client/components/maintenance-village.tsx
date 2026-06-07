@@ -1,100 +1,120 @@
-import { useEffect, useState } from "react";
-import Navbar from "./navbar";
+import { useEffect, useState } from 'react'
+import Navbar from './navbar'
 
 type MaintenanceRequest = {
-  id: number;
-  residentName: string;
-  residentUserName: string;
-  title: string;
-  description: string;
-  unitOrAddress: string;
-  priority: string;
-  status: string;
-  village: string;
-  managerAnswer?: string;
-  createdAt: string;
-};
+  id: number
+  residentName: string
+  residentUserName: string
+  title: string
+  description: string
+  unitOrAddress: string
+  priority: string
+  status: string
+  village: string
+  imageUrl1?: string
+  imageUrl2?: string
+  managerAnswer?: string
+  createdAt: string
+}
 
 function MaintenanceVillage() {
-  const API_BASE_URL = "http://localhost:5072";
-  const village = localStorage.getItem("village") || "Papakura";
-  const managerUserName = localStorage.getItem("username") || "";
+  const API_BASE_URL = 'http://localhost:5072'
+  const village = localStorage.getItem('village') || 'Papakura'
+  const managerUserName = localStorage.getItem('username') || ''
 
-  const [requests, setRequests] = useState<MaintenanceRequest[]>([]);
-  const [answers, setAnswers] = useState<Record<number, string>>({});
-  const [statuses, setStatuses] = useState<Record<number, string>>({});
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
+  const [requests, setRequests] = useState<MaintenanceRequest[]>([])
+  const [answers, setAnswers] = useState<Record<number, string>>({})
+  const [statuses, setStatuses] = useState<Record<number, string>>({})
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (!message && !error) return
+
+    const timer = setTimeout(() => {
+      setMessage('')
+      setError('')
+    }, 50000)
+
+    return () => clearTimeout(timer)
+  }, [message, error])
 
   const loadRequests = async () => {
     try {
-      setError("");
+      setError('')
 
       const response = await fetch(
-        `${API_BASE_URL}/api/maintenance/village/${encodeURIComponent(village)}`
-      );
+        `${API_BASE_URL}/api/maintenance/village/${encodeURIComponent(village)}`,
+      )
 
-      const data = await response.json();
+      const text = await response.text()
+      const data = text ? JSON.parse(text) : []
 
       if (!response.ok) {
-        throw new Error(data.message || "Failed to load village requests.");
+        throw new Error(data.message || 'Failed to load village requests.')
       }
 
-      setRequests(data);
+      setRequests(data)
     } catch (err: any) {
-      setError(err.message || "Failed to load village requests.");
+      setError(err.message || 'Failed to load village requests.')
     }
-  };
+  }
 
   useEffect(() => {
-    loadRequests();
-  }, [village]);
+    loadRequests()
+  }, [village])
 
   const handleSaveResponse = async (id: number) => {
     try {
-      setMessage("");
-      setError("");
+      setMessage('')
+      setError('')
 
-      const managerAnswer = answers[id] || "";
-      const status = statuses[id] || "Completed";
+      const managerAnswer = answers[id] || ''
+      const status = statuses[id] || 'Completed'
 
       if (!managerAnswer.trim()) {
-        setError("Please write a manager answer before saving.");
-        return;
+        setError('Please write a manager answer before saving.')
+        return
       }
 
       const response = await fetch(
         `${API_BASE_URL}/api/maintenance/${id}/manager-response`,
         {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             managerUserName,
             managerAnswer,
             status,
           }),
-        }
-      );
+        },
+      )
 
-      const data = await response.json();
+      const text = await response.text()
+      const data = text ? JSON.parse(text) : {}
 
       if (!response.ok) {
-        throw new Error(data.message || "Failed to update request.");
+        throw new Error(data.message || 'Failed to update request.')
       }
 
-      setMessage("Maintenance request updated successfully.");
-      setAnswers((prev) => ({ ...prev, [id]: "" }));
-      await loadRequests();
+      setMessage('Maintenance request updated successfully.')
+      setAnswers((prev) => ({ ...prev, [id]: '' }))
+      await loadRequests()
     } catch (err: any) {
-      setError(err.message || "Failed to update request.");
+      setError(err.message || 'Failed to update request.')
     }
-  };
+  }
 
   const getStatusClass = (status: string) => {
-    if (status === "Completed") return "bg-success";
-    if (status === "In Progress") return "bg-info text-dark";
-    return "bg-warning text-dark";
-  };
+    if (status === 'Completed') return 'bg-success'
+    if (status === 'In Progress') return 'bg-info text-dark'
+    return 'bg-warning text-dark'
+  }
+
+  const imageLink = (url?: string) => {
+    if (!url) return ''
+    return url.startsWith('http') ? url : `${API_BASE_URL}${url}`
+  }
 
   return (
     <>
@@ -108,7 +128,8 @@ function MaintenanceVillage() {
             </p>
             <h1 className="fw-bold mb-2">Maintenance Requests - {village}</h1>
             <p className="text-secondary mb-0">
-              View and respond to private resident maintenance requests for your village.
+              View resident maintenance requests, photos, descriptions, and send
+              responses.
             </p>
           </div>
         </section>
@@ -122,11 +143,14 @@ function MaintenanceVillage() {
               <div>
                 <h2 className="h4 fw-bold mb-1">Request Queue</h2>
                 <p className="text-secondary mb-0">
-                  Pending and completed maintenance requests.
+                  Pending, in progress, and completed maintenance requests.
                 </p>
               </div>
 
-              <button className="btn btn-outline-primary" onClick={loadRequests}>
+              <button
+                className="btn btn-outline-primary"
+                onClick={loadRequests}
+              >
                 Refresh
               </button>
             </div>
@@ -141,7 +165,8 @@ function MaintenanceVillage() {
                   <thead>
                     <tr>
                       <th>Resident</th>
-                      <th>Issue</th>
+                      <th>Issue Details</th>
+                      <th>Photos</th>
                       <th>Village</th>
                       <th>Priority</th>
                       <th>Status</th>
@@ -153,34 +178,73 @@ function MaintenanceVillage() {
                   <tbody>
                     {requests.map((request) => (
                       <tr key={request.id}>
-                        <td>
+                        <td style={{ minWidth: '160px' }}>
                           <strong>{request.residentName}</strong>
                           <div className="small text-secondary">
-                            {request.unitOrAddress || "No unit added"}
+                            {request.residentUserName}
+                          </div>
+                          <div className="small text-secondary">
+                            Unit: {request.unitOrAddress || '-'}
                           </div>
                         </td>
 
-                        <td>
+                        <td style={{ minWidth: '260px' }}>
                           <strong>{request.title}</strong>
                           <div className="small text-secondary">
                             {request.description}
                           </div>
                           <div className="small text-secondary mt-1">
-                            Submitted:{" "}
-                            {new Date(request.createdAt).toLocaleDateString("en-NZ")}
+                            Submitted:{' '}
+                            {new Date(request.createdAt).toLocaleDateString(
+                              'en-NZ',
+                            )}
                           </div>
+                        </td>
+
+                        <td style={{ minWidth: '130px' }}>
+                          {request.imageUrl1 || request.imageUrl2 ? (
+                            <div className="d-flex flex-column gap-1">
+                              {request.imageUrl1 && (
+                                <a
+                                  href={imageLink(request.imageUrl1)}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="btn btn-outline-primary btn-sm"
+                                >
+                                  Open Photo 1
+                                </a>
+                              )}
+
+                              {request.imageUrl2 && (
+                                <a
+                                  href={imageLink(request.imageUrl2)}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="btn btn-outline-primary btn-sm"
+                                >
+                                  Open Photo 2
+                                </a>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-secondary small">
+                              No photos
+                            </span>
+                          )}
                         </td>
 
                         <td>{request.village}</td>
                         <td>{request.priority}</td>
 
                         <td>
-                          <span className={`badge ${getStatusClass(request.status)}`}>
+                          <span
+                            className={`badge ${getStatusClass(request.status)}`}
+                          >
                             {request.status}
                           </span>
                         </td>
 
-                        <td style={{ minWidth: "260px" }}>
+                        <td style={{ minWidth: '260px' }}>
                           {request.managerAnswer && (
                             <div className="p-2 bg-light border rounded-3 small mb-2">
                               {request.managerAnswer}
@@ -191,7 +255,7 @@ function MaintenanceVillage() {
                             className="form-control"
                             rows={2}
                             placeholder="Write update or resolution..."
-                            value={answers[request.id] || ""}
+                            value={answers[request.id] || ''}
                             onChange={(e) =>
                               setAnswers((prev) => ({
                                 ...prev,
@@ -201,7 +265,7 @@ function MaintenanceVillage() {
                           />
                         </td>
 
-                        <td style={{ minWidth: "160px" }}>
+                        <td style={{ minWidth: '160px' }}>
                           <select
                             className="form-select form-select-sm mb-2"
                             value={statuses[request.id] || request.status}
@@ -234,7 +298,7 @@ function MaintenanceVillage() {
         </section>
       </main>
     </>
-  );
+  )
 }
 
-export default MaintenanceVillage;
+export default MaintenanceVillage

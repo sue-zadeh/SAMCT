@@ -8,7 +8,10 @@ type MaintenanceRequest = {
   unitOrAddress: string
   priority: string
   status: string
+  village: string
   managerAnswer?: string
+  imageUrl1?: string
+  imageUrl2?: string
   createdAt: string
   updatedAt?: string
 }
@@ -16,7 +19,7 @@ type MaintenanceRequest = {
 function MaintenanceResident() {
   const API_BASE_URL = 'http://localhost:5072'
   const userName = localStorage.getItem('username') || ''
-  const village = localStorage.getItem('village') || ''
+  const village = localStorage.getItem('village') || 'Papakura'
 
   const [requests, setRequests] = useState<MaintenanceRequest[]>([])
   const [title, setTitle] = useState('')
@@ -27,20 +30,30 @@ function MaintenanceResident() {
   const [error, setError] = useState('')
   const [image1, setImage1] = useState<File | null>(null)
   const [image2, setImage2] = useState<File | null>(null)
+  const [fileInputKey, setFileInputKey] = useState(0)
+
+  useEffect(() => {
+    if (!message && !error) return
+
+    const timer = setTimeout(() => {
+      setMessage('')
+      setError('')
+    }, 50000)
+
+    return () => clearTimeout(timer)
+  }, [message, error])
 
   const loadRequests = async () => {
     try {
+      setError('')
+
       const response = await fetch(
-        `${API_BASE_URL}/api/maintenance/resident/${userName}`,
+        `${API_BASE_URL}/api/maintenance/resident/${encodeURIComponent(userName)}`,
       )
 
-      let data
+      const text = await response.text()
+      const data = text ? JSON.parse(text) : []
 
-      try {
-        data = await response.json()
-      } catch {
-        throw new Error('Server returned invalid response.')
-      }
       if (!response.ok) {
         throw new Error(data.message || 'Failed to load maintenance requests.')
       }
@@ -62,34 +75,36 @@ function MaintenanceResident() {
     setMessage('')
     setError('')
 
+    if (!userName) {
+      setError('Login user was not found. Please login again.')
+      return
+    }
+
     if (!title.trim() || !description.trim()) {
       setError('Please add a title and description.')
       return
     }
 
     try {
+      const formData = new FormData()
+
+      formData.append('userName', userName)
+      formData.append('village', village)
+      formData.append('title', title)
+      formData.append('description', description)
+      formData.append('unitOrAddress', unitOrAddress)
+      formData.append('priority', priority)
+
+      if (image1) formData.append('image1', image1)
+      if (image2) formData.append('image2', image2)
+
       const response = await fetch(`${API_BASE_URL}/api/maintenance/resident`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userName,
-          village,
-          title,
-          description,
-          unitOrAddress,
-          priority,
-        }),
+        body: formData,
       })
 
-      let data = null
-
       const text = await response.text()
-
-      if (text) {
-        data = JSON.parse(text)
-      }
+      const data = text ? JSON.parse(text) : {}
 
       if (!response.ok) {
         throw new Error(data.message || 'Failed to submit request.')
@@ -100,6 +115,9 @@ function MaintenanceResident() {
       setDescription('')
       setUnitOrAddress('')
       setPriority('Normal')
+      setImage1(null)
+      setImage2(null)
+      setFileInputKey((prev) => prev + 1)
 
       await loadRequests()
     } catch (err: any) {
@@ -111,6 +129,11 @@ function MaintenanceResident() {
     if (status === 'Completed') return 'bg-success'
     if (status === 'In Progress') return 'bg-info text-dark'
     return 'bg-warning text-dark'
+  }
+
+  const imageLink = (url?: string) => {
+    if (!url) return ''
+    return url.startsWith('http') ? url : `${API_BASE_URL}${url}`
   }
 
   return (
@@ -190,6 +213,7 @@ function MaintenanceResident() {
                     Photo 1 optional
                   </label>
                   <input
+                    key={`image1-${fileInputKey}`}
                     type="file"
                     className="form-control"
                     accept=".jpg,.jpeg,.png"
@@ -202,6 +226,7 @@ function MaintenanceResident() {
                     Photo 2 optional
                   </label>
                   <input
+                    key={`image2-${fileInputKey}`}
                     type="file"
                     className="form-control"
                     accept=".jpg,.jpeg,.png"
@@ -236,6 +261,7 @@ function MaintenanceResident() {
                       <th>Village</th>
                       <th>Priority</th>
                       <th>Status</th>
+                      <th>Photos</th>
                       <th>Manager Answer</th>
                     </tr>
                   </thead>
@@ -248,17 +274,19 @@ function MaintenanceResident() {
                             'en-NZ',
                           )}
                         </td>
-                        <td>
+
+                        <td style={{ minWidth: '250px' }}>
                           <strong>{request.title}</strong>
                           <div className="small text-secondary">
                             {request.description}
                           </div>
                         </td>
+
                         <td>{request.unitOrAddress || '-'}</td>
-                        <td>{village}</td>
+                        <td>{request.village || village}</td>
                         <td>{request.priority}</td>
+
                         <td>
-                          {' '}
                           <span
                             className={`badge ${getStatusClass(
                               request.status,
@@ -267,7 +295,40 @@ function MaintenanceResident() {
                             {request.status}
                           </span>
                         </td>
-                        <td>
+
+                        <td style={{ minWidth: '130px' }}>
+                          {request.imageUrl1 || request.imageUrl2 ? (
+                            <div className="d-flex flex-column gap-1">
+                              {request.imageUrl1 && (
+                                <a
+                                  className="btn btn-outline-primary btn-sm"
+                                  href={imageLink(request.imageUrl1)}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                >
+                                  Open Photo 1
+                                </a>
+                              )}
+
+                              {request.imageUrl2 && (
+                                <a
+                                  className="btn btn-outline-primary btn-sm"
+                                  href={imageLink(request.imageUrl2)}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                >
+                                  Open Photo 2
+                                </a>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-secondary small">
+                              No photos
+                            </span>
+                          )}
+                        </td>
+
+                        <td style={{ minWidth: '220px' }}>
                           {request.managerAnswer ? (
                             <div className="p-2 bg-light border rounded-3 small">
                               {request.managerAnswer}

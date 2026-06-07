@@ -405,5 +405,28 @@ namespace server.Controllers
                 documentCount = documentCount
             });
         }
-    }
-}
+    
+
+
+       [HttpGet("village/{village}/summary")]
+       public async Task<IActionResult> GetVillageSummary(string village)
+       {
+           var decodedVillage = Uri.UnescapeDataString(village).Trim();
+
+           var residents = await _context.Users.CountAsync(x =>
+               x.Village == decodedVillage &&
+               x.Role == "Resident" &&
+               x.IsActive);
+       
+           var managers = await _context.Users.CountAsync(x =>
+               x.Village == decodedVillage &&
+               x.Role == "VillageManager" &&
+               x.IsActive);
+
+            return Ok(new
+            {
+                residents,
+                managers
+            });
+       }}
+       }

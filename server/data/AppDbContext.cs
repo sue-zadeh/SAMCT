@@ -13,5 +13,6 @@ namespace server.Data
         public DbSet<ContactMessage> ContactMessages { get; set; }
         public DbSet<MaintenanceRequest> MaintenanceRequests { get; set; }
         public DbSet<DocumentNotice> DocumentNotices { get; set; }
+        public DbSet<VillageProperty> VillageProperties { get; set; }
     }
 }

@@ -27,8 +27,8 @@ namespace server.Controllers
                 .Select(r => new
                 {
                     r.Id,
-                    ResidentName = r.User!.FullName,
-                    ResidentUserName = r.User.UserName,
+                    ResidentName = r.User != null ? r.User.FullName : "",
+                    ResidentUserName = r.User != null ? r.User.UserName : "",
                     r.Title,
                     r.Description,
                     r.UnitOrAddress,
@@ -36,6 +36,8 @@ namespace server.Controllers
                     r.Status,
                     r.Village,
                     r.ManagerAnswer,
+                    r.ImageUrl1,
+                    r.ImageUrl2,
                     r.CreatedAt,
                     r.UpdatedAt
                 })
@@ -45,76 +47,83 @@ namespace server.Controllers
         }
 
         [HttpPost("resident")]
-public async Task<IActionResult> CreateResidentMaintenance(
-    [FromForm] CreateMaintenanceRequestDto request
-)
-{
-    var user = await _context.Users
-        .FirstOrDefaultAsync(u => u.UserName == request.UserName && u.IsActive);
+        public async Task<IActionResult> CreateResidentMaintenance(
+            [FromForm] CreateMaintenanceRequestDto request
+        )
+        {
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.UserName == request.UserName && u.IsActive);
 
-    if (user == null)
-    {
-        return NotFound(new { message = "Resident user not found." });
-    }
+            if (user == null)
+            {
+                return NotFound(new { message = "Resident user not found." });
+            }
 
-    string imageUrl1 = "";
-    string imageUrl2 = "";
+            string imageUrl1 = "";
+            string imageUrl2 = "";
 
-    var uploadFolder = Path.Combine(
-        Directory.GetCurrentDirectory(),
-        "wwwroot",
-        "uploads",
-        "maintenance"
-    );
+            var uploadFolder = Path.Combine(
+                Directory.GetCurrentDirectory(),
+                "wwwroot",
+                "uploads",
+                "maintenance"
+            );
 
-    if (!Directory.Exists(uploadFolder))
-    {
-        Directory.CreateDirectory(uploadFolder);
-    }
+            if (!Directory.Exists(uploadFolder))
+            {
+                Directory.CreateDirectory(uploadFolder);
+            }
 
-    async Task<string> SaveImage(IFormFile file)
-    {
-        var extension = Path.GetExtension(file.FileName);
-        var fileName = $"{Guid.NewGuid()}{extension}";
-        var path = Path.Combine(uploadFolder, fileName);
+            async Task<string> SaveImage(IFormFile file)
+            {
+                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
+                var extension = Path.GetExtension(file.FileName).ToLower();
 
-        using var stream = new FileStream(path, FileMode.Create);
-        await file.CopyToAsync(stream);
+                if (!allowedExtensions.Contains(extension))
+                {
+                    throw new Exception("Only JPG, JPEG, and PNG images are allowed.");
+                }
 
-        return $"/uploads/maintenance/{fileName}";
-    }
+                var fileName = $"{Guid.NewGuid()}{extension}";
+                var path = Path.Combine(uploadFolder, fileName);
 
-    if (request.Image1 != null)
-    {
-        imageUrl1 = await SaveImage(request.Image1);
-    }
+                using var stream = new FileStream(path, FileMode.Create);
+                await file.CopyToAsync(stream);
 
-    if (request.Image2 != null)
-    {
-        imageUrl2 = await SaveImage(request.Image2);
-    }
+                return $"/uploads/maintenance/{fileName}";
+            }
 
-    var maintenance = new MaintenanceRequest
-    {
-        UserId = user.Id,
-        Village = request.Village,
-        Title = request.Title,
-        Description = request.Description,
-        UnitOrAddress = request.UnitOrAddress,
-        Priority = request.Priority,
-        Status = "Pending",
-        ImageUrl1 = imageUrl1,
-        ImageUrl2 = imageUrl2,
-        CreatedAt = DateTime.UtcNow,
-        IsReadByManager = false,
-        IsReadByResident = true
-    };
+            if (request.Image1 != null)
+            {
+                imageUrl1 = await SaveImage(request.Image1);
+            }
 
-    _context.MaintenanceRequests.Add(maintenance);
-    await _context.SaveChangesAsync();
+            if (request.Image2 != null)
+            {
+                imageUrl2 = await SaveImage(request.Image2);
+            }
 
-    return Ok(new { message = "Maintenance request submitted successfully." });
-}
+            var maintenance = new MaintenanceRequest
+            {
+                UserId = user.Id,
+                Village = request.Village,
+                Title = request.Title,
+                Description = request.Description,
+                UnitOrAddress = request.UnitOrAddress,
+                Priority = request.Priority,
+                Status = "Pending",
+                ImageUrl1 = imageUrl1,
+                ImageUrl2 = imageUrl2,
+                CreatedAt = DateTime.UtcNow,
+                IsReadByManager = false,
+                IsReadByResident = true
+            };
+
+            _context.MaintenanceRequests.Add(maintenance);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Maintenance request submitted successfully." });
+        }
 
         [HttpGet("village/{village}")]
         public async Task<IActionResult> GetVillageRequests(string village)
@@ -137,6 +146,8 @@ public async Task<IActionResult> CreateResidentMaintenance(
                     r.Status,
                     r.Village,
                     r.ManagerAnswer,
+                    r.ImageUrl1,
+                    r.ImageUrl2,
                     r.CreatedAt,
                     r.UpdatedAt
                 })
@@ -146,7 +157,10 @@ public async Task<IActionResult> CreateResidentMaintenance(
         }
 
         [HttpPut("{id}/manager-response")]
-        public async Task<IActionResult> UpdateManagerResponse(int id, [FromForm] UpdateMaintenanceRequestDto request)
+        public async Task<IActionResult> UpdateManagerResponse(
+            int id,
+            [FromBody] UpdateMaintenanceRequestDto request
+        )
         {
             var maintenance = await _context.MaintenanceRequests.FindAsync(id);
 
@@ -190,22 +204,22 @@ public async Task<IActionResult> CreateResidentMaintenance(
             });
         }
 
-         [HttpGet("summary/village/{village}")]
-         public async Task<IActionResult> GetVillageSummary(string village)
-         {
-             var decodedVillage = Uri.UnescapeDataString(village);
+        [HttpGet("summary/village/{village}")]
+        public async Task<IActionResult> GetVillageSummary(string village)
+        {
+            var decodedVillage = Uri.UnescapeDataString(village);
 
-             var requests = await _context.MaintenanceRequests
-                 .Where(r => r.Village == decodedVillage)
-                 .ToListAsync();
+            var requests = await _context.MaintenanceRequests
+                .Where(r => r.Village == decodedVillage)
+                .ToListAsync();
 
-             return Ok(new
-             {
-                 openMaintenanceCount = requests.Count,
-                 pending = requests.Count(r => r.Status == "Pending"),
-                 inProgress = requests.Count(r => r.Status == "In Progress"),
-                 completed = requests.Count(r => r.Status == "Completed")
-             });
-         } 
-   }
+            return Ok(new
+            {
+                openMaintenanceCount = requests.Count,
+                pending = requests.Count(r => r.Status == "Pending"),
+                inProgress = requests.Count(r => r.Status == "In Progress"),
+                completed = requests.Count(r => r.Status == "Completed")
+            });
+        }
+    }
 }
