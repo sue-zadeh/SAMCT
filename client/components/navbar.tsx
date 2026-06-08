@@ -26,7 +26,7 @@ export default function Navbar({ userType }: NavbarProps) {
   const publicLinks = [
     { label: 'Home', path: '/' },
     { label: 'About', path: '/about' },
-    { label: 'Availability', path: '/availability' },
+    { label: 'Marketing', path: '/marketing' },
     { label: 'Contact', path: '/contactUs' },
     { label: 'Login', path: '/login' },
     { label: 'Register', path: '/register' },
@@ -42,12 +42,11 @@ export default function Navbar({ userType }: NavbarProps) {
   const adminLinks = [
     { label: 'Dashboard', path: '/admin' },
     { label: 'Residents', path: '/admin/people' },
-    { label: 'Village Data', path: '/admin/properties' },
+    { label: 'Village Data', path: '/admin/village-properties' },
     { label: 'Maintenance', path: '/admin/maintenance' },
     { label: 'Documents & Notices', path: '/admin/documents' },
     { label: 'Orders', path: '/admin/orders' },
-    { label: 'Accounts', path: '/admin/accounts' },
-    { label: 'Website Content', path: '/admin/content' },
+    { label: 'Manage Profiles', path: '/admin/people' },
     { label: 'Register', path: '/register' },
   ]
 

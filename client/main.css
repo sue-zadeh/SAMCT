@@ -1,0 +1,88 @@
+:root {
+  --page-bg: #f7f4ef;
+  --card-bg: #ffffff;
+  --soft-blue: #f1f6ff;
+  --text-main: #172033;
+  --text-muted: #64748b;
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --border: #e2e8f0;
+}
+
+body {
+  background: var(--page-bg);
+  color: var(--text-main);
+}
+
+.navbar,
+header {
+  background: rgba(255, 255, 255, 0.94) !important;
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+
+.bg-white,
+.card,
+.samct-card {
+  background: linear-gradient(135deg, var(--soft-blue), #ffffff);
+}
+
+.samct-card {
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+  transition: all 0.25s ease;
+}
+
+.samct-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 26px rgba(37, 99, 235, 0.18);
+}
+
+.btn {
+  transition: all 0.25s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.25);
+}
+
+.nav-link.active,
+.nav-link:hover {
+  color: var(--primary) !important;
+  border-bottom: 2px solid var(--primary);
+}
+
+.samct-hero {
+  animation: softFloat 1.1s ease both;
+}
+
+.samct-card {
+  cursor: pointer;
+}
+
+.samct-card:hover {
+  transform: translateY(-7px) scale(1.01);
+}
+
+.samct-button:hover {
+  transform: translateY(-3px) scale(1.03);
+}
+
+.form-control:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 0.18rem rgba(37, 99, 235, 0.18);
+}
+
+@keyframes softFloat {
+  from {
+    opacity: 0;
+    transform: translateY(-18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

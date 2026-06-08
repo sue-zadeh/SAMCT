@@ -50,12 +50,16 @@ function MyVillage() {
   const [document1, setDocument1] = useState<File | null>(null)
   const [document2, setDocument2] = useState<File | null>(null)
   const [editingId, setEditingId] = useState<number | null>(null)
+  const [isVisibleOnMarketing, setIsVisibleOnMarketing] = useState(false)
+const [marketingTitle, setMarketingTitle] = useState('')
+const [marketingDescription, setMarketingDescription] = useState('')
+
 
   const [mainSearch, setMainSearch] = useState('')
-  const [nameSearch, setNameSearch] = useState('')
+  const [unitSearch, setUnitSearch] = useState('')
 
   const [users, setUsers] = useState<UserOption[]>([])
-  const [residentNameSearch, setResidentNameSearch] = useState('')
+  const [UnitSearch, setResidentUnitSearch] = useState('')
   const navigate = useNavigate()
   const loadProperties = async () => {
     try {
@@ -111,6 +115,16 @@ function MyVillage() {
       formData.append('residentOccupation', residentOccupation)
       formData.append('villageManagerName', villageManagerName)
       formData.append('notes', notes)
+      formData.append('isVisibleOnMarketing', String(isVisibleOnMarketing))
+formData.append(
+'marketingTitle',
+marketingTitle
+)
+
+formData.append(
+'marketingDescription',
+marketingDescription
+)
 
       if (document1) formData.append('document1', document1)
       if (document2) formData.append('document2', document2)
@@ -141,6 +155,10 @@ function MyVillage() {
       await loadProperties()
     } catch (err: any) {
       setError(err.message || 'Failed to save property.')
+      setIsVisibleOnMarketing(false)
+      setMarketingTitle('')
+      setMarketingDescription('')
+
     }
   }
 
@@ -153,6 +171,9 @@ function MyVillage() {
     setResidentEmail(property.residentEmail)
     setResidentOccupation(property.residentOccupation)
     setVillageManagerName(property.villageManagerName)
+    setIsVisibleOnMarketing(property.isVisibleOnMarketing)
+    setMarketingTitle(property.marketingTitle)
+    setMarketingDescription(property.marketingDescription)
     setNotes(property.notes)
     setDocument1(null)
     setDocument2(null)
@@ -449,6 +470,70 @@ function MyVillage() {
                     onChange={(e) => setNotes(e.target.value)}
                   />
                 </div>
+<div className="col-12 mt-3">
+  <hr />
+
+  <h4 className="fw-bold">
+    Marketing Page Settings
+  </h4>
+
+  <div className="form-check mb-3">
+    <input
+      type="checkbox"
+      className="form-check-input"
+      checked={isVisibleOnMarketing}
+      onChange={(e) =>
+        setIsVisibleOnMarketing(e.target.checked)
+      }
+    />
+
+```
+<label className="form-check-label">
+  Show this property on the public Marketing page
+</label>
+```
+
+  </div>
+
+  <div className="mb-3">
+    <label className="form-label">
+      Marketing Title
+    </label>
+
+```
+<input
+  className="form-control"
+  value={marketingTitle}
+  onChange={(e) =>
+    setMarketingTitle(e.target.value)
+  }
+  placeholder="Unit 5 - Papakura Village"
+/>
+```
+
+  </div>
+
+  <div>
+    <label className="form-label">
+      Marketing Description
+    </label>
+
+```
+<textarea
+  rows={4}
+  className="form-control"
+  value={marketingDescription}
+  onChange={(e) =>
+    setMarketingDescription(e.target.value)
+  }
+  placeholder="Modern unit with sunny lounge and garden views..."
+/>
+```
+
+  </div>
+</div>
+
+
 
                 <div className="col-md-6">
                   <label className="form-label fw-semibold">
@@ -502,7 +587,7 @@ function MyVillage() {
 
         <section>
           <div className="p-4 border rounded-4 shadow-sm bg-white">
-            <div className="d-flex flex-column flex-md-row justify-content-between gap-3 align-items-md-center mb-4">
+            <div className="d-flex flex-column flex-md-row justify-content-center gap-3 align-items-md-center mb-4">
               <div className="text-center mb-4">
                 <h2 className="fw-bold mb-1">My Village Table</h2>
                 <p className="text-secondary mb-3">
@@ -524,8 +609,8 @@ function MyVillage() {
                     <input
                       className="form-control"
                       style={{ maxWidth: '300px' }}
-                      placeholder="Search by resident name..."
-                      value={nameSearch}
+                      placeholder="Search by unit number..."
+                      value={unitSearch}
                       onChange={(e) => setNameSearch(e.target.value)}
                     />
                   </>

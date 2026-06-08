@@ -32,7 +32,7 @@ function Footer() {
                 </Link>
               </li>
               <li>
-                <Link to="/" className="text-decoration-none text-dark">
+                <Link to="/contactus" className="text-decoration-none text-dark">
                   Contact
                 </Link>
               </li>

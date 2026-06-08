@@ -3,6 +3,7 @@ namespace server.Models
     public class VillageProperty
     {
         public int Id { get; set; }
+
         public string Village { get; set; } = "";
         public string UnitNumber { get; set; } = "";
         public string Address { get; set; } = "";
@@ -17,6 +18,10 @@ namespace server.Models
 
         public string DocumentUrl1 { get; set; } = "";
         public string DocumentUrl2 { get; set; } = "";
+
+        public bool IsVisibleOnMarketing { get; set; } = false;
+        public string MarketingTitle { get; set; } = "";
+        public string MarketingDescription { get; set; } = "";
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }

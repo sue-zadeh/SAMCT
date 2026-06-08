@@ -31,6 +31,29 @@ namespace server.Controllers
             return Ok(data);
         }
 
+        [HttpGet("admin/all")]
+        public async Task<IActionResult> GetAllForAdmin()
+        {
+            var data = await _context.VillageProperties
+                .OrderBy(v => v.Village)
+                .ThenBy(v => v.UnitNumber)
+                .ToListAsync();
+
+            return Ok(data);
+        }
+
+        [HttpGet("marketing")]
+        public async Task<IActionResult> GetMarketingProperties()
+        {
+            var data = await _context.VillageProperties
+                .Where(v => v.IsVisibleOnMarketing)
+                .OrderBy(v => v.Village)
+                .ThenBy(v => v.UnitNumber)
+                .ToListAsync();
+
+            return Ok(data);
+        }
+
         [HttpPost]
         public async Task<IActionResult> Create()
         {
@@ -47,6 +70,9 @@ namespace server.Controllers
                 ResidentOccupation = form["residentOccupation"].ToString(),
                 VillageManagerName = form["villageManagerName"].ToString(),
                 Notes = form["notes"].ToString(),
+                IsVisibleOnMarketing = form["isVisibleOnMarketing"] == "true",
+                MarketingTitle = form["marketingTitle"].ToString(),
+                MarketingDescription = form["marketingDescription"].ToString(),
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -79,6 +105,9 @@ namespace server.Controllers
             property.ResidentOccupation = form["residentOccupation"].ToString();
             property.VillageManagerName = form["villageManagerName"].ToString();
             property.Notes = form["notes"].ToString();
+            property.IsVisibleOnMarketing = form["isVisibleOnMarketing"] == "true";
+            property.MarketingTitle = form["marketingTitle"].ToString();
+            property.MarketingDescription = form["marketingDescription"].ToString();
             property.UpdatedAt = DateTime.UtcNow;
 
             var file1 = await SaveFile(form.Files["document1"]);

@@ -5,6 +5,8 @@ import HomeAdmins from './components/home-admins'
 import HomeResidents from './components/home-residents'
 import HomeVillageManager from './components/home-village-manager'
 import ContactUs from './components/contactus'
+import Marketing from './components/marketing'
+import About from './components/about'
 
 import Login from './components/login'
 import Register from './components/register'
@@ -40,10 +42,11 @@ function App() {
       <Routes>
         {/* Public pages */}
         <Route path="/" element={<HomePublic />} />
-        <Route path="/about" element={<HomePublic />} />
-        <Route path="/availability" element={<HomePublic />} />
-        <Route path="/contact" element={<HomePublic />} />
+        <Route path="/about" element={<About />} />
+        {/* <Route path="/availability" element={<HomePublic />} /> */}
         <Route path="/contactUs" element={<ContactUs />} />
+        <Route path="/marketing" element={<Marketing />} />
+       
 
         {/* Auth */} 
         <Route path="/login" element={<Login onLoginSuccess={() => {}} />} />

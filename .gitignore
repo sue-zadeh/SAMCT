@@ -150,6 +150,7 @@ bin/
 obj/
 server/bin/
 server/obj/
+*appsettings.json
 
 # VS Code / IDE
 .vscode/

@@ -83,9 +83,9 @@ function Login({ onLoginSuccess }: LoginProps) {
         <div className="row justify-content-center">
           <div className="col-lg-4">
             <div className="p-4 border rounded-4 shadow-sm bg-white">
-              <h1 className="fw-bold text-center text-primary mb-4">
+              <h3 className="fw-semi-bold text-center text-primary mb-4">
                 Welcome to SAMCT Portal
-              </h1>
+              </h3>
 
               <h2 className="h3 text-center fst-italic mb-4">Login</h2>
 
