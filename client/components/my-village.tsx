@@ -15,9 +15,12 @@ type VillageProperty = {
   notes: string
   documentUrl1: string
   documentUrl2: string
+  isVisibleOnMarketing: boolean
+  marketingTitle: string
+  marketingDescription: string
   createdAt: string
 }
-//for residents, dropdown list
+
 type UserOption = {
   id: number
   firstName: string
@@ -32,12 +35,13 @@ type UserOption = {
 function MyVillage() {
   const API_BASE_URL = 'http://localhost:5072'
   const village = localStorage.getItem('village') || 'Papakura'
-  const managerName = localStorage.getItem('fullname') || 'Village Manager'
+  const navigate = useNavigate()
 
   const [properties, setProperties] = useState<VillageProperty[]>([])
-  const [search, setSearch] = useState('')
-  const [message, setMessage] = useState('')
-  const [error, setError] = useState('')
+  const [users, setUsers] = useState<UserOption[]>([])
+
+  const [mainSearch, setMainSearch] = useState('')
+  const [unitSearch, setUnitSearch] = useState('')
 
   const [unitNumber, setUnitNumber] = useState('')
   const [address, setAddress] = useState('')
@@ -49,21 +53,29 @@ function MyVillage() {
   const [notes, setNotes] = useState('')
   const [document1, setDocument1] = useState<File | null>(null)
   const [document2, setDocument2] = useState<File | null>(null)
-  const [editingId, setEditingId] = useState<number | null>(null)
+
   const [isVisibleOnMarketing, setIsVisibleOnMarketing] = useState(false)
-const [marketingTitle, setMarketingTitle] = useState('')
-const [marketingDescription, setMarketingDescription] = useState('')
+  const [marketingTitle, setMarketingTitle] = useState('')
+  const [marketingDescription, setMarketingDescription] = useState('')
 
+  const [editingId, setEditingId] = useState<number | null>(null)
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
 
-  const [mainSearch, setMainSearch] = useState('')
-  const [unitSearch, setUnitSearch] = useState('')
+  const residents = users.filter(
+    (user) =>
+      user.role.toLowerCase().includes('resident') && user.isActive !== false,
+  )
 
-  const [users, setUsers] = useState<UserOption[]>([])
-  const [UnitSearch, setResidentUnitSearch] = useState('')
-  const navigate = useNavigate()
+  const managers = users.filter(
+    (user) =>
+      user.role.toLowerCase().includes('village') && user.isActive !== false,
+  )
+
   const loadProperties = async () => {
     try {
       setError('')
+
       const response = await fetch(
         `${API_BASE_URL}/api/village-properties/${encodeURIComponent(village)}`,
       )
@@ -74,15 +86,42 @@ const [marketingDescription, setMarketingDescription] = useState('')
         throw new Error(data.message || 'Failed to load village properties.')
       }
 
-      setProperties(data)
+      setProperties(Array.isArray(data) ? data : [])
     } catch (err: any) {
       setError(err.message || 'Failed to load village properties.')
     }
   }
 
+  const loadUsers = async () => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/users/by-village/${encodeURIComponent(village)}`,
+      )
+
+      if (!response.ok) return
+
+      const data = await response.json()
+      setUsers(Array.isArray(data) ? data : data.users || data.data || [])
+    } catch {
+      setUsers([])
+    }
+  }
+
   useEffect(() => {
     loadProperties()
+    loadUsers()
   }, [village])
+
+  useEffect(() => {
+    if (!message && !error) return
+
+    const timer = setTimeout(() => {
+      setMessage('')
+      setError('')
+    }, 50000)
+
+    return () => clearTimeout(timer)
+  }, [message, error])
 
   const clearForm = () => {
     setUnitNumber('')
@@ -95,17 +134,45 @@ const [marketingDescription, setMarketingDescription] = useState('')
     setNotes('')
     setDocument1(null)
     setDocument2(null)
+    setIsVisibleOnMarketing(false)
+    setMarketingTitle('')
+    setMarketingDescription('')
     setEditingId(null)
+  }
+
+  const isEmailValid = (value: string) => {
+    if (!value.trim()) return true
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setMessage('')
+    setError('')
+
+    if (!unitNumber.trim() || !address.trim()) {
+      setError('Please add unit number and address.')
+      return
+    }
+
+    if (!residentName.trim()) {
+      setError('Please select a resident.')
+      return
+    }
+
+    if (!villageManagerName.trim()) {
+      setError('Please select a village manager.')
+      return
+    }
+
+    if (!isEmailValid(residentEmail)) {
+      setError('Resident email is not valid.')
+      return
+    }
 
     try {
-      setMessage('')
-      setError('')
-
       const formData = new FormData()
+
       formData.append('village', village)
       formData.append('unitNumber', unitNumber)
       formData.append('address', address)
@@ -116,15 +183,8 @@ const [marketingDescription, setMarketingDescription] = useState('')
       formData.append('villageManagerName', villageManagerName)
       formData.append('notes', notes)
       formData.append('isVisibleOnMarketing', String(isVisibleOnMarketing))
-formData.append(
-'marketingTitle',
-marketingTitle
-)
-
-formData.append(
-'marketingDescription',
-marketingDescription
-)
+      formData.append('marketingTitle', marketingTitle)
+      formData.append('marketingDescription', marketingDescription)
 
       if (document1) formData.append('document1', document1)
       if (document2) formData.append('document2', document2)
@@ -155,10 +215,6 @@ marketingDescription
       await loadProperties()
     } catch (err: any) {
       setError(err.message || 'Failed to save property.')
-      setIsVisibleOnMarketing(false)
-      setMarketingTitle('')
-      setMarketingDescription('')
-
     }
   }
 
@@ -171,41 +227,15 @@ marketingDescription
     setResidentEmail(property.residentEmail)
     setResidentOccupation(property.residentOccupation)
     setVillageManagerName(property.villageManagerName)
-    setIsVisibleOnMarketing(property.isVisibleOnMarketing)
-    setMarketingTitle(property.marketingTitle)
-    setMarketingDescription(property.marketingDescription)
     setNotes(property.notes)
+    setIsVisibleOnMarketing(property.isVisibleOnMarketing || false)
+    setMarketingTitle(property.marketingTitle || '')
+    setMarketingDescription(property.marketingDescription || '')
     setDocument1(null)
     setDocument2(null)
+
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
-  // users dropdown list
-  const residents = users.filter(
-    (user) =>
-      user.role.toLowerCase().includes('resident') && user.isActive !== false,
-  )
-
-  const managers = users.filter(
-    (user) =>
-      user.role.toLowerCase().includes('village') && user.isActive !== false,
-  )
-
-  const loadUsers = async () => {
-    const response = await fetch(
-      `${API_BASE_URL}/api/users/by-village/${encodeURIComponent(village)}`,
-    )
-
-    if (!response.ok) return
-
-    const data = await response.json()
-    setUsers(Array.isArray(data) ? data : data.users || data.data || [])
-  }
-  useEffect(() => {
-    loadProperties()
-    loadUsers()
-  }, [village])
-
-  //Action delete
 
   const handleDelete = async (id: number) => {
     const confirmed = window.confirm(
@@ -237,34 +267,25 @@ marketingDescription
   }
 
   const filteredProperties = properties.filter((item) => {
-    const mainText = `
-    ${item.unitNumber}
-    ${item.address}
-    ${item.residentName}
-    ${item.residentEmail}
-    ${item.residentOccupation}
-    ${item.villageManagerName}
-    ${item.notes}
-  `.toLowerCase()
+    const allText = `
+      ${item.unitNumber}
+      ${item.address}
+      ${item.residentName}
+      ${item.residentEmail}
+      ${item.residentOccupation}
+      ${item.villageManagerName}
+      ${item.notes}
+      ${item.marketingTitle}
+      ${item.marketingDescription}
+    `.toLowerCase()
 
-    const residentOnly = item.residentName.toLowerCase()
+    const unitText = item.unitNumber.toLowerCase()
 
     return (
-      mainText.includes(mainSearch.toLowerCase()) &&
-      residentOnly.includes(nameSearch.toLowerCase())
+      allText.includes(mainSearch.toLowerCase()) &&
+      unitText.includes(unitSearch.toLowerCase())
     )
   })
-  // Notifications disappear after 50 seconds
-  useEffect(() => {
-    if (!message && !error) return
-
-    const timer = setTimeout(() => {
-      setMessage('')
-      setError('')
-    }, 50000)
-
-    return () => clearTimeout(timer)
-  }, [message, error])
 
   return (
     <>
@@ -272,14 +293,14 @@ marketingDescription
 
       <main className="container py-5">
         <section className="mb-4">
-          <div className="p-4 border rounded-4 shadow-sm bg-white">
+          <div className="samct-card p-4">
             <p className="text-uppercase text-primary fw-semibold mb-1">
               My Village
             </p>
             <h1 className="fw-bold mb-2">{village}</h1>
             <p className="text-secondary mb-0">
               Manage village property records, residents, occupations, manager
-              allocation, and related documents.
+              allocation, documents, and marketing visibility.
             </p>
           </div>
         </section>
@@ -287,10 +308,10 @@ marketingDescription
         {message && <div className="alert alert-success">{message}</div>}
         {error && <div className="alert alert-danger">{error}</div>}
 
-        <section className="mb-2">
+        <section className="mb-4">
           <div className="row g-3">
             <div className="col-md-4">
-              <div className="p-4 border rounded-4 shadow-sm bg-white h-70">
+              <div className="samct-card p-4 h-100">
                 <p className="text-secondary mb-2">Village Properties</p>
                 <h2 className="fw-bold mb-1">{properties.length}</h2>
                 <p className="small text-secondary mb-0">
@@ -301,17 +322,12 @@ marketingDescription
 
             <div className="col-md-4">
               <div
-                className="p-4 border rounded-4 shadow-sm bg-white h-70"
-                style={{
-                  cursor: 'pointer',
-                  transition: '0.2s',
-                }}
+                className="samct-card p-4 h-100"
+                style={{ cursor: 'pointer' }}
                 onClick={() => navigate('/village-manager/residents')}
               >
-                <p className="text-secondary mb-2">Total Residents</p>
-
+                <p className="text-secondary mb-2">Active Residents</p>
                 <h2 className="fw-bold mb-1">{residents.length}</h2>
-
                 <p className="small text-secondary mb-0">
                   Click to manage residents
                 </p>
@@ -319,7 +335,7 @@ marketingDescription
             </div>
 
             <div className="col-md-4">
-              <div className="p-4 border rounded-4 shadow-sm bg-white h-70">
+              <div className="samct-card p-4 h-100">
                 <p className="text-secondary mb-2">Documents</p>
                 <h2 className="fw-bold text-primary mb-1">
                   {properties.reduce(
@@ -339,8 +355,8 @@ marketingDescription
         </section>
 
         <section className="mb-4">
-          <div className="p-4 border rounded-4 shadow-sm bg-white">
-            <h2 className="fw-bold mb-3">
+          <div className="samct-card p-4">
+            <h2 className="fw-bold mb-4">
               {editingId ? 'Edit Village Property' : 'Add Village Property'}
             </h2>
 
@@ -374,7 +390,6 @@ marketingDescription
                     type="number"
                     min="1"
                     className="form-control"
-                    placeholder="Select resident's name"
                     value={residentCount}
                     onChange={(e) => setResidentCount(Number(e.target.value))}
                   />
@@ -385,17 +400,19 @@ marketingDescription
                     Resident Name
                   </label>
                   <select
-                    className="form-control col-md-3 "
+                    className="form-select"
                     value={residentName}
                     onChange={(e) => {
                       const selectedName = e.target.value
                       setResidentName(selectedName)
-                      const selectedResident = residents.find(
-                        (resident) =>
-                          (resident.fullName ||
-                            `${resident.firstName} ${resident.lastName}`) ===
-                          selectedName,
-                      )
+
+                      const selectedResident = residents.find((resident) => {
+                        const name =
+                          resident.fullName ||
+                          `${resident.firstName} ${resident.lastName}`
+
+                        return name === selectedName
+                      })
 
                       setResidentEmail(selectedResident?.email || '')
                     }}
@@ -414,6 +431,7 @@ marketingDescription
                     })}
                   </select>
                 </div>
+
                 <div className="col-md-4">
                   <label className="form-label fw-semibold">
                     Resident Email
@@ -442,7 +460,7 @@ marketingDescription
                     Village Manager
                   </label>
                   <select
-                    className="form-control"
+                    className="form-select"
                     value={villageManagerName}
                     onChange={(e) => setVillageManagerName(e.target.value)}
                   >
@@ -470,70 +488,51 @@ marketingDescription
                     onChange={(e) => setNotes(e.target.value)}
                   />
                 </div>
-<div className="col-12 mt-3">
-  <hr />
 
-  <h4 className="fw-bold">
-    Marketing Page Settings
-  </h4>
+                <div className="col-12 mt-3">
+                  <hr />
+                  <h4 className="fw-bold mb-3">Marketing Page Settings</h4>
 
-  <div className="form-check mb-3">
-    <input
-      type="checkbox"
-      className="form-check-input"
-      checked={isVisibleOnMarketing}
-      onChange={(e) =>
-        setIsVisibleOnMarketing(e.target.checked)
-      }
-    />
+                  <div className="form-check mb-3">
+                    <input
+                      type="checkbox"
+                      className="form-check-input"
+                      checked={isVisibleOnMarketing}
+                      onChange={(e) =>
+                        setIsVisibleOnMarketing(e.target.checked)
+                      }
+                    />
 
-```
-<label className="form-check-label">
-  Show this property on the public Marketing page
-</label>
-```
+                    <label className="form-check-label">
+                      Show this property on the public Marketing page
+                    </label>
+                  </div>
 
-  </div>
+                  <div className="mb-3">
+                    <label className="form-label fw-semibold">
+                      Marketing Title
+                    </label>
+                    <input
+                      className="form-control"
+                      value={marketingTitle}
+                      onChange={(e) => setMarketingTitle(e.target.value)}
+                      placeholder="Unit 5 - Papakura Village"
+                    />
+                  </div>
 
-  <div className="mb-3">
-    <label className="form-label">
-      Marketing Title
-    </label>
-
-```
-<input
-  className="form-control"
-  value={marketingTitle}
-  onChange={(e) =>
-    setMarketingTitle(e.target.value)
-  }
-  placeholder="Unit 5 - Papakura Village"
-/>
-```
-
-  </div>
-
-  <div>
-    <label className="form-label">
-      Marketing Description
-    </label>
-
-```
-<textarea
-  rows={4}
-  className="form-control"
-  value={marketingDescription}
-  onChange={(e) =>
-    setMarketingDescription(e.target.value)
-  }
-  placeholder="Modern unit with sunny lounge and garden views..."
-/>
-```
-
-  </div>
-</div>
-
-
+                  <div>
+                    <label className="form-label fw-semibold">
+                      Marketing Description
+                    </label>
+                    <textarea
+                      rows={4}
+                      className="form-control"
+                      value={marketingDescription}
+                      onChange={(e) => setMarketingDescription(e.target.value)}
+                      placeholder="Modern unit with sunny lounge and garden views..."
+                    />
+                  </div>
+                </div>
 
                 <div className="col-md-6">
                   <label className="form-label fw-semibold">
@@ -545,8 +544,8 @@ marketingDescription
                     accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                     onChange={(e) => setDocument1(e.target.files?.[0] || null)}
                   />
-                  <small className="text-center px-5">
-                    pdf, doc, jpg, jpeg, png{' '}
+                  <small className="text-secondary">
+                    pdf, doc, docx, jpg, jpeg, png
                   </small>
                 </div>
 
@@ -560,13 +559,13 @@ marketingDescription
                     accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                     onChange={(e) => setDocument2(e.target.files?.[0] || null)}
                   />
-                  <small className="text-center px-5">
-                    pdf, doc, jpg, jpeg, png{' '}
+                  <small className="text-secondary">
+                    pdf, doc, docx, jpg, jpeg, png
                   </small>
                 </div>
 
                 <div className="col-12 d-flex gap-2">
-                  <button className="btn btn-primary" type="submit">
+                  <button className="btn btn-primary samct-button" type="submit">
                     {editingId ? 'Update Property' : 'Save Property'}
                   </button>
 
@@ -586,35 +585,29 @@ marketingDescription
         </section>
 
         <section>
-          <div className="p-4 border rounded-4 shadow-sm bg-white">
-            <div className="d-flex flex-column flex-md-row justify-content-center gap-3 align-items-md-center mb-4">
-              <div className="text-center mb-4">
-                <h2 className="fw-bold mb-1">My Village Table</h2>
-                <p className="text-secondary mb-3">
-                  Search by unit, resident, email, occupation, manager, or
-                  notes.
-                </p>
+          <div className="samct-card p-4">
+            <div className="text-center mb-4">
+              <h2 className="fw-bold mb-1">My Village Table</h2>
+              <p className="text-secondary mb-3">
+                Search by all records or filter by unit number.
+              </p>
 
-                <div className="d-flex justify-content-center gap-3 flex-wrap my-3">
-                  <>
-                    <input
-                      className="form-control"
-                      style={{ maxWidth: '360px' }}
-                      placeholder="Search all village records..."
-                      value={mainSearch}
-                      onChange={(e) => setMainSearch(e.target.value)}
-                    />
-                  </>
-                  <>
-                    <input
-                      className="form-control"
-                      style={{ maxWidth: '300px' }}
-                      placeholder="Search by unit number..."
-                      value={unitSearch}
-                      onChange={(e) => setNameSearch(e.target.value)}
-                    />
-                  </>
-                </div>
+              <div className="d-flex justify-content-center gap-3 flex-wrap">
+                <input
+                  className="form-control"
+                  style={{ maxWidth: '360px' }}
+                  placeholder="Search all village records..."
+                  value={mainSearch}
+                  onChange={(e) => setMainSearch(e.target.value)}
+                />
+
+                <input
+                  className="form-control"
+                  style={{ maxWidth: '260px' }}
+                  placeholder="Search by unit number..."
+                  value={unitSearch}
+                  onChange={(e) => setUnitSearch(e.target.value)}
+                />
               </div>
             </div>
 
@@ -632,6 +625,7 @@ marketingDescription
                       <th>Email</th>
                       <th>Occupation</th>
                       <th>Manager</th>
+                      <th>Marketing</th>
                       <th>Documents</th>
                       <th>Actions</th>
                     </tr>
@@ -657,6 +651,23 @@ marketingDescription
                         <td>{item.residentEmail || '-'}</td>
                         <td>{item.residentOccupation || '-'}</td>
                         <td>{item.villageManagerName || '-'}</td>
+
+                        <td>
+                          <span
+                            className={`badge ${
+                              item.isVisibleOnMarketing
+                                ? 'bg-success'
+                                : 'bg-secondary'
+                            }`}
+                          >
+                            {item.isVisibleOnMarketing ? 'Visible' : 'Hidden'}
+                          </span>
+                          {item.marketingTitle && (
+                            <div className="small text-secondary mt-1">
+                              {item.marketingTitle}
+                            </div>
+                          )}
+                        </td>
 
                         <td>
                           <div className="d-flex flex-column gap-1">
