@@ -41,7 +41,7 @@ export default function Navbar({ userType }: NavbarProps) {
 
   const adminLinks = [
     { label: 'Dashboard', path: '/admin' },
-    { label: 'Residents', path: '/admin/people' },
+    // { label: 'Residents', path: '/admin/people' },
     { label: 'Village Data', path: '/admin/village-properties' },
     { label: 'Maintenance', path: '/admin/maintenance' },
     { label: 'Documents & Notices', path: '/admin/documents' },
