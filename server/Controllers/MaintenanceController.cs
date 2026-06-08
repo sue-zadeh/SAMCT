@@ -47,17 +47,13 @@ namespace server.Controllers
         }
 
         [HttpPost("resident")]
-        public async Task<IActionResult> CreateResidentMaintenance(
-            [FromForm] CreateMaintenanceRequestDto request
-        )
+        public async Task<IActionResult> CreateResidentMaintenance([FromForm] CreateMaintenanceRequestDto request)
         {
             var user = await _context.Users
                 .FirstOrDefaultAsync(u => u.UserName == request.UserName && u.IsActive);
 
             if (user == null)
-            {
                 return NotFound(new { message = "Resident user not found." });
-            }
 
             string imageUrl1 = "";
             string imageUrl2 = "";
@@ -69,10 +65,7 @@ namespace server.Controllers
                 "maintenance"
             );
 
-            if (!Directory.Exists(uploadFolder))
-            {
-                Directory.CreateDirectory(uploadFolder);
-            }
+            Directory.CreateDirectory(uploadFolder);
 
             async Task<string> SaveImage(IFormFile file)
             {
@@ -80,9 +73,7 @@ namespace server.Controllers
                 var extension = Path.GetExtension(file.FileName).ToLower();
 
                 if (!allowedExtensions.Contains(extension))
-                {
                     throw new Exception("Only JPG, JPEG, and PNG images are allowed.");
-                }
 
                 var fileName = $"{Guid.NewGuid()}{extension}";
                 var path = Path.Combine(uploadFolder, fileName);
@@ -93,15 +84,8 @@ namespace server.Controllers
                 return $"/uploads/maintenance/{fileName}";
             }
 
-            if (request.Image1 != null)
-            {
-                imageUrl1 = await SaveImage(request.Image1);
-            }
-
-            if (request.Image2 != null)
-            {
-                imageUrl2 = await SaveImage(request.Image2);
-            }
+            if (request.Image1 != null) imageUrl1 = await SaveImage(request.Image1);
+            if (request.Image2 != null) imageUrl2 = await SaveImage(request.Image2);
 
             var maintenance = new MaintenanceRequest
             {
@@ -165,9 +149,7 @@ namespace server.Controllers
             var maintenance = await _context.MaintenanceRequests.FindAsync(id);
 
             if (maintenance == null)
-            {
                 return NotFound(new { message = "Maintenance request not found." });
-            }
 
             var manager = await _context.Users
                 .FirstOrDefaultAsync(u => u.UserName == request.ManagerUserName && u.IsActive);
@@ -179,9 +161,7 @@ namespace server.Controllers
             maintenance.IsReadByManager = true;
 
             if (manager != null)
-            {
                 maintenance.HandledById = manager.Id;
-            }
 
             await _context.SaveChangesAsync();
 
@@ -220,6 +200,31 @@ namespace server.Controllers
                 inProgress = requests.Count(r => r.Status == "In Progress"),
                 completed = requests.Count(r => r.Status == "Completed")
             });
+        }
+
+        [HttpGet("summary/admin")]
+        public async Task<IActionResult> GetAdminSummary()
+        {
+            var villages = new[] { "Papakura", "Ngatea", "Whitianga" };
+            var result = new List<object>();
+
+            foreach (var village in villages)
+            {
+                var requests = await _context.MaintenanceRequests
+                    .Where(r => r.Village == village)
+                    .ToListAsync();
+
+                result.Add(new
+                {
+                    village,
+                    total = requests.Count,
+                    pending = requests.Count(r => r.Status == "Pending"),
+                    inProgress = requests.Count(r => r.Status == "In Progress"),
+                    completed = requests.Count(r => r.Status == "Completed")
+                });
+            }
+
+            return Ok(result);
         }
     }
 }

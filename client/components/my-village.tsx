@@ -18,7 +18,11 @@ type VillageProperty = {
   isVisibleOnMarketing: boolean
   marketingTitle: string
   marketingDescription: string
-  createdAt: string
+  marketingImageUrl1: string
+  marketingImageUrl2: string
+  marketingImageUrl3: string
+  marketingImageUrl4: string
+  marketingImageUrl5: string
 }
 
 type UserOption = {
@@ -51,8 +55,15 @@ function MyVillage() {
   const [residentOccupation, setResidentOccupation] = useState('')
   const [villageManagerName, setVillageManagerName] = useState('')
   const [notes, setNotes] = useState('')
+
   const [document1, setDocument1] = useState<File | null>(null)
   const [document2, setDocument2] = useState<File | null>(null)
+
+  const [marketingImage1, setMarketingImage1] = useState<File | null>(null)
+  const [marketingImage2, setMarketingImage2] = useState<File | null>(null)
+  const [marketingImage3, setMarketingImage3] = useState<File | null>(null)
+  const [marketingImage4, setMarketingImage4] = useState<File | null>(null)
+  const [marketingImage5, setMarketingImage5] = useState<File | null>(null)
 
   const [isVisibleOnMarketing, setIsVisibleOnMarketing] = useState(false)
   const [marketingTitle, setMarketingTitle] = useState('')
@@ -134,15 +145,15 @@ function MyVillage() {
     setNotes('')
     setDocument1(null)
     setDocument2(null)
+    setMarketingImage1(null)
+    setMarketingImage2(null)
+    setMarketingImage3(null)
+    setMarketingImage4(null)
+    setMarketingImage5(null)
     setIsVisibleOnMarketing(false)
     setMarketingTitle('')
     setMarketingDescription('')
     setEditingId(null)
-  }
-
-  const isEmailValid = (value: string) => {
-    if (!value.trim()) return true
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -165,30 +176,31 @@ function MyVillage() {
       return
     }
 
-    if (!isEmailValid(residentEmail)) {
-      setError('Resident email is not valid.')
-      return
-    }
+    const formData = new FormData()
+
+    formData.append('village', village)
+    formData.append('unitNumber', unitNumber)
+    formData.append('address', address)
+    formData.append('residentCount', String(residentCount))
+    formData.append('residentName', residentName)
+    formData.append('residentEmail', residentEmail)
+    formData.append('residentOccupation', residentOccupation)
+    formData.append('villageManagerName', villageManagerName)
+    formData.append('notes', notes)
+    formData.append('isVisibleOnMarketing', String(isVisibleOnMarketing))
+    formData.append('marketingTitle', marketingTitle)
+    formData.append('marketingDescription', marketingDescription)
+
+    if (document1) formData.append('document1', document1)
+    if (document2) formData.append('document2', document2)
+
+    if (marketingImage1) formData.append('marketingImage1', marketingImage1)
+    if (marketingImage2) formData.append('marketingImage2', marketingImage2)
+    if (marketingImage3) formData.append('marketingImage3', marketingImage3)
+    if (marketingImage4) formData.append('marketingImage4', marketingImage4)
+    if (marketingImage5) formData.append('marketingImage5', marketingImage5)
 
     try {
-      const formData = new FormData()
-
-      formData.append('village', village)
-      formData.append('unitNumber', unitNumber)
-      formData.append('address', address)
-      formData.append('residentCount', String(residentCount))
-      formData.append('residentName', residentName)
-      formData.append('residentEmail', residentEmail)
-      formData.append('residentOccupation', residentOccupation)
-      formData.append('villageManagerName', villageManagerName)
-      formData.append('notes', notes)
-      formData.append('isVisibleOnMarketing', String(isVisibleOnMarketing))
-      formData.append('marketingTitle', marketingTitle)
-      formData.append('marketingDescription', marketingDescription)
-
-      if (document1) formData.append('document1', document1)
-      if (document2) formData.append('document2', document2)
-
       const url =
         editingId === null
           ? `${API_BASE_URL}/api/village-properties`
@@ -231,38 +243,34 @@ function MyVillage() {
     setIsVisibleOnMarketing(property.isVisibleOnMarketing || false)
     setMarketingTitle(property.marketingTitle || '')
     setMarketingDescription(property.marketingDescription || '')
-    setDocument1(null)
-    setDocument2(null)
-
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleDelete = async (id: number) => {
-    const confirmed = window.confirm(
-      'Are you sure you want to delete this village property?',
-    )
+    if (!window.confirm('Are you sure you want to delete this property?')) return
 
-    if (!confirmed) return
+    const response = await fetch(`${API_BASE_URL}/api/village-properties/${id}`, {
+      method: 'DELETE',
+    })
 
-    try {
-      setMessage('')
-      setError('')
-
-      const response = await fetch(
-        `${API_BASE_URL}/api/village-properties/${id}`,
-        { method: 'DELETE' },
-      )
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to delete property.')
-      }
-
+    if (response.ok) {
       setMessage('Village property deleted successfully.')
       await loadProperties()
-    } catch (err: any) {
-      setError(err.message || 'Failed to delete property.')
+    }
+  }
+
+  const handleMarketingToggle = async (id: number, visible: boolean) => {
+    const response = await fetch(
+      `${API_BASE_URL}/api/village-properties/${id}/marketing-visibility`,
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isVisibleOnMarketing: visible }),
+      },
+    )
+
+    if (response.ok) {
+      await loadProperties()
     }
   }
 
@@ -279,11 +287,9 @@ function MyVillage() {
       ${item.marketingDescription}
     `.toLowerCase()
 
-    const unitText = item.unitNumber.toLowerCase()
-
     return (
       allText.includes(mainSearch.toLowerCase()) &&
-      unitText.includes(unitSearch.toLowerCase())
+      item.unitNumber.toLowerCase().includes(unitSearch.toLowerCase())
     )
   })
 
@@ -299,8 +305,7 @@ function MyVillage() {
             </p>
             <h1 className="fw-bold mb-2">{village}</h1>
             <p className="text-secondary mb-0">
-              Manage village property records, residents, occupations, manager
-              allocation, documents, and marketing visibility.
+              Manage village properties, residents, files, and marketing visibility.
             </p>
           </div>
         </section>
@@ -313,10 +318,7 @@ function MyVillage() {
             <div className="col-md-4">
               <div className="samct-card p-4 h-100">
                 <p className="text-secondary mb-2">Village Properties</p>
-                <h2 className="fw-bold mb-1">{properties.length}</h2>
-                <p className="small text-secondary mb-0">
-                  Saved property records
-                </p>
+                <h2 className="fw-bold">{properties.length}</h2>
               </div>
             </div>
 
@@ -327,7 +329,7 @@ function MyVillage() {
                 onClick={() => navigate('/village-manager/residents')}
               >
                 <p className="text-secondary mb-2">Active Residents</p>
-                <h2 className="fw-bold mb-1">{residents.length}</h2>
+                <h2 className="fw-bold">{residents.length}</h2>
                 <p className="small text-secondary mb-0">
                   Click to manage residents
                 </p>
@@ -337,7 +339,7 @@ function MyVillage() {
             <div className="col-md-4">
               <div className="samct-card p-4 h-100">
                 <p className="text-secondary mb-2">Documents</p>
-                <h2 className="fw-bold text-primary mb-1">
+                <h2 className="fw-bold text-primary">
                   {properties.reduce(
                     (total, item) =>
                       total +
@@ -346,9 +348,6 @@ function MyVillage() {
                     0,
                   )}
                 </h2>
-                <p className="small text-secondary mb-0">
-                  Uploaded property files
-                </p>
               </div>
             </div>
           </div>
@@ -368,7 +367,6 @@ function MyVillage() {
                     className="form-control"
                     value={unitNumber}
                     onChange={(e) => setUnitNumber(e.target.value)}
-                    required
                   />
                 </div>
 
@@ -378,7 +376,6 @@ function MyVillage() {
                     className="form-control"
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
-                    required
                   />
                 </div>
 
@@ -396,9 +393,7 @@ function MyVillage() {
                 </div>
 
                 <div className="col-md-2">
-                  <label className="form-label fw-semibold">
-                    Resident Name
-                  </label>
+                  <label className="form-label fw-semibold">Resident Name</label>
                   <select
                     className="form-select"
                     value={residentName}
@@ -410,7 +405,6 @@ function MyVillage() {
                         const name =
                           resident.fullName ||
                           `${resident.firstName} ${resident.lastName}`
-
                         return name === selectedName
                       })
 
@@ -433,9 +427,7 @@ function MyVillage() {
                 </div>
 
                 <div className="col-md-4">
-                  <label className="form-label fw-semibold">
-                    Resident Email
-                  </label>
+                  <label className="form-label fw-semibold">Resident Email</label>
                   <input
                     className="form-control"
                     value={residentEmail}
@@ -456,9 +448,7 @@ function MyVillage() {
                 </div>
 
                 <div className="col-md-4">
-                  <label className="form-label fw-semibold">
-                    Village Manager
-                  </label>
+                  <label className="form-label fw-semibold">Village Manager</label>
                   <select
                     className="form-select"
                     value={villageManagerName}
@@ -489,7 +479,7 @@ function MyVillage() {
                   />
                 </div>
 
-                <div className="col-12 mt-3">
+                <div className="col-12">
                   <hr />
                   <h4 className="fw-bold mb-3">Marketing Page Settings</h4>
 
@@ -502,39 +492,36 @@ function MyVillage() {
                         setIsVisibleOnMarketing(e.target.checked)
                       }
                     />
-
                     <label className="form-check-label">
                       Show this property on the public Marketing page
                     </label>
                   </div>
-
-                  <div className="mb-3">
-                    <label className="form-label fw-semibold">
-                      Marketing Title
-                    </label>
-                    <input
-                      className="form-control"
-                      value={marketingTitle}
-                      onChange={(e) => setMarketingTitle(e.target.value)}
-                      placeholder="Unit 5 - Papakura Village"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="form-label fw-semibold">
-                      Marketing Description
-                    </label>
-                    <textarea
-                      rows={4}
-                      className="form-control"
-                      value={marketingDescription}
-                      onChange={(e) => setMarketingDescription(e.target.value)}
-                      placeholder="Modern unit with sunny lounge and garden views..."
-                    />
-                  </div>
                 </div>
 
-                <div className="col-md-6">
+                <div className="col-12">
+                  <label className="form-label fw-semibold">Marketing Title</label>
+                  <input
+                    className="form-control"
+                    value={marketingTitle}
+                    onChange={(e) => setMarketingTitle(e.target.value)}
+                    placeholder="Unit 5 - Papakura Village"
+                  />
+                </div>
+
+                <div className="col-12">
+                  <label className="form-label fw-semibold">
+                    Marketing Description
+                  </label>
+                  <textarea
+                    rows={4}
+                    className="form-control"
+                    value={marketingDescription}
+                    onChange={(e) => setMarketingDescription(e.target.value)}
+                    placeholder="Modern unit with sunny lounge and garden views..."
+                  />
+                </div>
+
+                 <div className="col-md-6">
                   <label className="form-label fw-semibold">
                     Document 1 optional
                   </label>
@@ -544,9 +531,6 @@ function MyVillage() {
                     accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                     onChange={(e) => setDocument1(e.target.files?.[0] || null)}
                   />
-                  <small className="text-secondary">
-                    pdf, doc, docx, jpg, jpeg, png
-                  </small>
                 </div>
 
                 <div className="col-md-6">
@@ -559,10 +543,37 @@ function MyVillage() {
                     accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                     onChange={(e) => setDocument2(e.target.files?.[0] || null)}
                   />
-                  <small className="text-secondary">
-                    pdf, doc, docx, jpg, jpeg, png
-                  </small>
                 </div>
+
+                <div className="col-12">
+                  <h5 className="fw-bold mt-3">Marketing Gallery Images</h5>
+                  <p className="text-secondary small">
+                    Upload up to 5 images. Image 1 is the main public image.
+                  </p>
+                </div>
+
+                {[1, 2, 3, 4, 5].map((num) => (
+                  <div className="col-md-4" key={num}>
+                    <label className="form-label fw-semibold">
+                      {num === 1 ? 'Main Marketing Image' : `Gallery Image ${num}`}
+                    </label>
+                    <input
+                      type="file"
+                      accept=".jpg,.jpeg,.png"
+                      className="form-control"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0] || null
+                        if (num === 1) setMarketingImage1(file)
+                        if (num === 2) setMarketingImage2(file)
+                        if (num === 3) setMarketingImage3(file)
+                        if (num === 4) setMarketingImage4(file)
+                        if (num === 5) setMarketingImage5(file)
+                      }}
+                    />
+                  </div>
+                ))}
+
+               
 
                 <div className="col-12 d-flex gap-2">
                   <button className="btn btn-primary samct-button" type="submit">
@@ -653,20 +664,29 @@ function MyVillage() {
                         <td>{item.villageManagerName || '-'}</td>
 
                         <td>
-                          <span
-                            className={`badge ${
+                          <div className="form-check form-switch">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              checked={item.isVisibleOnMarketing}
+                              onChange={() =>
+                                handleMarketingToggle(
+                                  item.id,
+                                  !item.isVisibleOnMarketing,
+                                )
+                              }
+                            />
+                          </div>
+
+                          <small
+                            className={
                               item.isVisibleOnMarketing
-                                ? 'bg-success'
-                                : 'bg-secondary'
-                            }`}
+                                ? 'text-success'
+                                : 'text-secondary'
+                            }
                           >
                             {item.isVisibleOnMarketing ? 'Visible' : 'Hidden'}
-                          </span>
-                          {item.marketingTitle && (
-                            <div className="small text-secondary mt-1">
-                              {item.marketingTitle}
-                            </div>
-                          )}
+                          </small>
                         </td>
 
                         <td>

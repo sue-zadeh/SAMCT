@@ -12,7 +12,6 @@ namespace server.Models
         public string ResidentName { get; set; } = "";
         public string ResidentEmail { get; set; } = "";
         public string ResidentOccupation { get; set; } = "";
-
         public string VillageManagerName { get; set; } = "";
         public string Notes { get; set; } = "";
 
@@ -22,6 +21,12 @@ namespace server.Models
         public bool IsVisibleOnMarketing { get; set; } = false;
         public string MarketingTitle { get; set; } = "";
         public string MarketingDescription { get; set; } = "";
+
+        public string MarketingImageUrl1 { get; set; } = "";
+        public string MarketingImageUrl2 { get; set; } = "";
+        public string MarketingImageUrl3 { get; set; } = "";
+        public string MarketingImageUrl4 { get; set; } = "";
+        public string MarketingImageUrl5 { get; set; } = "";
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
