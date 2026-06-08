@@ -33,6 +33,7 @@ import DocumentsVillage from './components/documents-village'
 import DocumentsResident from './components/documents-resident'
 import DocumentsAdmin from './components/documents-admin'
 import MaintenanceAdmin from './components/maintenance-admin'
+import AdminVillageProperties from './components/admin-village-properties'
 
 import MyVillage from './components/my-village'
 
@@ -92,14 +93,10 @@ function App() {
 
         <Route
           path="/admin/profile/password"
-          element={
-            <ProfilePassword
-              userType="admin"
-              backPath="/admin/profile"
-              title="Change Admin Password"
-            />
-          }
-        />
+          element={<ProfilePassword userType="admin" backPath="/admin/profile"
+              title="Change Admin Password" />} />
+        <Route
+          path="/admin/village-properties" element={<AdminVillageProperties />} />
 
         {/* Village Manager */}
         <Route path="/village-manager" element={<HomeVillageManager />} />
