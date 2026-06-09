@@ -55,6 +55,7 @@ export default function Navbar({ userType }: NavbarProps) {
     { label: 'Maintenance', path: '/village-manager/maintenance' },
     { label: 'Residents', path: '/village-manager/residents' },
     { label: 'Documents & Notices', path: '/village-manager/documents' },
+    { label: 'Purchase Orders', path: '/village-manager/purchase-orders' },
     { label: 'Register', path: '/register' },
   ]
 
@@ -205,7 +206,11 @@ export default function Navbar({ userType }: NavbarProps) {
           {userType !== 'public' && renderProfileMenu()}
 
           {userType !== 'public' && (
-            <button onClick={handleLogout} style={styles.logoutButton}>
+            <button
+              className="btn btn-outline-danger text-danger"
+              onClick={handleLogout}
+              style={styles.logoutButton}
+            >
               Logout
             </button>
           )}

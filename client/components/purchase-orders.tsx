@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react'
 import Navbar from './navbar'
+import { useLocation } from 'react-router-dom'
 
 function PurchaseOrders() {
   const village = localStorage.getItem('village') || 'Papakura'
+  const location = useLocation()
+  const isAdmin = location.pathname.startsWith('/admin')
 
   const [orders, setOrders] = useState<any[]>([])
 
@@ -13,18 +16,19 @@ function PurchaseOrders() {
   const [estimatedCost, setEstimatedCost] = useState('')
   const [priority, setPriority] = useState('Normal')
   const [notes, setNotes] = useState('')
-
   const [message, setMessage] = useState('')
 
   useEffect(() => {
     loadOrders()
-  }, [])
+  }, [isAdmin, village])
 
   async function loadOrders() {
     try {
-      const response = await fetch(
-        `http://localhost:5072/api/purchase-orders/village/${village}`,
-      )
+      const url = isAdmin
+        ? 'http://localhost:5072/api/purchase-orders/admin/all'
+        : `http://localhost:5072/api/purchase-orders/village/${village}`
+
+      const response = await fetch(url)
 
       if (response.ok) {
         const data = await response.json()
@@ -47,7 +51,7 @@ function PurchaseOrders() {
       estimatedCost: Number(estimatedCost),
       priority,
       notes,
-      createdByUserName: localStorage.getItem('userName') || '',
+      createdByUserName: localStorage.getItem('username') || '',
     }
 
     const response = await fetch('http://localhost:5072/api/purchase-orders', {
@@ -72,33 +76,18 @@ function PurchaseOrders() {
       loadOrders()
     }
   }
-  ;<select
-    className="form-select"
-    value={category}
-    onChange={(e) => setCategory(e.target.value)}
-  >
-    <option value="">Select category</option>
-    <option value="Maintenance">Maintenance</option>
-    <option value="Plumbing">Plumbing</option>
-    <option value="Electrical">Electrical</option>
-    <option value="Painting">Painting</option>
-    <option value="Gardening">Gardening</option>
-    <option value="Cleaning">Cleaning</option>
-    <option value="Appliance">Appliance</option>
-    <option value="General Supplies">General Supplies</option>
-    <option value="Other">Other</option>
-  </select>
 
   return (
     <>
-      <Navbar userType="villageManager" />
+      <Navbar userType={isAdmin ? 'admin' : 'villageManager'} />
 
       <main className="container py-5">
         <section className="samct-card p-4 mb-4">
           <h2 className="fw-bold">Purchase Orders</h2>
 
-          <p className="text-secondary">
-            Create and track purchase requests for your village.
+          <p className="text-secondary mb-0 fs-5">
+            Create and track purchase orders for maintenance, repairs,
+            suppliers, and village unit expenses.
           </p>
         </section>
 
@@ -148,11 +137,22 @@ function PurchaseOrders() {
               <div className="col-md-4">
                 <label className="form-label">Category</label>
 
-                <input
-                  className="form-control"
+                <select
+                  className="form-select"
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                />
+                >
+                  <option value="">Select category</option>
+                  <option value="Maintenance">Maintenance</option>
+                  <option value="Plumbing">Plumbing</option>
+                  <option value="Electrical">Electrical</option>
+                  <option value="Painting">Painting</option>
+                  <option value="Gardening">Gardening</option>
+                  <option value="Cleaning">Cleaning</option>
+                  <option value="Appliance">Appliance</option>
+                  <option value="General Supplies">General Supplies</option>
+                  <option value="Other">Other</option>
+                </select>
               </div>
 
               <div className="col-md-4">
@@ -209,6 +209,7 @@ function PurchaseOrders() {
                   <th>Supplier</th>
                   <th>Cost</th>
                   <th>Priority</th>
+                  <th>Notes</th>
                   <th>Status</th>
                 </tr>
               </thead>
@@ -222,6 +223,7 @@ function PurchaseOrders() {
                     <td>{order.supplier}</td>
                     <td>${order.estimatedCost}</td>
                     <td>{order.priority}</td>
+                    <td>{order.notes || '-'}</td>
                     <td>{order.status}</td>
                   </tr>
                 ))}

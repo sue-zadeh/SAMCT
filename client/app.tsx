@@ -48,9 +48,8 @@ function App() {
         {/* <Route path="/availability" element={<HomePublic />} /> */}
         <Route path="/contactUs" element={<ContactUs />} />
         <Route path="/marketing" element={<Marketing />} />
-       
 
-        {/* Auth */} 
+        {/* Auth */}
         <Route path="/login" element={<Login onLoginSuccess={() => {}} />} />
         <Route path="/register" element={<Register />} />
 
@@ -63,19 +62,6 @@ function App() {
         />
         <Route path="/resident/maintenance" element={<ResidentMaintenance />} />
 
-        <Route path="/admin/maintenance" element={<MaintenanceAdmin />} />
-        <Route path="/admin/documents" element={<DocumentsAdmin />} />
-        <Route path="/admin/purchase-orders" element={<PurchaseOrders />} />
-
-        <Route path="/resident/documents" element={<DocumentsResident />} />
-
-        <Route
-          path="/village-manager/documents"
-          element={<DocumentsVillage />}
-        />
-
-        <Route path="/village-manager/my-village" element={<MyVillage />} />
-
         <Route
           path="/resident/profile/password"
           element={
@@ -87,18 +73,35 @@ function App() {
           }
         />
 
+        <Route
+          path="/village-manager/purchase-orders"
+          element={<PurchaseOrders />}
+        />
         {/* Admin */}
         <Route path="/admin" element={<HomeAdmins />} />
         <Route path="/admin/profile" element={<ProfileAdmin />} />
         <Route path="/admin/profile/edit" element={<ProfileAdminEdit />} />
         <Route path="/admin/people" element={<ManageUsers />} />
+        <Route path="/admin/maintenance" element={<MaintenanceAdmin />} />
+        <Route path="/admin/documents" element={<DocumentsAdmin />} />
+        <Route path="/admin/purchase-orders" element={<PurchaseOrders />} />
+
+        <Route path="/resident/documents" element={<DocumentsResident />} />
 
         <Route
           path="/admin/profile/password"
-          element={<ProfilePassword userType="admin" backPath="/admin/profile"
-              title="Change Admin Password" />} />
+          element={
+            <ProfilePassword
+              userType="admin"
+              backPath="/admin/profile"
+              title="Change Admin Password"
+            />
+          }
+        />
         <Route
-          path="/admin/village-properties" element={<AdminVillageProperties />} />
+          path="/admin/village-properties"
+          element={<AdminVillageProperties />}
+        />
 
         {/* Village Manager */}
         <Route path="/village-manager" element={<HomeVillageManager />} />
@@ -107,6 +110,13 @@ function App() {
           path="/village-manager/profile/edit"
           element={<ProfileVillageEdit />}
         />
+        <Route
+          path="/village-manager/documents"
+          element={<DocumentsVillage />}
+        />
+
+        <Route path="/village-manager/my-village" element={<MyVillage />} />
+
         <Route
           path="/village-manager/residents"
           element={<ManageUsersVillage />}
