@@ -21,8 +21,8 @@ type VillageProperty = {
 }
 
 function AdminVillageProperties() {
-  const API_BASE_URL = 'http://localhost:5072'
-
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5072";
   const [properties, setProperties] = useState<VillageProperty[]>([])
   const [mainSearch, setMainSearch] = useState('')
   const [villageSearch, setVillageSearch] = useState('')

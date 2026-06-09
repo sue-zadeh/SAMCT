@@ -18,7 +18,7 @@ type MarketingProperty = {
 }
 
 function Marketing() {
-  const API_BASE_URL = 'http://localhost:5072'
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5072";
 
   const [properties, setProperties] = useState<MarketingProperty[]>([])
   const [selectedVillage, setSelectedVillage] = useState('All')

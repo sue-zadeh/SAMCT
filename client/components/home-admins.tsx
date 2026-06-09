@@ -28,8 +28,8 @@ type VillageProperty = {
 }
 
 function HomeAdmins() {
-  const API_BASE_URL = 'http://localhost:5072'
-
+  const API_BASE_URL =
+    import.meta.env.VITE_API_BASE_URL || 'http://localhost:5072'
   const fullName = localStorage.getItem('fullname') || 'Admin'
   const firstName = localStorage.getItem('firstname') || 'Admin'
   const role = localStorage.getItem('role') || 'Administrator'
@@ -74,7 +74,9 @@ function HomeAdmins() {
       const propertiesData = await propertiesResponse.json()
 
       if (propertiesResponse.ok) {
-        setVillageProperties(Array.isArray(propertiesData) ? propertiesData : [])
+        setVillageProperties(
+          Array.isArray(propertiesData) ? propertiesData : [],
+        )
       }
     } catch {
       setError('Failed to load admin dashboard data.')
@@ -158,7 +160,10 @@ function HomeAdmins() {
             </div>
 
             <div className="d-flex gap-2">
-              <Link to="/admin/profile" className="btn btn-primary samct-button">
+              <Link
+                to="/admin/profile"
+                className="btn btn-primary samct-button"
+              >
                 My Profile
               </Link>
 
@@ -205,9 +210,7 @@ function HomeAdmins() {
             <div className="col-md-4 col-xl-2">
               <div className="samct-card p-4 h-100">
                 <p className="text-secondary mb-2">Completed</p>
-                <h2 className="fw-bold text-success mb-1">
-                  {totalCompleted}
-                </h2>
+                <h2 className="fw-bold text-success mb-1">{totalCompleted}</h2>
                 <p className="small text-secondary mb-0">Resolved</p>
               </div>
             </div>

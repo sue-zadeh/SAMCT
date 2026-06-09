@@ -16,7 +16,7 @@ type UserItem = {
 };
 
 function ManageUsersVillage() {
-  const API_BASE_URL = "http://localhost:5072";
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5072";
   const currentVillage = localStorage.getItem("village") || "Papakura";
 
   const [users, setUsers] = useState<UserItem[]>([]);

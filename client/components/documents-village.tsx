@@ -14,7 +14,8 @@ type DocumentNotice = {
 }
 
 function DocumentsVillage() {
-  const API_BASE_URL = 'http://localhost:5072'
+  const API_BASE_URL =
+    import.meta.env.VITE_API_BASE_URL || 'http://localhost:5072'
   const village = localStorage.getItem('village') || 'Papakura'
   const userName = localStorage.getItem('username') || ''
 
@@ -104,7 +105,11 @@ function DocumentsVillage() {
         throw new Error(data.message || 'Failed to save document.')
       }
 
-      setMessage(editingId ? 'Document updated successfully.' : 'Document saved successfully.')
+      setMessage(
+        editingId
+          ? 'Document updated successfully.'
+          : 'Document saved successfully.',
+      )
       resetForm()
       await loadDocuments()
     } catch (err: any) {
@@ -186,7 +191,8 @@ function DocumentsVillage() {
             </p>
             <h1 className="fw-bold mb-2">Documents & Notices - {village}</h1>
             <p className="text-secondary mb-0">
-              Upload notices, minutes, Code of Practice documents, and village files.
+              Upload notices, minutes, Code of Practice documents, and village
+              files.
             </p>
           </div>
         </section>
@@ -197,7 +203,9 @@ function DocumentsVillage() {
         <section className="mb-4">
           <div className="p-4 border rounded-4 shadow-sm bg-white">
             <h2 className="h4 fw-bold mb-3">
-              {editingId ? 'Edit Document or Notice' : 'Add New Document or Notice'}
+              {editingId
+                ? 'Edit Document or Notice'
+                : 'Add New Document or Notice'}
             </h2>
 
             <div className="row g-3">
@@ -220,7 +228,9 @@ function DocumentsVillage() {
                 >
                   <option value="Notice">Notice</option>
                   <option value="Minutes">Minutes</option>
-                  <option value="Consultation Minutes">Consultation Minutes</option>
+                  <option value="Consultation Minutes">
+                    Consultation Minutes
+                  </option>
                   <option value="Code of Practice">Code of Practice</option>
                   <option value="Village Data">Village Data</option>
                   <option value="General Document">General Document</option>
@@ -265,7 +275,10 @@ function DocumentsVillage() {
                     onChange={(e) => setIsVisibleToResidents(e.target.checked)}
                     id="visibleToResidents"
                   />
-                  <label className="form-check-label" htmlFor="visibleToResidents">
+                  <label
+                    className="form-check-label"
+                    htmlFor="visibleToResidents"
+                  >
                     Visible to residents
                   </label>
                 </div>
@@ -274,11 +287,16 @@ function DocumentsVillage() {
 
             <div className="d-flex gap-2 mt-4">
               <button className="btn btn-primary" onClick={handleSubmit}>
-                {editingId ? 'Update Document / Notice' : 'Save Document / Notice'}
+                {editingId
+                  ? 'Update Document / Notice'
+                  : 'Save Document / Notice'}
               </button>
 
               {editingId && (
-                <button className="btn btn-outline-secondary" onClick={resetForm}>
+                <button
+                  className="btn btn-outline-secondary"
+                  onClick={resetForm}
+                >
                   Cancel Edit
                 </button>
               )}
@@ -312,11 +330,15 @@ function DocumentsVillage() {
                   <tbody>
                     {documents.map((doc) => (
                       <tr key={doc.id}>
-                        <td>{new Date(doc.createdAt).toLocaleDateString('en-NZ')}</td>
+                        <td>
+                          {new Date(doc.createdAt).toLocaleDateString('en-NZ')}
+                        </td>
 
                         <td>
                           <strong>{doc.title}</strong>
-                          <div className="small text-secondary">{doc.description}</div>
+                          <div className="small text-secondary">
+                            {doc.description}
+                          </div>
                         </td>
 
                         <td>{doc.type}</td>

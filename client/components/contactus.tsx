@@ -4,8 +4,8 @@ import { Link } from 'react-router-dom'
 import AOS from 'aos'
 
 function ContactUs() {
-  const API_BASE_URL = 'http://localhost:5072'
-
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5072";
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [subject, setSubject] = useState('')

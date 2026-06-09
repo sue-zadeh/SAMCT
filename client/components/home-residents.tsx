@@ -15,8 +15,8 @@ type MaintenanceRequest = {
 }
 
 function HomeResidents() {
-  const API_BASE_URL = 'http://localhost:5072'
-
+  const API_BASE_URL =
+    import.meta.env.VITE_API_BASE_URL || 'http://localhost:5072'
   const fullName = localStorage.getItem('fullname') || 'Resident User'
   const firstName = localStorage.getItem('firstname') || 'Resident'
   const village = localStorage.getItem('village') || 'Papakura'
@@ -156,9 +156,7 @@ function HomeResidents() {
               >
                 <div className="p-4 border rounded-4 shadow-sm bg-white h-100">
                   <p className="text-secondary mb-2">Documents & Notices</p>
-                  <h2 className="fw-bold text-primary mb-0">
-                    {documentCount}
-                  </h2>
+                  <h2 className="fw-bold text-primary mb-0">{documentCount}</h2>
                 </div>
               </Link>
             </div>

@@ -14,7 +14,7 @@ type ProfilePasswordProps = {
 
 function ProfilePassword({ userType, backPath, title }: ProfilePasswordProps) {
   const navigate = useNavigate();
-  const API_BASE_URL = "http://localhost:5072";
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5072";
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");

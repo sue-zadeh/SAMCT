@@ -13,7 +13,7 @@ import Navbar from "./navbar";
 
 function ProfileResidentEdit() {
   const navigate = useNavigate();
-  const API_BASE_URL = "http://localhost:5072";
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5072";
 
   const [firstName, setFirstName] = useState(localStorage.getItem("firstname") || "");
   const [lastName, setLastName] = useState(localStorage.getItem("lastname") || "");

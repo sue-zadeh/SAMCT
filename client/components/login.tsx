@@ -10,7 +10,7 @@ type LoginProps = {
 
 function Login({ onLoginSuccess }: LoginProps) {
   const navigate = useNavigate();
-  const API_BASE_URL = "http://localhost:5072";
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5072";
 
   const savedUserName = localStorage.getItem("rememberedUsername") || "";
 

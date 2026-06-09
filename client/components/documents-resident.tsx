@@ -14,7 +14,8 @@ type DocumentNotice = {
 }
 
 function DocumentsResident() {
-  const API_BASE_URL = 'http://localhost:5072'
+  const API_BASE_URL =
+    import.meta.env.VITE_API_BASE_URL || 'http://localhost:5072'
   const village = localStorage.getItem('village') || 'Papakura'
 
   const [documents, setDocuments] = useState<DocumentNotice[]>([])
@@ -61,7 +62,8 @@ function DocumentsResident() {
             </p>
             <h1 className="fw-bold mb-2">Documents & Notices - {village}</h1>
             <p className="text-secondary mb-0">
-              View notices, minutes, Code of Practice documents, and shared village files.
+              View notices, minutes, Code of Practice documents, and shared
+              village files.
             </p>
           </div>
         </section>
