@@ -36,7 +36,9 @@ function Marketing() {
   }, [])
 
   const loadMarketingProperties = async () => {
-    const response = await fetch(`${API_BASE_URL}/api/village-properties/marketing`)
+    const response = await fetch(
+      `${API_BASE_URL}/api/village-properties/marketing`,
+    )
     const data = await response.json()
 
     if (response.ok) {
@@ -66,22 +68,38 @@ function Marketing() {
       <Navbar userType="public" />
 
       <main className="container py-5">
-        <section className="samct-card p-5 text-center mb-4" data-aos="fade-down">
+        <section
+          className="samct-card p-5 text-center mb-4"
+          data-aos="fade-down"
+        >
           <p className="text-uppercase text-primary fw-semibold mb-2">
             SAMCT Villages
           </p>
 
-          <h1 className="fw-bold mb-3">
+          <h3 className="fw-bold mb-3">
             Safe, supportive village living in South Auckland and beyond
-          </h1>
+          </h3>
 
-          <p className="text-secondary fs-5 mb-4">
-            View available village units, photos, and information shared by SAMCT.
+          <p
+            className="text-secondary  mb-4 mx-auto"
+            style={{ maxWidth: '850px' }}
+          >
+            Explore available village units, photos, and information for
+            Papakura, Ngatea, and Whitianga.
           </p>
 
-          <Link to="/contactUs" className="btn btn-primary px-5 samct-button">
-            Contact SAMCT
-          </Link>
+          <div className="d-flex justify-content-center gap-3 flex-wrap">
+            <Link to="/contactUs" className="btn btn-primary px-5 samct-button">
+              Contact SAMCT
+            </Link>
+
+            <Link
+              to="/#marketing-listings"
+              className="btn btn-outline-primary px-5 samct-button"
+            >
+              View Available Units
+            </Link>
+          </div>
         </section>
 
         <section className="text-center mb-4" data-aos="zoom-in">
@@ -115,7 +133,11 @@ function Marketing() {
               const mainImage = images[0]
 
               return (
-                <div className="col-md-6 col-xl-4" key={item.id} data-aos="fade-up">
+                <div
+                  className="col-md-6 col-xl-4"
+                  key={item.id}
+                  data-aos="fade-up"
+                >
                   <div className="samct-card h-100 overflow-hidden">
                     {mainImage ? (
                       <img
@@ -150,7 +172,8 @@ function Marketing() {
                       </p>
 
                       <p className="text-secondary">
-                        {item.marketingDescription || 'No description added yet.'}
+                        {item.marketingDescription ||
+                          'No description added yet.'}
                       </p>
 
                       <button

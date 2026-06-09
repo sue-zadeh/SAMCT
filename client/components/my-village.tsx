@@ -247,11 +247,15 @@ function MyVillage() {
   }
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('Are you sure you want to delete this property?')) return
+    if (!window.confirm('Are you sure you want to delete this property?'))
+      return
 
-    const response = await fetch(`${API_BASE_URL}/api/village-properties/${id}`, {
-      method: 'DELETE',
-    })
+    const response = await fetch(
+      `${API_BASE_URL}/api/village-properties/${id}`,
+      {
+        method: 'DELETE',
+      },
+    )
 
     if (response.ok) {
       setMessage('Village property deleted successfully.')
@@ -299,14 +303,31 @@ function MyVillage() {
 
       <main className="container py-5">
         <section className="mb-4">
-          <div className="samct-card p-4">
+          <div className="samct-card p-4 text-center">
             <p className="text-uppercase text-primary fw-semibold mb-1">
               My Village
             </p>
-            <h1 className="fw-bold mb-2">{village}</h1>
+            <h2 className="fw-bold mb-2">{village}</h2>
             <p className="text-secondary mb-0">
-              Manage village properties, residents, files, and marketing visibility.
+              Manage village properties, residents, files, and marketing
+              visibility.
             </p>
+            <div className="alert alert-info mb-4">
+              <h5 className="px-3 fw-semibold text-start" data-aos="fade-left">
+                How to use this page
+              </h5>
+
+              <ul className="mb-0 mt-2 text-start" text-dark data-aos="fade-right">
+                <li>Add a unit and resident information.</li>
+                <li>Upload property documents if available.</li>
+                <li>Add marketing title, description, and up to 5 images.</li>
+                <li>
+                  Turn Marketing Visibility ON to show the property on the
+                  public Marketing page.
+                </li>
+                <li>Use Edit to update property information later.</li>
+              </ul>
+            </div>
           </div>
         </section>
 
@@ -393,7 +414,9 @@ function MyVillage() {
                 </div>
 
                 <div className="col-md-2">
-                  <label className="form-label fw-semibold">Resident Name</label>
+                  <label className="form-label fw-semibold">
+                    Resident Name
+                  </label>
                   <select
                     className="form-select"
                     value={residentName}
@@ -427,7 +450,9 @@ function MyVillage() {
                 </div>
 
                 <div className="col-md-4">
-                  <label className="form-label fw-semibold">Resident Email</label>
+                  <label className="form-label fw-semibold">
+                    Resident Email
+                  </label>
                   <input
                     className="form-control"
                     value={residentEmail}
@@ -448,7 +473,9 @@ function MyVillage() {
                 </div>
 
                 <div className="col-md-4">
-                  <label className="form-label fw-semibold">Village Manager</label>
+                  <label className="form-label fw-semibold">
+                    Village Manager
+                  </label>
                   <select
                     className="form-select"
                     value={villageManagerName}
@@ -499,7 +526,9 @@ function MyVillage() {
                 </div>
 
                 <div className="col-12">
-                  <label className="form-label fw-semibold">Marketing Title</label>
+                  <label className="form-label fw-semibold">
+                    Marketing Title
+                  </label>
                   <input
                     className="form-control"
                     value={marketingTitle}
@@ -521,7 +550,7 @@ function MyVillage() {
                   />
                 </div>
 
-                 <div className="col-md-6">
+                <div className="col-md-6">
                   <label className="form-label fw-semibold">
                     Document 1 optional
                   </label>
@@ -555,7 +584,9 @@ function MyVillage() {
                 {[1, 2, 3, 4, 5].map((num) => (
                   <div className="col-md-4" key={num}>
                     <label className="form-label fw-semibold">
-                      {num === 1 ? 'Main Marketing Image' : `Gallery Image ${num}`}
+                      {num === 1
+                        ? 'Main Marketing Image'
+                        : `Gallery Image ${num}`}
                     </label>
                     <input
                       type="file"
@@ -573,10 +604,11 @@ function MyVillage() {
                   </div>
                 ))}
 
-               
-
                 <div className="col-12 d-flex gap-2">
-                  <button className="btn btn-primary samct-button" type="submit">
+                  <button
+                    className="btn btn-primary samct-button"
+                    type="submit"
+                  >
                     {editingId ? 'Update Property' : 'Save Property'}
                   </button>
 
