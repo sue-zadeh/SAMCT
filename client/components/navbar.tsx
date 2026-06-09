@@ -207,7 +207,7 @@ export default function Navbar({ userType }: NavbarProps) {
 
           {userType !== 'public' && (
             <button
-              className="btn btn-outline-danger text-danger"
+              className="btn btn-outline-danger border-danger text-danger"
               onClick={handleLogout}
               style={styles.logoutButton}
             >
