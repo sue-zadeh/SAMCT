@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using server.Data;
 using server.DTOs;
 using server.Models;
+using server.Services;
 
 namespace server.Controllers
 {
@@ -12,11 +13,19 @@ namespace server.Controllers
     {
         private readonly AppDbContext _context;
         private readonly IWebHostEnvironment _environment;
+        private readonly IEmailService _emailService;
+        private readonly IConfiguration _configuration;
 
-        public AuthController(AppDbContext context, IWebHostEnvironment environment)
+        public AuthController(
+          AppDbContext context,
+          IWebHostEnvironment environment, 
+          IEmailService emailService,
+          IConfiguration configuration)
         {
             _context = context;
             _environment = environment;
+            _emailService = emailService;
+            _configuration = configuration;
         }
 
         private UserResponseDto MapUser(User user)
@@ -428,5 +437,65 @@ namespace server.Controllers
                 residents,
                 managers
             });
-       }}
        }
+     //forgot password
+       [HttpPost("forgot-password")]
+public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequestDto request)
+{
+    if (string.IsNullOrWhiteSpace(request.Email))
+    {
+        return BadRequest(new { message = "Email is required." });
+    }
+
+    var user = await _context.Users
+        .FirstOrDefaultAsync(u => u.Email == request.Email.Trim() && u.IsActive);
+
+    if (user == null)
+    {
+        return Ok(new { message = "If this email exists, a reset link has been sent." });
+    }
+
+    var token = Guid.NewGuid().ToString();
+
+    user.PasswordResetToken = token;
+    user.PasswordResetTokenExpiry = DateTime.UtcNow.AddHours(1);
+
+    await _context.SaveChangesAsync();
+
+    var frontendUrl = _configuration["EmailSettings:FrontendUrl"];
+    var resetLink = $"{frontendUrl}/reset-password/{token}";
+
+    await _emailService.SendPasswordResetEmail(user.Email, resetLink);
+
+    return Ok(new { message = "If this email exists, a reset link has been sent." });
+}
+
+//Reset password
+        [HttpPut("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDto request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Token) ||
+                string.IsNullOrWhiteSpace(request.NewPassword))
+            {
+                return BadRequest(new { message = "Token and new password are required." });
+            }
+
+            var user = await _context.Users.FirstOrDefaultAsync(u =>
+                u.PasswordResetToken == request.Token &&
+                u.PasswordResetTokenExpiry > DateTime.UtcNow);
+
+            if (user == null)
+            {
+                return BadRequest(new { message = "Invalid or expired reset link." });
+            }
+
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+            user.PasswordResetToken = null;
+            user.PasswordResetTokenExpiry = null;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Password reset successfully." });
+        }
+    }
+}

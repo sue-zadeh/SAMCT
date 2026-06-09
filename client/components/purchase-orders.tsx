@@ -85,7 +85,7 @@ function PurchaseOrders() {
         <section className="samct-card p-4 mb-4">
           <h2 className="fw-bold">Purchase Orders</h2>
 
-          <p className="text-secondary mb-0 fs-5">
+          <p className="text-secondary mb-0 fw-semibold">
             Create and track purchase orders for maintenance, repairs,
             suppliers, and village unit expenses.
           </p>

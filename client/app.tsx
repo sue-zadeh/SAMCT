@@ -37,6 +37,9 @@ import MaintenanceAdmin from './components/maintenance-admin'
 import AdminVillageProperties from './components/admin-village-properties'
 
 import MyVillage from './components/my-village'
+// forgot password
+import ForgotPassword from "./components/forgot-password";
+import ResetPassword from "./components/reset-password";
 
 function App() {
   return (
@@ -136,6 +139,9 @@ function App() {
             />
           }
         />
+          {/* forgot password */}
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
       </Routes>
 
       <Footer />

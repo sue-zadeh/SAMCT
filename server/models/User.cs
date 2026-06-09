@@ -13,5 +13,8 @@ namespace server.Models
         public string Village { get; set; } = "";
         public string ProfileImageUrl { get; set; } = "";
         public bool IsActive { get; set; } = true;
+
+        public string? PasswordResetToken { get; set; }
+        public DateTime? PasswordResetTokenExpiry { get; set; }
     }
 }

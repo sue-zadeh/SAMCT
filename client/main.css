@@ -12,6 +12,8 @@
 body {
   background: var(--page-bg);
   color: var(--text-main);
+    font-family: "Cairo", system-ui, sans-serif; 
+
 }
 
 .navbar,
