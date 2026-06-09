@@ -22,6 +22,7 @@ import ProfileVillage from './components/profile-village'
 import ProfileVillageEdit from './components/profile-village-edit'
 
 import ProfilePassword from './components/profile-password'
+import PurchaseOrders from './components/purchase-orders'
 
 import ManageUsers from './components/manage-users'
 import ManageUsersVillage from './components/manage-users-village'
@@ -64,6 +65,7 @@ function App() {
 
         <Route path="/admin/maintenance" element={<MaintenanceAdmin />} />
         <Route path="/admin/documents" element={<DocumentsAdmin />} />
+        <Route path="/admin/purchase-orders" element={<PurchaseOrders />} />
 
         <Route path="/resident/documents" element={<DocumentsResident />} />
 

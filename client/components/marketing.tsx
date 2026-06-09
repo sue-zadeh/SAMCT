@@ -93,16 +93,16 @@ function Marketing() {
               Contact SAMCT
             </Link>
 
-            <Link
-              to="/#marketing-listings"
+            <a
+              href="#marketing-listings"
               className="btn btn-outline-primary px-5 samct-button"
             >
               View Available Units
-            </Link>
+            </a>
           </div>
         </section>
 
-        <section className="text-center mb-4" data-aos="zoom-in">
+        <section id="marketing-listings" className="text-center mb-4" data-aos="zoom-in">
           <div className="d-flex justify-content-center gap-2 flex-wrap">
             {villages.map((village) => (
               <button

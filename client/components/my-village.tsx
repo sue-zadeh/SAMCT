@@ -313,11 +313,11 @@ function MyVillage() {
               visibility.
             </p>
             <div className="alert alert-info mb-4">
-              <h5 className="px-3 fw-semibold text-start" data-aos="fade-left">
+              <h5 className="px-3 fw-semibold text-start">
                 How to use this page
               </h5>
 
-              <ul className="mb-0 mt-2 text-start" text-dark data-aos="fade-right">
+              <ul className="mb-0 mt-2 text-start">
                 <li>Add a unit and resident information.</li>
                 <li>Upload property documents if available.</li>
                 <li>Add marketing title, description, and up to 5 images.</li>
@@ -326,6 +326,10 @@ function MyVillage() {
                   public Marketing page.
                 </li>
                 <li>Use Edit to update property information later.</li>
+                <li>
+                  A copy of the property detail will send to the admin dashboard
+                  automatically
+                </li>
               </ul>
             </div>
           </div>

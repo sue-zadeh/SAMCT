@@ -14,5 +14,6 @@ namespace server.Data
         public DbSet<MaintenanceRequest> MaintenanceRequests { get; set; }
         public DbSet<DocumentNotice> DocumentNotices { get; set; }
         public DbSet<VillageProperty> VillageProperties { get; set; }
+        public DbSet<PurchaseOrder> PurchaseOrders { get; set; }
     }
 }

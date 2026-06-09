@@ -44,7 +44,7 @@ export default function Navbar({ userType }: NavbarProps) {
     { label: 'Village Data', path: '/admin/village-properties' },
     { label: 'Maintenance', path: '/admin/maintenance' },
     { label: 'Documents & Notices', path: '/admin/documents' },
-    { label: 'Purchase Orders', path: '/admin/orders' },
+    { label: 'Purchase Orders', path: '/admin/purchase-orders' },
     { label: 'Manage Profiles', path: '/admin/people' },
     { label: 'Register', path: '/register' },
   ]
