@@ -10,7 +10,8 @@ function PurchaseOrders() {
   const location = useLocation()
   const isAdmin = location.pathname.startsWith('/admin')
 
-  const villageOptions = ['Papakura', 'Ngatea', 'Whitianga']
+  const allVillages = ['Papakura', 'Ngatea', 'Whitianga']
+  const villageOptions = isAdmin ? allVillages : [userVillage]
 
   const [orders, setOrders] = useState<any[]>([])
   const [editingId, setEditingId] = useState<number | null>(null)
@@ -130,12 +131,7 @@ function PurchaseOrders() {
     })
 
     if (response.ok) {
-      setMessage(
-        editingId
-          ? 'Purchase order updated.'
-          : 'Purchase order created.'
-      )
-
+      setMessage(editingId ? 'Purchase order updated.' : 'Purchase order created.')
       resetForm()
       loadOrders()
     }
@@ -169,7 +165,7 @@ function PurchaseOrders() {
 
                 <select
                   className="form-select"
-                  value={isAdmin ? village : userVillage}
+                  value={village}
                   disabled={!isAdmin}
                   onChange={(e) => setVillage(e.target.value)}
                 >
@@ -287,9 +283,7 @@ function PurchaseOrders() {
 
               <div className="col-12 d-flex gap-2">
                 <button className="btn btn-primary" type="submit">
-                  {editingId
-                    ? 'Update Purchase Order'
-                    : 'Save Purchase Order'}
+                  {editingId ? 'Update Purchase Order' : 'Save Purchase Order'}
                 </button>
 
                 {editingId && (
