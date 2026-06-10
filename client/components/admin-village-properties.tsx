@@ -88,7 +88,7 @@ const API_BASE_URL =
 
       <main className="container py-5">
         <section className="mb-4">
-          <div className="samct-card p-4">
+          <div className="samct-card p-4 border rounded-4 shadow-sm bg-white">
             <p className="text-uppercase text-primary fw-semibold mb-1">
               Admin Read Only
             </p>
@@ -105,7 +105,7 @@ const API_BASE_URL =
         <section className="mb-4">
           <div className="row g-3">
             <div className="col-md-4">
-              <div className="samct-card p-4 h-100">
+              <div className="samct-card p-4 h-100 border rounded-4 shadow-sm bg-white">
                 <p className="text-secondary mb-2">Total Properties</p>
                 <h2 className="fw-bold mb-1">{properties.length}</h2>
                 <p className="small text-secondary mb-0">
@@ -130,7 +130,7 @@ const API_BASE_URL =
             </div>
 
             <div className="col-md-4">
-              <div className="samct-card p-4 h-100">
+              <div className="samct-card p-4 h-100 border rounded-4 shadow-sm bg-white">
                 <p className="text-secondary mb-2">Documents</p>
                 <h2 className="fw-bold text-primary mb-1">
                   {properties.reduce(
@@ -150,7 +150,7 @@ const API_BASE_URL =
         </section>
 
         <section>
-          <div className="samct-card p-4">
+          <div className="samct-card p-4 mb-4 border rounded-4 shadow-sm bg-white">
             <div className="text-center mb-4">
               <h2 className="fw-bold mb-1">All Village Records</h2>
               <p className="text-secondary mb-3">

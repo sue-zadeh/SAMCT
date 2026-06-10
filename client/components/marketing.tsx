@@ -69,7 +69,7 @@ function Marketing() {
 
       <main className="container py-5">
         <section
-          className="samct-card p-5 text-center mb-4"
+          className="samct-card p-5 text-center mb-4 shadow-sm border rounded-4 bg-white"
           data-aos="fade-down"
         >
           <p className="text-uppercase text-primary fw-semibold mb-2">
@@ -138,7 +138,7 @@ function Marketing() {
                   key={item.id}
                   data-aos="fade-up"
                 >
-                  <div className="samct-card h-100 overflow-hidden">
+                  <div className="samct-card h-100 overflow-hidden border rounded-4 shadow-sm bg-white">
                     {mainImage ? (
                       <img
                         src={`${API_BASE_URL}${mainImage}`}

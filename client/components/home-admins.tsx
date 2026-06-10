@@ -246,7 +246,7 @@ function HomeAdmins() {
         </section>
 
         <section className="mb-5">
-          <div className="samct-card p-4">
+          <div className="samct-card p-4 mb-4 border rounded-4 shadow-sm bg-white">
             <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
               <div>
                 <p className="text-uppercase text-primary fw-semibold mb-1">

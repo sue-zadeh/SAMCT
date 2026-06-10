@@ -6,7 +6,7 @@ function About() {
       <Navbar userType="public" />
 
       <main className="container py-5">
-        <section className="samct-card p-5 text-center">
+        <section className="samct-card p-5 text-center mb-4 shadow-sm border rounded-4 bg-white">
           <p className="text-uppercase text-primary fw-semibold mb-2">
             About SAMCT
           </p>

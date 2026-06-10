@@ -142,7 +142,7 @@ function PurchaseOrders() {
       <Navbar userType={isAdmin ? 'admin' : 'villageManager'} />
 
       <main className="container py-5">
-        <section className="samct-card p-4 mb-4">
+        <section className="samct-card p-4 mb-4 border rounded-4 shadow-sm bg-white">
           <h2 className="fw-bold">Purchase Orders</h2>
 
           <p className="text-secondary mb-0 fw-semibold">
@@ -153,7 +153,7 @@ function PurchaseOrders() {
 
         {message && <div className="alert alert-success">{message}</div>}
 
-        <section className="samct-card p-4 mb-4">
+        <section className="samct-card p-4 mb-4 border rounded-4 shadow-sm bg-white">
           <h4 className="mb-4">
             {editingId ? 'Edit Purchase Order' : 'New Purchase Order'}
           </h4>
@@ -300,7 +300,7 @@ function PurchaseOrders() {
           </form>
         </section>
 
-        <section className="samct-card p-4">
+        <section className="samct-card p-4 mb-4 border rounded-4 shadow-sm bg-white">
           <h4 className="mb-4">Existing Purchase Orders</h4>
 
           <div className="table-responsive">

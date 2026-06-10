@@ -124,7 +124,7 @@ const API_BASE_URL =
         <section className="row g-4 mb-4">
           <div className="col-md-4" data-aos="fade-right">
             <Link to="/about" className="text-decoration-none text-dark">
-              <div className="p-4 samct-card h-100">
+              <div className="p-4 samct-card h-100 border rounded-4 shadow-sm bg-white">
                 <h5 className="fw-bold">Village Information</h5>
                 <p className="text-secondary mb-0">
                   Learn more about Papakura, Ngatea, and Whitianga village
@@ -147,7 +147,7 @@ const API_BASE_URL =
           </div>
 
           <div className="col-md-4" data-aos="fade-left">
-            <div className="p-4 samct-card h-100">
+            <div className="p-4 samct-card h-100 border rounded-4 shadow-sm bg-white">
               <h5 className="fw-bold">Resident Support</h5>
               <p className="text-secondary mb-0">
                 Contact SAMCT for general questions, documents, or support.

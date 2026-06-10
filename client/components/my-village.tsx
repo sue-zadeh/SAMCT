@@ -303,7 +303,7 @@ function MyVillage() {
 
       <main className="container py-5">
         <section className="mb-4">
-          <div className="samct-card p-4 text-center">
+          <div className="samct-card p-4 text-center border rounded-4 shadow-sm bg-white">
             <p className="text-uppercase text-primary fw-semibold mb-1">
               My Village
             </p>
@@ -341,7 +341,7 @@ function MyVillage() {
         <section className="mb-4">
           <div className="row g-3">
             <div className="col-md-4">
-              <div className="samct-card p-4 h-100">
+              <div className="samct-card p-4 h-100 border rounded-4 shadow-sm bg-white">
                 <p className="text-secondary mb-2">Village Properties</p>
                 <h2 className="fw-bold">{properties.length}</h2>
               </div>
@@ -349,7 +349,7 @@ function MyVillage() {
 
             <div className="col-md-4">
               <div
-                className="samct-card p-4 h-100"
+                className="samct-card p-4 h-100 border rounded-4 shadow-sm bg-white"
                 style={{ cursor: 'pointer' }}
                 onClick={() => navigate('/village-manager/residents')}
               >
@@ -362,7 +362,7 @@ function MyVillage() {
             </div>
 
             <div className="col-md-4">
-              <div className="samct-card p-4 h-100">
+              <div className="samct-card p-4 h-100 border rounded-4 shadow-sm bg-white">
                 <p className="text-secondary mb-2">Documents</p>
                 <h2 className="fw-bold text-primary">
                   {properties.reduce(
@@ -379,7 +379,7 @@ function MyVillage() {
         </section>
 
         <section className="mb-4">
-          <div className="samct-card p-4">
+          <div className="samct-card p-4 border rounded-4 shadow-sm bg-white">
             <h2 className="fw-bold mb-4">
               {editingId ? 'Edit Village Property' : 'Add Village Property'}
             </h2>
@@ -632,7 +632,7 @@ function MyVillage() {
         </section>
 
         <section>
-          <div className="samct-card p-4">
+          <div className="samct-card p-4 mb-4 border rounded-4 shadow-sm bg-white">
             <div className="text-center mb-4">
               <h2 className="fw-bold mb-1">My Village Table</h2>
               <p className="text-secondary mb-3">
