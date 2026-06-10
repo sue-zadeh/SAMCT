@@ -1,5 +1,5 @@
 import { NavLink, Link, useNavigate } from 'react-router-dom'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import logoImage from '../assets/icon5.png'
 
 type UserType = 'public' | 'resident' | 'admin' | 'villageManager'
@@ -12,9 +12,31 @@ export default function Navbar({ userType }: NavbarProps) {
   const navigate = useNavigate()
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkScreen = () => {
+      setIsMobile(window.innerWidth <= 1005)
+      if (window.innerWidth > 1005) {
+        setMenuOpen(false)
+      }
+    }
+
+    checkScreen()
+    window.addEventListener('resize', checkScreen)
+
+    return () => window.removeEventListener('resize', checkScreen)
+  }, [])
 
   const handleLogout = () => {
-    localStorage.clear()
+    localStorage.removeItem('firstname')
+    localStorage.removeItem('lastname')
+    localStorage.removeItem('fullname')
+    localStorage.removeItem('role')
+    localStorage.removeItem('profileImageUrl')
+    localStorage.removeItem('email')
+    localStorage.removeItem('username')
+    localStorage.removeItem('village')
     navigate('/')
   }
 
@@ -59,20 +81,22 @@ export default function Navbar({ userType }: NavbarProps) {
   if (userType === 'villageManager') links = villageManagerLinks
 
   const renderProfileMenu = () => {
-    const basePath =
-      userType === 'admin'
-        ? '/admin'
-        : userType === 'resident'
-        ? '/resident'
-        : '/village-manager'
+    let basePath = '/resident'
+
+    if (userType === 'admin') basePath = '/admin'
+    if (userType === 'villageManager') basePath = '/village-manager'
 
     return (
       <div
         style={styles.dropdownWrapper}
-        onMouseEnter={() => setShowProfileMenu(true)}
-        onMouseLeave={() => setShowProfileMenu(false)}
+        onMouseEnter={() => !isMobile && setShowProfileMenu(true)}
+        onMouseLeave={() => !isMobile && setShowProfileMenu(false)}
       >
-        <button type="button" style={styles.dropdownButton}>
+        <button
+          type="button"
+          style={styles.dropdownButton}
+          onClick={() => setShowProfileMenu(!showProfileMenu)}
+        >
           Profile
         </button>
 
@@ -84,10 +108,7 @@ export default function Navbar({ userType }: NavbarProps) {
             <Link to={`${basePath}/profile/edit`} style={styles.dropdownItem}>
               Edit Profile
             </Link>
-            <Link
-              to={`${basePath}/profile/password`}
-              style={styles.dropdownItem}
-            >
+            <Link to={`${basePath}/profile/password`} style={styles.dropdownItem}>
               Change Password
             </Link>
 
@@ -112,27 +133,25 @@ export default function Navbar({ userType }: NavbarProps) {
     <nav style={styles.navbar}>
       <div style={styles.container}>
         <Link to="/" style={styles.logo}>
-          <img
-            src={logoImage}
-            alt="SAMCT Villages logo"
-            style={styles.logoImage}
-          />
+          <img src={logoImage} alt="SAMCT Villages logo" style={styles.logoImage} />
           <span>SAMCT Villages</span>
         </Link>
 
-        <button
-          type="button"
-          style={styles.hamburger}
-          onClick={() => setMenuOpen(!menuOpen)}
-          aria-label="Toggle menu"
-        >
-          ☰
-        </button>
+        {isMobile && (
+          <button
+            type="button"
+            style={styles.hamburger}
+            onClick={() => setMenuOpen(!menuOpen)}
+          >
+            ☰
+          </button>
+        )}
 
         <div
           style={{
             ...styles.links,
-            ...(menuOpen ? styles.linksOpen : {}),
+            ...(isMobile ? styles.mobileLinks : {}),
+            ...(isMobile && menuOpen ? styles.mobileLinksOpen : {}),
           }}
         >
           {links.map((link) => (
@@ -187,7 +206,7 @@ const styles: Record<string, React.CSSProperties> = {
   container: {
     maxWidth: '1200px',
     margin: '0 auto',
-    padding: '0.8rem 1rem',
+    padding: '1rem 1.5rem',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -197,12 +216,12 @@ const styles: Record<string, React.CSSProperties> = {
 
   logo: {
     textDecoration: 'none',
-    fontSize: '1.4rem',
+    fontSize: '1.25rem',
     fontWeight: 700,
     color: '#1f2937',
     display: 'flex',
     alignItems: 'center',
-    gap: '0.6rem',
+    gap: '0.5rem',
   },
 
   logoImage: {
@@ -211,39 +230,50 @@ const styles: Record<string, React.CSSProperties> = {
     objectFit: 'contain',
   },
 
-  hamburger: {
-    display: 'block',
-    border: '1px solid #d1d5db',
-    backgroundColor: 'white',
-    borderRadius: '8px',
-    padding: '0.4rem 0.7rem',
-    fontSize: '1.5rem',
-    cursor: 'pointer',
-  },
-
   links: {
-    display: 'none',
-    position: 'absolute',
-    top: '100%',
-    left: 0,
-    right: 0,
-    backgroundColor: 'white',
-    borderBottom: '1px solid #e5e7eb',
-    padding: '1rem',
-    flexDirection: 'column',
-    alignItems: 'flex-start',
+    display: 'flex',
     gap: '1rem',
+    flexWrap: 'wrap',
+    alignItems: 'center',
   },
 
-  linksOpen: {
+  mobileLinks: {
+  display: 'none',
+  position: 'absolute',
+  top: '100%',
+  right: '1.5rem',
+  backgroundColor: '#ffffff',
+  border: '1px solid #e5e7eb',
+  borderRadius: '12px',
+  padding: '1rem',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  gap: '0.9rem',
+  minWidth: '230px',
+  maxWidth: '280px',
+  boxShadow: '0 8px 20px rgba(0,0,0,0.08)',
+  zIndex: 1200,
+},
+
+  mobileLinksOpen: {
     display: 'flex',
   },
+
+hamburger: {
+  border: '1px solid #d1d5db',
+  backgroundColor: 'white',
+  borderRadius: '8px',
+  padding: '0.35rem 0.7rem',
+  fontSize: '1.5rem',
+  cursor: 'pointer',
+  marginLeft: 'auto',
+},
 
   link: {
     textDecoration: 'none',
     color: '#374151',
     fontWeight: 500,
-    fontSize: '1rem',
+    fontSize: '0.95rem',
     paddingBottom: '4px',
   },
 
@@ -266,7 +296,7 @@ const styles: Record<string, React.CSSProperties> = {
     background: 'none',
     color: '#374151',
     fontWeight: 500,
-    fontSize: '1rem',
+    fontSize: '0.95rem',
     cursor: 'pointer',
     padding: 0,
   },
@@ -274,7 +304,7 @@ const styles: Record<string, React.CSSProperties> = {
   dropdownMenu: {
     position: 'absolute',
     top: '100%',
-    left: 0,
+    right: 0,
     backgroundColor: 'white',
     border: '1px solid #e5e7eb',
     borderRadius: '8px',
