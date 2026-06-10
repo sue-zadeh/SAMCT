@@ -135,7 +135,7 @@ function HomeAdmins() {
 
       <main className="container py-5">
         <section className="mb-5">
-          <div className="samct-card p-4 d-flex justify-content-between align-items-center flex-wrap gap-4">
+          <div className="samct-card p-4 h-100 border rounded-4 shadow-sm d-flex justify-content-between align-items-center flex-wrap gap-4">
             <div className="d-flex align-items-center gap-3">
               <img
                 src={profileImageSrc}
@@ -268,7 +268,7 @@ function HomeAdmins() {
               <div className="row g-3">
                 {maintenanceSummary.map((item) => (
                   <div className="col-md-6 col-xl-4" key={item.village}>
-                    <div className="p-4 border rounded-4 h-100 bg-white">
+                    <div className="p-4 border rounded-4 h-100 bg-white shadow-sm">
                       <h3 className="h5 fw-bold">{item.village}</h3>
 
                       <div className="d-flex flex-wrap gap-2 mt-3">
@@ -297,7 +297,7 @@ function HomeAdmins() {
         </section>
 
         <section className="mb-5">
-          <div className="samct-card p-4">
+          <div className="samct-card p-4 shadow-sm border rounded-4 bg-white">
             <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
               <div>
                 <p className="text-uppercase text-primary fw-semibold mb-1">
@@ -316,7 +316,7 @@ function HomeAdmins() {
 
             <div className="row g-3 mb-4">
               <div className="col-md-4">
-                <div className="p-4 border rounded-4 bg-white h-100">
+                <div className="p-4 border rounded-4 bg-white h-100 shadow-sm">
                   <p className="text-secondary mb-2">Total Properties</p>
                   <h3 className="fw-bold mb-1">{villageProperties.length}</h3>
                   <p className="small text-secondary mb-0">
@@ -338,7 +338,7 @@ function HomeAdmins() {
               </div>
 
               <div className="col-md-4">
-                <div className="p-4 border rounded-4 bg-white h-100">
+                <div className="p-4 border rounded-4 bg-white h-100 shadow-sm">
                   <p className="text-secondary mb-2">Documents Uploaded</p>
                   <h3 className="fw-bold text-primary mb-1">
                     {totalDocuments}
