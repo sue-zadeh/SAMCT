@@ -183,7 +183,7 @@ function HomeAdmins() {
                 to="/admin/maintenance"
                 className="text-decoration-none text-dark"
               >
-                <div className="samct-card p-4 h-100">
+                <div className="samct-card p-4 h-100 border rounded-4 shadow-sm bg-white">
                   <p className="text-secondary mb-2">Maintenance</p>
                   <h2 className="fw-bold mb-1">{totalMaintenance}</h2>
                   <p className="small text-secondary mb-0">All requests</p>
@@ -192,7 +192,7 @@ function HomeAdmins() {
             </div>
 
             <div className="col-md-4 col-xl-2">
-              <div className="samct-card p-4 h-100">
+              <div className="samct-card p-4 h-100 border rounded-4 shadow-sm bg-white">
                 <p className="text-secondary mb-2">Pending</p>
                 <h2 className="fw-bold text-warning mb-1">{totalPending}</h2>
                 <p className="small text-secondary mb-0">Waiting action</p>
@@ -200,7 +200,7 @@ function HomeAdmins() {
             </div>
 
             <div className="col-md-4 col-xl-2">
-              <div className="samct-card p-4 h-100">
+              <div className="samct-card p-4 h-100 border rounded-4 shadow-sm bg-white">
                 <p className="text-secondary mb-2">In Progress</p>
                 <h2 className="fw-bold text-info mb-1">{totalInProgress}</h2>
                 <p className="small text-secondary mb-0">Being handled</p>
@@ -208,7 +208,7 @@ function HomeAdmins() {
             </div>
 
             <div className="col-md-4 col-xl-2">
-              <div className="samct-card p-4 h-100">
+              <div className="samct-card p-4 h-100 border rounded-4 shadow-sm bg-white">
                 <p className="text-secondary mb-2">Completed</p>
                 <h2 className="fw-bold text-success mb-1">{totalCompleted}</h2>
                 <p className="small text-secondary mb-0">Resolved</p>
@@ -220,7 +220,7 @@ function HomeAdmins() {
                 to="/admin/village-properties"
                 className="text-decoration-none text-dark"
               >
-                <div className="samct-card p-4 h-100">
+                <div className="samct-card p-4 h-100 border rounded-4 shadow-sm bg-white">
                   <p className="text-secondary mb-2">Village Data</p>
                   <h2 className="fw-bold mb-1">{villageProperties.length}</h2>
                   <p className="small text-secondary mb-0">Property records</p>
@@ -233,7 +233,7 @@ function HomeAdmins() {
                 to="/admin/village-properties"
                 className="text-decoration-none text-dark"
               >
-                <div className="samct-card p-4 h-100">
+                <div className="samct-card p-4 h-100 border rounded-4 shadow-sm bg-white">
                   <p className="text-secondary mb-2">Marketing</p>
                   <h2 className="fw-bold text-primary mb-1">
                     {totalMarketingListings}
