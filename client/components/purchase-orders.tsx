@@ -4,41 +4,98 @@ import { useLocation } from 'react-router-dom'
 
 function PurchaseOrders() {
   const API_BASE_URL =
-    import.meta.env.VITE_API_BASE_URL || "http://localhost:5072";
+    import.meta.env.VITE_API_BASE_URL || 'http://localhost:5072'
 
-  const village = localStorage.getItem('village') || 'Papakura'
+  const userVillage = localStorage.getItem('village') || 'Papakura'
   const location = useLocation()
   const isAdmin = location.pathname.startsWith('/admin')
 
-  const [orders, setOrders] = useState<any[]>([])
+  const villageOptions = ['Papakura', 'Ngatea', 'Whitianga']
 
+  const [orders, setOrders] = useState<any[]>([])
+  const [editingId, setEditingId] = useState<number | null>(null)
+
+  const [village, setVillage] = useState(userVillage)
   const [title, setTitle] = useState('')
   const [unitNumber, setUnitNumber] = useState('')
   const [category, setCategory] = useState('')
   const [supplier, setSupplier] = useState('')
   const [estimatedCost, setEstimatedCost] = useState('')
   const [priority, setPriority] = useState('Normal')
+  const [status, setStatus] = useState('Pending')
   const [notes, setNotes] = useState('')
   const [message, setMessage] = useState('')
 
   useEffect(() => {
     loadOrders()
-  }, [isAdmin, village])
+  }, [isAdmin, userVillage])
+
+  useEffect(() => {
+    if (!message) return
+
+    const timer = setTimeout(() => {
+      setMessage('')
+    }, 50000)
+
+    return () => clearTimeout(timer)
+  }, [message])
 
   async function loadOrders() {
-    try {
-      const url = isAdmin
-        ? `${API_BASE_URL}/api/purchase-orders/admin/all`
-        : `${API_BASE_URL}/api/purchase-orders/village/${village}`;
+    const url = isAdmin
+      ? `${API_BASE_URL}/api/purchase-orders/admin/all`
+      : `${API_BASE_URL}/api/purchase-orders/village/${userVillage}`
 
-      const response = await fetch(url)
+    const response = await fetch(url)
 
-      if (response.ok) {
-        const data = await response.json()
-        setOrders(data)
-      }
-    } catch (error) {
-      console.error(error)
+    if (response.ok) {
+      const data = await response.json()
+      setOrders(data)
+    }
+  }
+
+  function resetForm() {
+    setEditingId(null)
+    setVillage(userVillage)
+    setTitle('')
+    setUnitNumber('')
+    setCategory('')
+    setSupplier('')
+    setEstimatedCost('')
+    setPriority('Normal')
+    setStatus('Pending')
+    setNotes('')
+  }
+
+  function handleEdit(order: any) {
+    setEditingId(order.id)
+    setVillage(order.village || userVillage)
+    setTitle(order.title || '')
+    setUnitNumber(order.unitNumber || '')
+    setCategory(order.category || '')
+    setSupplier(order.supplier || '')
+    setEstimatedCost(String(order.estimatedCost || ''))
+    setPriority(order.priority || 'Normal')
+    setStatus(order.status || 'Pending')
+    setNotes(order.notes || '')
+
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  async function handleDelete(id: number) {
+    const confirmDelete = window.confirm(
+      'Are you sure you want to delete this purchase order?'
+    )
+
+    if (!confirmDelete) return
+
+    const response = await fetch(`${API_BASE_URL}/api/purchase-orders/${id}`, {
+      method: 'DELETE',
+    })
+
+    if (response.ok) {
+      setMessage('Purchase order deleted.')
+      resetForm()
+      loadOrders()
     }
   }
 
@@ -46,19 +103,26 @@ function PurchaseOrders() {
     event.preventDefault()
 
     const order = {
-      village,
+      village: isAdmin ? village : userVillage,
       unitNumber,
       title,
       category,
       supplier,
       estimatedCost: Number(estimatedCost),
       priority,
+      status,
       notes,
       createdByUserName: localStorage.getItem('username') || '',
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/purchase-orders`, {
-      method: 'POST',
+    const url = editingId
+      ? `${API_BASE_URL}/api/purchase-orders/${editingId}`
+      : `${API_BASE_URL}/api/purchase-orders`
+
+    const method = editingId ? 'PUT' : 'POST'
+
+    const response = await fetch(url, {
+      method,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -66,16 +130,13 @@ function PurchaseOrders() {
     })
 
     if (response.ok) {
-      setMessage('Purchase order created.')
+      setMessage(
+        editingId
+          ? 'Purchase order updated.'
+          : 'Purchase order created.'
+      )
 
-      setTitle('')
-      setUnitNumber('')
-      setCategory('')
-      setSupplier('')
-      setEstimatedCost('')
-      setPriority('Normal')
-      setNotes('')
-
+      resetForm()
       loadOrders()
     }
   }
@@ -97,11 +158,30 @@ function PurchaseOrders() {
         {message && <div className="alert alert-success">{message}</div>}
 
         <section className="samct-card p-4 mb-4">
-          <h4 className="mb-4">New Purchase Order</h4>
+          <h4 className="mb-4">
+            {editingId ? 'Edit Purchase Order' : 'New Purchase Order'}
+          </h4>
 
           <form onSubmit={handleSubmit}>
             <div className="row g-3">
-              <div className="col-md-6">
+              <div className="col-md-4">
+                <label className="form-label">Village</label>
+
+                <select
+                  className="form-select"
+                  value={isAdmin ? village : userVillage}
+                  disabled={!isAdmin}
+                  onChange={(e) => setVillage(e.target.value)}
+                >
+                  {villageOptions.map((item) => (
+                    <option key={item} value={item}>
+                      {item}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="col-md-5">
                 <label className="form-label">Title</label>
 
                 <input
@@ -137,7 +217,22 @@ function PurchaseOrders() {
                 </select>
               </div>
 
-              <div className="col-md-4">
+              <div className="col-md-3">
+                <label className="form-label">Status</label>
+
+                <select
+                  className="form-select"
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                >
+                  <option>Pending</option>
+                  <option>In Progress</option>
+                  <option>Completed</option>
+                  <option>Cancelled</option>
+                </select>
+              </div>
+
+              <div className="col-md-3">
                 <label className="form-label">Category</label>
 
                 <select
@@ -158,7 +253,7 @@ function PurchaseOrders() {
                 </select>
               </div>
 
-              <div className="col-md-4">
+              <div className="col-md-3">
                 <label className="form-label">Supplier</label>
 
                 <input
@@ -190,10 +285,22 @@ function PurchaseOrders() {
                 />
               </div>
 
-              <div className="col-12">
+              <div className="col-12 d-flex gap-2">
                 <button className="btn btn-primary" type="submit">
-                  Save Purchase Order
+                  {editingId
+                    ? 'Update Purchase Order'
+                    : 'Save Purchase Order'}
                 </button>
+
+                {editingId && (
+                  <button
+                    className="btn btn-outline-secondary"
+                    type="button"
+                    onClick={resetForm}
+                  >
+                    Cancel Edit
+                  </button>
+                )}
               </div>
             </div>
           </form>
@@ -206,28 +313,48 @@ function PurchaseOrders() {
             <table className="table">
               <thead>
                 <tr>
+                  <th>Village</th>
                   <th>Title</th>
                   <th>Unit</th>
                   <th>Category</th>
                   <th>Supplier</th>
                   <th>Cost</th>
                   <th>Priority</th>
-                  <th>Notes</th>
                   <th>Status</th>
+                  <th>Notes</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
 
               <tbody>
                 {orders.map((order) => (
                   <tr key={order.id}>
+                    <td>{order.village}</td>
                     <td>{order.title}</td>
                     <td>{order.unitNumber}</td>
                     <td>{order.category}</td>
                     <td>{order.supplier}</td>
                     <td>${order.estimatedCost}</td>
                     <td>{order.priority}</td>
-                    <td>{order.notes || '-'}</td>
                     <td>{order.status}</td>
+                    <td>{order.notes || '-'}</td>
+                    <td>
+                      <div className="d-flex gap-2">
+                        <button
+                          className="btn btn-sm btn-outline-primary"
+                          onClick={() => handleEdit(order)}
+                        >
+                          Edit
+                        </button>
+
+                        <button
+                          className="btn btn-sm btn-outline-danger"
+                          onClick={() => handleDelete(order.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -239,4 +366,4 @@ function PurchaseOrders() {
   )
 }
 
-export default PurchaseOrders;
+export default PurchaseOrders

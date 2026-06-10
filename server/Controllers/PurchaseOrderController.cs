@@ -42,7 +42,7 @@ namespace server.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(PurchaseOrder order)
         {
-            order.Status = "Pending";
+            order.Status = string.IsNullOrWhiteSpace(order.Status) ? "Pending" : order.Status;
             order.CreatedAt = DateTime.UtcNow;
 
             _context.PurchaseOrders.Add(order);
@@ -62,12 +62,13 @@ namespace server.Controllers
             }
 
             order.UnitNumber = request.UnitNumber;
+            order.Village = request.Village;
             order.Title = request.Title;
             order.Category = request.Category;
             order.Supplier = request.Supplier;
             order.EstimatedCost = request.EstimatedCost;
             order.Priority = request.Priority;
-            order.Status = request.Status;
+            order.Status = string.IsNullOrWhiteSpace(request.Status) ? order.Status : request.Status;
             order.Notes = request.Notes;
             order.UpdatedAt = DateTime.UtcNow;
 
@@ -91,5 +92,6 @@ namespace server.Controllers
 
             return Ok(new { message = "Purchase order deleted successfully." });
         }
-    }
-}
+
+     }
+   }
