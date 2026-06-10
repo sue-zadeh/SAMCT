@@ -11,16 +11,10 @@ type NavbarProps = {
 export default function Navbar({ userType }: NavbarProps) {
   const navigate = useNavigate()
   const [showProfileMenu, setShowProfileMenu] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
 
   const handleLogout = () => {
-    localStorage.removeItem('firstname')
-    localStorage.removeItem('lastname')
-    localStorage.removeItem('fullname')
-    localStorage.removeItem('role')
-    localStorage.removeItem('profileImageUrl')
-    localStorage.removeItem('email')
-    localStorage.removeItem('username')
-    localStorage.removeItem('village')
+    localStorage.clear()
     navigate('/')
   }
 
@@ -36,7 +30,6 @@ export default function Navbar({ userType }: NavbarProps) {
   const residentLinks = [
     { label: 'Dashboard', path: '/resident' },
     { label: 'Maintenance', path: '/resident/maintenance' },
-    // { label: "My Requests", path: "/resident/requests" },
     { label: 'Documents & Notices', path: '/resident/documents' },
   ]
 
@@ -61,117 +54,58 @@ export default function Navbar({ userType }: NavbarProps) {
   ]
 
   let links = publicLinks
-
-  if (userType === 'resident') {
-    links = residentLinks
-  }
-
-  if (userType === 'admin') {
-    links = adminLinks
-  }
-
-  if (userType === 'villageManager') {
-    links = villageManagerLinks
-  }
+  if (userType === 'resident') links = residentLinks
+  if (userType === 'admin') links = adminLinks
+  if (userType === 'villageManager') links = villageManagerLinks
 
   const renderProfileMenu = () => {
-    if (userType === 'resident') {
-      return (
-        <div
-          style={styles.dropdownWrapper}
-          onMouseEnter={() => setShowProfileMenu(true)}
-          onMouseLeave={() => setShowProfileMenu(false)}
-        >
-          <button type="button" style={styles.dropdownButton}>
-            Profile
-          </button>
+    const basePath =
+      userType === 'admin'
+        ? '/admin'
+        : userType === 'resident'
+        ? '/resident'
+        : '/village-manager'
 
-          {showProfileMenu && (
-            <div style={styles.dropdownMenu}>
-              <Link to="/resident/profile" style={styles.dropdownItem}>
-                My Profile
-              </Link>
-              <Link to="/resident/profile/edit" style={styles.dropdownItem}>
-                Edit Profile
-              </Link>
-              <Link to="/resident/profile/password" style={styles.dropdownItem}>
-                Change Password
-              </Link>
-            </div>
-          )}
-        </div>
-      )
-    }
+    return (
+      <div
+        style={styles.dropdownWrapper}
+        onMouseEnter={() => setShowProfileMenu(true)}
+        onMouseLeave={() => setShowProfileMenu(false)}
+      >
+        <button type="button" style={styles.dropdownButton}>
+          Profile
+        </button>
 
-    if (userType === 'admin') {
-      return (
-        <div
-          style={styles.dropdownWrapper}
-          onMouseEnter={() => setShowProfileMenu(true)}
-          onMouseLeave={() => setShowProfileMenu(false)}
-        >
-          <button type="button" style={styles.dropdownButton}>
-            Profile
-          </button>
+        {showProfileMenu && (
+          <div style={styles.dropdownMenu}>
+            <Link to={`${basePath}/profile`} style={styles.dropdownItem}>
+              My Profile
+            </Link>
+            <Link to={`${basePath}/profile/edit`} style={styles.dropdownItem}>
+              Edit Profile
+            </Link>
+            <Link
+              to={`${basePath}/profile/password`}
+              style={styles.dropdownItem}
+            >
+              Change Password
+            </Link>
 
-          {showProfileMenu && (
-            <div style={styles.dropdownMenu}>
-              <Link to="/admin/profile" style={styles.dropdownItem}>
-                My Profile
-              </Link>
-              <Link to="/admin/profile/edit" style={styles.dropdownItem}>
-                Edit Profile
-              </Link>
-              <Link to="/admin/profile/password" style={styles.dropdownItem}>
-                Change Password
-              </Link>
+            {userType === 'admin' && (
               <Link to="/admin/people" style={styles.dropdownItem}>
                 Manage Users
               </Link>
-            </div>
-          )}
-        </div>
-      )
-    }
+            )}
 
-    if (userType === 'villageManager') {
-      return (
-        <div
-          style={styles.dropdownWrapper}
-          onMouseEnter={() => setShowProfileMenu(true)}
-          onMouseLeave={() => setShowProfileMenu(false)}
-        >
-          <button type="button" style={styles.dropdownButton}>
-            Profile
-          </button>
-
-          {showProfileMenu && (
-            <div style={styles.dropdownMenu}>
-              <Link to="/village-manager/profile" style={styles.dropdownItem}>
-                My Profile
-              </Link>
-              <Link
-                to="/village-manager/profile/edit"
-                style={styles.dropdownItem}
-              >
-                Edit Profile
-              </Link>
-              <Link
-                to="/village-manager/profile/password"
-                style={styles.dropdownItem}
-              >
-                Change Password
-              </Link>
+            {userType === 'villageManager' && (
               <Link to="/village-manager/residents" style={styles.dropdownItem}>
                 Manage Users
               </Link>
-            </div>
-          )}
-        </div>
-      )
-    }
-
-    return null
+            )}
+          </div>
+        )}
+      </div>
+    )
   }
 
   return (
@@ -186,11 +120,26 @@ export default function Navbar({ userType }: NavbarProps) {
           <span>SAMCT Villages</span>
         </Link>
 
-        <div style={styles.links}>
+        <button
+          type="button"
+          style={styles.hamburger}
+          onClick={() => setMenuOpen(!menuOpen)}
+          aria-label="Toggle menu"
+        >
+          ☰
+        </button>
+
+        <div
+          style={{
+            ...styles.links,
+            ...(menuOpen ? styles.linksOpen : {}),
+          }}
+        >
           {links.map((link) => (
             <NavLink
               key={link.path}
               to={link.path}
+              onClick={() => setMenuOpen(false)}
               end={
                 link.path === '/resident' ||
                 link.path === '/admin' ||
@@ -202,7 +151,6 @@ export default function Navbar({ userType }: NavbarProps) {
                 borderBottom: isActive
                   ? '2px solid #2563eb'
                   : '2px solid transparent',
-                paddingBottom: '4px',
               })}
             >
               {link.label}
@@ -235,37 +183,70 @@ const styles: Record<string, React.CSSProperties> = {
     top: 0,
     zIndex: 1000,
   },
+
   container: {
     maxWidth: '1200px',
     margin: '0 auto',
-    padding: '1rem 1.5rem',
+    padding: '0.8rem 1rem',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     gap: '1rem',
-    flexWrap: 'wrap',
+    position: 'relative',
   },
+
   logo: {
     textDecoration: 'none',
-    fontSize: '1.25rem',
+    fontSize: '1.4rem',
     fontWeight: 700,
     color: '#1f2937',
     display: 'flex',
     alignItems: 'center',
-    gap: '0.5rem',
+    gap: '0.6rem',
   },
+
+  logoImage: {
+    width: '58px',
+    height: '58px',
+    objectFit: 'contain',
+  },
+
+  hamburger: {
+    display: 'block',
+    border: '1px solid #d1d5db',
+    backgroundColor: 'white',
+    borderRadius: '8px',
+    padding: '0.4rem 0.7rem',
+    fontSize: '1.5rem',
+    cursor: 'pointer',
+  },
+
   links: {
-    display: 'flex',
+    display: 'none',
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
+    backgroundColor: 'white',
+    borderBottom: '1px solid #e5e7eb',
+    padding: '1rem',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
     gap: '1rem',
-    flexWrap: 'wrap',
-    alignItems: 'center',
   },
+
+  linksOpen: {
+    display: 'flex',
+  },
+
   link: {
     textDecoration: 'none',
     color: '#374151',
     fontWeight: 500,
-    fontSize: '0.95rem',
+    fontSize: '1rem',
+    paddingBottom: '4px',
   },
+
   logoutButton: {
     border: '1px solid #d1d5db',
     backgroundColor: 'white',
@@ -275,22 +256,25 @@ const styles: Record<string, React.CSSProperties> = {
     fontWeight: 500,
     color: '#374151',
   },
+
   dropdownWrapper: {
     position: 'relative',
   },
+
   dropdownButton: {
     border: 'none',
     background: 'none',
     color: '#374151',
     fontWeight: 500,
-    fontSize: '0.95rem',
+    fontSize: '1rem',
     cursor: 'pointer',
     padding: 0,
   },
+
   dropdownMenu: {
     position: 'absolute',
     top: '100%',
-    right: 0,
+    left: 0,
     backgroundColor: 'white',
     border: '1px solid #e5e7eb',
     borderRadius: '8px',
@@ -299,6 +283,7 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '0.5rem 0',
     zIndex: 1100,
   },
+
   dropdownItem: {
     display: 'block',
     padding: '0.6rem 1rem',
@@ -306,11 +291,5 @@ const styles: Record<string, React.CSSProperties> = {
     color: '#374151',
     fontWeight: 500,
     whiteSpace: 'nowrap',
-  },
-
-  logoImage: {
-    width: '62px',
-    height: '62px',
-    objectFit: 'contain',
   },
 }
