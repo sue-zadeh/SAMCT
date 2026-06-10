@@ -1,5 +1,5 @@
-import { useState } from "react";
-import axios from "axios";
+import { useState } from 'react'
+import axios from 'axios'
 import {
   FaUser,
   FaEnvelope,
@@ -8,39 +8,42 @@ import {
   FaLock,
   FaImage,
   FaBuilding,
-} from "react-icons/fa";
-import Navbar from "./navbar";
+} from 'react-icons/fa'
+import Navbar from './navbar'
 
 function Register() {
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5072";
+  const API_BASE_URL =
+    import.meta.env.VITE_API_BASE_URL || 'http://localhost:5072'
 
   const [formData, setFormData] = useState({
-    userName: "",
-    firstName: "",
-    lastName: "",
-    email: "",
-    role: "Resident",
-    village: "Papakura",
-    password: "",
-    confirmPassword: "",
-  });
+    userName: '',
+    firstName: '',
+    lastName: '',
+    email: '',
+    role: 'Resident',
+    village: 'Papakura',
+    password: '',
+    confirmPassword: '',
+  })
 
-  const [profileImage, setProfileImage] = useState<File | null>(null);
-  const [notification, setNotification] = useState("");
-  const [isError, setIsError] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [profileImage, setProfileImage] = useState<File | null>(null)
+  const [notification, setNotification] = useState('')
+  const [isError, setIsError] = useState(false)
+  const [loading, setLoading] = useState(false)
 
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
+  const loggedInRole = localStorage.getItem('role')
+  const isVillageManager = loggedInRole === 'VillageManager'
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
-    });
-  };
+    })
+  }
 
   const validateForm = () => {
     if (
@@ -52,46 +55,46 @@ function Register() {
       !formData.password ||
       !formData.confirmPassword
     ) {
-      return "Please fill in all required fields.";
+      return 'Please fill in all required fields.'
     }
 
     if (formData.password !== formData.confirmPassword) {
-      return "Passwords do not match.";
+      return 'Passwords do not match.'
     }
 
     if (formData.password.length < 6) {
-      return "Password should be at least 6 characters.";
+      return 'Password should be at least 6 characters.'
     }
 
-    return "";
-  };
+    return ''
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
-    const error = validateForm();
+    const error = validateForm()
     if (error) {
-      setNotification(error);
-      setIsError(true);
-      return;
+      setNotification(error)
+      setIsError(true)
+      return
     }
 
     try {
-      setLoading(true);
-      setNotification("");
-      setIsError(false);
+      setLoading(true)
+      setNotification('')
+      setIsError(false)
 
-      const submitData = new FormData();
-      submitData.append("UserName", formData.userName);
-      submitData.append("FirstName", formData.firstName);
-      submitData.append("LastName", formData.lastName);
-      submitData.append("Email", formData.email);
-      submitData.append("Role", formData.role);
-      submitData.append("Village", formData.village);
-      submitData.append("Password", formData.password);
+      const submitData = new FormData()
+      submitData.append('UserName', formData.userName)
+      submitData.append('FirstName', formData.firstName)
+      submitData.append('LastName', formData.lastName)
+      submitData.append('Email', formData.email)
+      submitData.append('Role', formData.role)
+      submitData.append('Village', formData.village)
+      submitData.append('Password', formData.password)
 
       if (profileImage) {
-        submitData.append("ProfileImage", profileImage);
+        submitData.append('ProfileImage', profileImage)
       }
 
       const response = await axios.post(
@@ -99,39 +102,46 @@ function Register() {
         submitData,
         {
           headers: {
-            "Content-Type": "multipart/form-data",
+            'Content-Type': 'multipart/form-data',
           },
-        }
-      );
+        },
+      )
 
-      setNotification(response.data.message || "User registered successfully.");
-      setIsError(false);
+      setNotification(response.data.message || 'User registered successfully.')
+      setIsError(false)
 
       setFormData({
-        userName: "",
-        firstName: "",
-        lastName: "",
-        email: "",
-        role: "Resident",
-        village: "Papakura",
-        password: "",
-        confirmPassword: "",
-      });
-      setProfileImage(null);
+        userName: '',
+        firstName: '',
+        lastName: '',
+        email: '',
+        role: 'Resident',
+        village: 'Papakura',
+        password: '',
+        confirmPassword: '',
+      })
+      setProfileImage(null)
     } catch (error: any) {
       setNotification(
-        error?.response?.data?.message || "Failed to register user."
-      );
-      setIsError(true);
+        error?.response?.data?.message || 'Failed to register user.',
+      )
+      setIsError(true)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <>
-      <Navbar userType="public" />
-
+      <Navbar
+        userType={
+          loggedInRole === 'VillageManager'
+            ? 'villageManager'
+            : loggedInRole === 'Admin'
+              ? 'admin'
+              : 'public'
+        }
+      />
       <main className="container py-5">
         <div className="row justify-content-center">
           <div className="col-lg-6">
@@ -141,7 +151,7 @@ function Register() {
               {notification && (
                 <div
                   className={`alert ${
-                    isError ? "alert-danger" : "alert-success"
+                    isError ? 'alert-danger' : 'alert-success'
                   }`}
                 >
                   {notification}
@@ -220,10 +230,21 @@ function Register() {
                       onChange={handleChange}
                     >
                       <option value="Resident">Resident</option>
-                      <option value="VillageManager">Village Manager</option>
-                      <option value="CompanySecretary">Company Secretary</option>
-                      <option value="FinancialAdvisor">Financial Advisor</option>
-                      <option value="Chairman">Chairman</option>
+
+                      {!isVillageManager && (
+                        <>
+                          <option value="VillageManager">
+                            Village Manager
+                          </option>
+                          <option value="CompanySecretary">
+                            Company Secretary
+                          </option>
+                          <option value="FinancialAdvisor">
+                            Financial Advisor
+                          </option>
+                          <option value="Chairman">Chairman</option>
+                        </>
+                      )}
                     </select>
                   </div>
 
@@ -267,7 +288,7 @@ function Register() {
                   </label>
                   <div className="input-group">
                     <input
-                      type={showPassword ? "text" : "password"}
+                      type={showPassword ? 'text' : 'password'}
                       className="form-control"
                       name="password"
                       value={formData.password}
@@ -290,7 +311,7 @@ function Register() {
                   </label>
                   <div className="input-group">
                     <input
-                      type={showConfirmPassword ? "text" : "password"}
+                      type={showConfirmPassword ? 'text' : 'password'}
                       className="form-control"
                       name="confirmPassword"
                       value={formData.confirmPassword}
@@ -313,7 +334,7 @@ function Register() {
                   className="btn btn-primary w-100 mt-4"
                   disabled={loading}
                 >
-                  {loading ? "Registering..." : "Register User"}
+                  {loading ? 'Registering...' : 'Register User'}
                 </button>
               </form>
             </div>
@@ -321,7 +342,7 @@ function Register() {
         </div>
       </main>
     </>
-  );
+  )
 }
 
-export default Register;
+export default Register

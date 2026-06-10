@@ -1,5 +1,6 @@
 import { NavLink, Link, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
+import logoImage from '../assets/icon5.png'
 
 type UserType = 'public' | 'resident' | 'admin' | 'villageManager'
 
@@ -177,7 +178,12 @@ export default function Navbar({ userType }: NavbarProps) {
     <nav style={styles.navbar}>
       <div style={styles.container}>
         <Link to="/" style={styles.logo}>
-          SAMCT Villages
+          <img
+            src={logoImage}
+            alt="SAMCT Villages logo"
+            style={styles.logoImage}
+          />
+          <span>SAMCT Villages</span>
         </Link>
 
         <div style={styles.links}>
@@ -244,6 +250,9 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: '1.25rem',
     fontWeight: 700,
     color: '#1f2937',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
   },
   links: {
     display: 'flex',
@@ -297,5 +306,11 @@ const styles: Record<string, React.CSSProperties> = {
     color: '#374151',
     fontWeight: 500,
     whiteSpace: 'nowrap',
+  },
+
+  logoImage: {
+    width: '62px',
+    height: '62px',
+    objectFit: 'contain',
   },
 }
