@@ -7,7 +7,15 @@ export const SAMCT_VILLAGES = [
   'Matariki Lodge 476',
 ]
 
-export const SAMCT_ROLES = [
+export const SAMCT_ADMIN_ROLES = [
+  'Admin',
+  'CompanySecretary',
+  'FinancialAdministrator',
+  'Chairman',
+  'Director',
+]
+
+export const SAMCT_REGISTER_ROLES = [
   { value: 'Resident', label: 'Resident' },
   { value: 'VillageManager', label: 'Village Manager' },
   { value: 'CompanySecretary', label: 'Company Secretary' },

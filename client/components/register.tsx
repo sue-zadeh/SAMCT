@@ -1,6 +1,10 @@
 import { useState } from 'react'
 import axios from 'axios'
-import { SAMCT_ROLES, SAMCT_VILLAGES } from '../constants/samct-data'
+import {
+  SAMCT_ADMIN_ROLES,
+  SAMCT_REGISTER_ROLES,
+  SAMCT_VILLAGES,
+} from '../constants/samct-data'
 import {
   FaUser,
   FaEnvelope,
@@ -16,15 +20,16 @@ function Register() {
   const API_BASE_URL =
     import.meta.env.VITE_API_BASE_URL || 'http://localhost:5072'
 
-  const adminRoles = [
-    'Admin',
-    'CompanySecretary',
-    'FinancialAdministrator',
-    'Chairman',
-    'Director',
-  ]
+  const loggedInRole = localStorage.getItem('role') || ''
+  const loggedInVillage = localStorage.getItem('village') || SAMCT_VILLAGES[0]
 
-  const villages = ['Ngatea', 'Whitianga']
+  const isVillageManager = loggedInRole === 'VillageManager'
+  const isAdminUser = SAMCT_ADMIN_ROLES.includes(loggedInRole)
+
+  const getInitialVillage = () => {
+    if (isVillageManager) return loggedInVillage
+    return SAMCT_VILLAGES[0]
+  }
 
   const [formData, setFormData] = useState({
     userName: '',
@@ -32,7 +37,7 @@ function Register() {
     lastName: '',
     email: '',
     role: 'Resident',
-    village: SAMCT_VILLAGES[0],
+    village: getInitialVillage(),
     password: '',
     confirmPassword: '',
   })
@@ -45,17 +50,34 @@ function Register() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
-  const loggedInRole = localStorage.getItem('role')
-  const isVillageManager = loggedInRole === 'VillageManager'
-  const isAdminUser = loggedInRole ? adminRoles.includes(loggedInRole) : false
+  const roleOptions = isVillageManager
+    ? SAMCT_REGISTER_ROLES.filter((role) => role.value === 'Resident')
+    : SAMCT_REGISTER_ROLES
+
+  const villageOptions = isVillageManager
+    ? [loggedInVillage]
+    : SAMCT_VILLAGES
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    })
+    const { name, value } = e.target
+
+    if (name === 'role') {
+      setFormData((prev) => ({
+        ...prev,
+        role: value,
+        village: value === 'Resident' || value === 'VillageManager'
+          ? prev.village || getInitialVillage()
+          : '',
+      }))
+      return
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
   }
 
   const validateForm = () => {
@@ -69,6 +91,13 @@ function Register() {
       !formData.confirmPassword
     ) {
       return 'Please fill in all required fields.'
+    }
+
+    if (
+      (formData.role === 'Resident' || formData.role === 'VillageManager') &&
+      !formData.village.trim()
+    ) {
+      return 'Please select a village.'
     }
 
     if (formData.password !== formData.confirmPassword) {
@@ -86,6 +115,7 @@ function Register() {
     e.preventDefault()
 
     const error = validateForm()
+
     if (error) {
       setNotification(error)
       setIsError(true)
@@ -98,10 +128,11 @@ function Register() {
       setIsError(false)
 
       const submitData = new FormData()
-      submitData.append('UserName', formData.userName)
-      submitData.append('FirstName', formData.firstName)
-      submitData.append('LastName', formData.lastName)
-      submitData.append('Email', formData.email)
+
+      submitData.append('UserName', formData.userName.trim())
+      submitData.append('FirstName', formData.firstName.trim())
+      submitData.append('LastName', formData.lastName.trim())
+      submitData.append('Email', formData.email.trim())
       submitData.append('Role', formData.role)
       submitData.append('Village', formData.village)
       submitData.append('Password', formData.password)
@@ -129,10 +160,11 @@ function Register() {
         lastName: '',
         email: '',
         role: 'Resident',
-        village: 'Ngatea',
+        village: getInitialVillage(),
         password: '',
         confirmPassword: '',
       })
+
       setProfileImage(null)
     } catch (error: any) {
       setNotification(
@@ -243,23 +275,11 @@ function Register() {
                       value={formData.role}
                       onChange={handleChange}
                     >
-                      <option value="Resident">Resident</option>
-
-                      {!isVillageManager && (
-                        <>
-                          <option value="VillageManager">
-                            Village Manager
-                          </option>
-                          <option value="CompanySecretary">
-                            Company Secretary
-                          </option>
-                          <option value="FinancialAdministrator">
-                            Financial Administrator
-                          </option>
-                          <option value="Chairman">Chairman</option>
-                          <option value="Director">Director</option>
-                        </>
-                      )}
+                      {roleOptions.map((role) => (
+                        <option key={role.value} value={role.value}>
+                          {role.label}
+                        </option>
+                      ))}
                     </select>
                   </div>
 
@@ -273,8 +293,18 @@ function Register() {
                       name="village"
                       value={formData.village}
                       onChange={handleChange}
+                      disabled={
+                        isVillageManager ||
+                        (formData.role !== 'Resident' &&
+                          formData.role !== 'VillageManager')
+                      }
                     >
-                      {villages.map((village) => (
+                      {formData.role !== 'Resident' &&
+                        formData.role !== 'VillageManager' && (
+                          <option value="">Not village based</option>
+                        )}
+
+                      {villageOptions.map((village) => (
                         <option key={village} value={village}>
                           {village}
                         </option>
