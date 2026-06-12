@@ -1,16 +1,17 @@
 import { useEffect, useState } from 'react'
 import Navbar from './navbar'
 import { useLocation } from 'react-router-dom'
+import { SAMCT_VILLAGES } from '../constants/samct-data'
 
 function PurchaseOrders() {
   const API_BASE_URL =
     import.meta.env.VITE_API_BASE_URL || 'http://localhost:5072'
 
-  const userVillage = localStorage.getItem('village') || 'Papakura'
+  const userVillage = localStorage.getItem('village') || SAMCT_VILLAGES[0]  
+  const allVillages = SAMCT_VILLAGES
   const location = useLocation()
   const isAdmin = location.pathname.startsWith('/admin')
-
-  const allVillages = ['Papakura', 'Ngatea', 'Whitianga']
+  
   const villageOptions = isAdmin ? allVillages : [userVillage]
 
   const [orders, setOrders] = useState<any[]>([])

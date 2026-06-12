@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import axios from 'axios'
+import { SAMCT_ROLES, SAMCT_VILLAGES } from '../constants/samct-data'
 import {
   FaUser,
   FaEnvelope,
@@ -15,13 +16,23 @@ function Register() {
   const API_BASE_URL =
     import.meta.env.VITE_API_BASE_URL || 'http://localhost:5072'
 
+  const adminRoles = [
+    'Admin',
+    'CompanySecretary',
+    'FinancialAdministrator',
+    'Chairman',
+    'Director',
+  ]
+
+  const villages = ['Ngatea', 'Whitianga']
+
   const [formData, setFormData] = useState({
     userName: '',
     firstName: '',
     lastName: '',
     email: '',
     role: 'Resident',
-    village: 'Papakura',
+    village: SAMCT_VILLAGES[0],
     password: '',
     confirmPassword: '',
   })
@@ -36,6 +47,8 @@ function Register() {
 
   const loggedInRole = localStorage.getItem('role')
   const isVillageManager = loggedInRole === 'VillageManager'
+  const isAdminUser = loggedInRole ? adminRoles.includes(loggedInRole) : false
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
@@ -116,7 +129,7 @@ function Register() {
         lastName: '',
         email: '',
         role: 'Resident',
-        village: 'Papakura',
+        village: 'Ngatea',
         password: '',
         confirmPassword: '',
       })
@@ -135,13 +148,14 @@ function Register() {
     <>
       <Navbar
         userType={
-          loggedInRole === 'VillageManager'
+          isVillageManager
             ? 'villageManager'
-            : loggedInRole === 'Admin'
+            : isAdminUser
               ? 'admin'
               : 'public'
         }
       />
+
       <main className="container py-5">
         <div className="row justify-content-center">
           <div className="col-lg-6">
@@ -239,10 +253,11 @@ function Register() {
                           <option value="CompanySecretary">
                             Company Secretary
                           </option>
-                          <option value="FinancialAdvisor">
-                            Financial Advisor
+                          <option value="FinancialAdministrator">
+                            Financial Administrator
                           </option>
                           <option value="Chairman">Chairman</option>
+                          <option value="Director">Director</option>
                         </>
                       )}
                     </select>
@@ -259,9 +274,11 @@ function Register() {
                       value={formData.village}
                       onChange={handleChange}
                     >
-                      <option value="Papakura">Papakura</option>
-                      <option value="Ngatea">Ngatea</option>
-                      <option value="Whitianga">Whitianga</option>
+                      {villages.map((village) => (
+                        <option key={village} value={village}>
+                          {village}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>
