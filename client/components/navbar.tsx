@@ -16,7 +16,7 @@ export default function Navbar({ userType }: NavbarProps) {
 
   useEffect(() => {
     const checkScreen = () => {
-      setIsMobile(window.innerWidth <= 1005)
+      setIsMobile(window.innerWidth <= 1020)
       if (window.innerWidth > 1005) {
         setMenuOpen(false)
       }

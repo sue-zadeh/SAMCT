@@ -13,11 +13,7 @@ body {
   background: var(--page-bg);
   color: var(--text-main);
   font-family: "Cairo", system-ui, sans-serif; 
-  line-height: 1.8;
 
-}
-p {
-  line-height: 30px;
 }
 .navbar,
 header {
