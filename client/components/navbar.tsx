@@ -16,8 +16,8 @@ export default function Navbar({ userType }: NavbarProps) {
 
   useEffect(() => {
     const checkScreen = () => {
-      setIsMobile(window.innerWidth <= 1020)
-      if (window.innerWidth > 1005) {
+      setIsMobile(window.innerWidth <= 1190)
+      if (window.innerWidth > 1190) {
         setMenuOpen(false)
       }
     }
@@ -206,7 +206,7 @@ const styles: Record<string, React.CSSProperties> = {
   container: {
     maxWidth: '1200px',
     margin: '0 auto',
-    padding: '1rem 1.5rem',
+    padding: '1rem 1.3rem',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
