@@ -28,7 +28,7 @@ SELECT
 'Needham',
 'Amanda Needham',
 'amanda.needham@samct.co.nz',
-'$2a$11$6R8yin0ON4bCQyasBNvKTeWb4a.rXaa4r21GA/Dx3cfRU6XtUzDHe',
+'$2a$11$6R8yin0ON4bCQyasBNvKTeWb4a.rXaa4r21GA/Dx3cfRU6Xt UzDHe',
 'FinancialAdministrator',
 '',
 '',
