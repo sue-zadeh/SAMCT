@@ -20,7 +20,7 @@ function ProfileVillageEdit() {
   const [lastName, setLastName] = useState(localStorage.getItem("lastname") || "");
   const [userName, setUserName] = useState(localStorage.getItem("username") || "");
   const [email, setEmail] = useState(localStorage.getItem("email") || "");
-  const [village, setVillage] = useState(localStorage.getItem("village") || "Papakura");
+  const [village, setVillage] = useState(localStorage.getItem("village") || "Ngatea");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -122,7 +122,7 @@ function ProfileVillageEdit() {
                 value={village}
                 onChange={(e) => setVillage(e.target.value)}
               >
-                <option value="Papakura">Papakura</option>
+                {/* <option value="Papakura">Papakura</option> */}
                 <option value="Ngatea">Ngatea</option>
                 <option value="Whitianga">Whitianga</option>
               </select>

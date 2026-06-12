@@ -17,7 +17,7 @@ type UserItem = {
 
 function ManageUsersVillage() {
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5072";
-  const currentVillage = localStorage.getItem("village") || "Papakura";
+  const currentVillage = localStorage.getItem("village") || "Ngatea";
 
   const [users, setUsers] = useState<UserItem[]>([]);
   const [message, setMessage] = useState("");
@@ -206,7 +206,7 @@ function ManageUsersVillage() {
                           handleFieldChange(user.id, "village", e.target.value)
                         }
                       >
-                        <option value="Papakura">Papakura</option>
+                        {/* <option value="Papakura">Papakura</option> */}
                         <option value="Ngatea">Ngatea</option>
                         <option value="Whitianga">Whitianga</option>
                       </select>

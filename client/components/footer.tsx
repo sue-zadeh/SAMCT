@@ -42,7 +42,7 @@ function Footer() {
           <div className="col-md-4">
             <h6 className="fw-bold mb-3">Locations</h6>
             <ul className="list-unstyled text-secondary mb-0">
-              <li>Papakura</li>
+           
               <li>Ngatea</li>
               <li>Whitianga</li>
             </ul>

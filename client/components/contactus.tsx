@@ -127,7 +127,7 @@ const API_BASE_URL =
               <div className="p-4 samct-card h-100 border rounded-4 shadow-sm bg-white">
                 <h5 className="fw-bold">Village Information</h5>
                 <p className="text-secondary mb-0">
-                  Learn more about Papakura, Ngatea, and Whitianga village
+                  Learn more about Ngatea, and Whitianga village
                   options.
                 </p>
               </div>

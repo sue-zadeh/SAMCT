@@ -18,7 +18,7 @@ function ProfileResidentEdit() {
   const [firstName, setFirstName] = useState(localStorage.getItem("firstname") || "");
   const [lastName, setLastName] = useState(localStorage.getItem("lastname") || "");
   const [email, setEmail] = useState(localStorage.getItem("email") || "");
-  const [village, setVillage] = useState(localStorage.getItem("village") || "Papakura");
+  const [village, setVillage] = useState(localStorage.getItem("village") || "Ngatea");
   const userName = localStorage.getItem("username") || "";
 
   const [message, setMessage] = useState("");

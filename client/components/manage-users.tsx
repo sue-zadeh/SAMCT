@@ -184,7 +184,7 @@ function ManageUsers() {
                           handleFieldChange(user.id, "village", e.target.value)
                         }
                       >
-                        <option value="Papakura">Papakura</option>
+                        {/* <option value="Papakura">Papakura</option> */}
                         <option value="Ngatea">Ngatea</option>
                         <option value="Whitianga">Whitianga</option>
                       </select>

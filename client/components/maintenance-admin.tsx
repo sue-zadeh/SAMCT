@@ -24,7 +24,7 @@ function MaintenanceAdmin() {
     try {
       setError("");
 
-      const villages = ["Papakura", "Ngatea", "Whitianga"];
+      const villages = ["Ngatea", "Whitianga"];
 
       const allData = await Promise.all(
         villages.map(async (village) => {

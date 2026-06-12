@@ -46,7 +46,7 @@ function Marketing() {
     }
   }
 
-  const villages = ['All', 'Papakura', 'Ngatea', 'Whitianga']
+  const villages = ['All', 'Ngatea', 'Whitianga']
 
   const filteredProperties =
     selectedVillage === 'All'
@@ -85,7 +85,7 @@ function Marketing() {
             style={{ maxWidth: '850px' }}
           >
             Explore available village units, photos, and information for
-            Papakura, Ngatea, and Whitianga.
+            Ngatea, and Whitianga.
           </p>
 
           <div className="d-flex justify-content-center gap-3 flex-wrap">

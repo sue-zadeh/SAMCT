@@ -38,7 +38,7 @@ function HomeVillageManager() {
   const lastName = localStorage.getItem('lastname') || 'Manager'
   const fullName =
     localStorage.getItem('fullname') || `${firstName} ${lastName}`
-  const village = localStorage.getItem('village') || 'Papakura'
+  const village = localStorage.getItem('village') || 'Ngatea'
   const role = localStorage.getItem('role') || 'VillageManager'
 
   const savedImage =

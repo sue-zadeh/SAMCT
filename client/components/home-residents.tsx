@@ -19,7 +19,7 @@ function HomeResidents() {
     import.meta.env.VITE_API_BASE_URL || 'http://localhost:5072'
   const fullName = localStorage.getItem('fullname') || 'Resident User'
   const firstName = localStorage.getItem('firstname') || 'Resident'
-  const village = localStorage.getItem('village') || 'Papakura'
+  const village = localStorage.getItem('village') || 'Ngatea'
   const userName = localStorage.getItem('username') || ''
   const profileImageUrl =
     localStorage.getItem('profileImageUrl') || 'https://via.placeholder.com/80'

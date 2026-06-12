@@ -38,7 +38,7 @@ type UserOption = {
 
 function MyVillage() {
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5072";
-  const village = localStorage.getItem('village') || 'Papakura'
+  const village = localStorage.getItem('village') || 'Ngatea'
   const navigate = useNavigate()
 
   const [properties, setProperties] = useState<VillageProperty[]>([])
@@ -537,7 +537,7 @@ function MyVillage() {
                     className="form-control"
                     value={marketingTitle}
                     onChange={(e) => setMarketingTitle(e.target.value)}
-                    placeholder="Unit 5 - Papakura Village"
+                    placeholder="Unit 5 - Ngatea Village"
                   />
                 </div>
 

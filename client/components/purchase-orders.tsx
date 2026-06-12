@@ -1,35 +1,23 @@
 import { useEffect, useState } from 'react'
 import Navbar from './navbar'
 import { useLocation } from 'react-router-dom'
-import { SAMCT_ADMIN_ROLES, SAMCT_VILLAGES } from '../constants/samct-data'
+
 
 function PurchaseOrders() {
   const API_BASE_URL =
     import.meta.env.VITE_API_BASE_URL || 'http://localhost:5072'
 
+  const userVillage = localStorage.getItem('village') || 'Ngatea'
   const location = useLocation()
-
-  const loggedInRole = localStorage.getItem('role') || ''
-  const storedVillage = localStorage.getItem('village') || SAMCT_VILLAGES[0]
-
-  const isAdmin =
-    location.pathname.startsWith('/admin') ||
-    SAMCT_ADMIN_ROLES.includes(loggedInRole)
-
-  const userVillage = SAMCT_VILLAGES.includes(storedVillage)
-    ? storedVillage
-    : SAMCT_VILLAGES[0]
-
-  const villageOptions = isAdmin ? SAMCT_VILLAGES : [userVillage]
-
-  const getInitialVillage = () => {
-    return isAdmin ? SAMCT_VILLAGES[0] : userVillage
-  }
+  const isAdmin = location.pathname.startsWith('/admin')
+  
+  const allVillages = ['Ngatea', 'Whitianga']
+  const villageOptions = isAdmin ? allVillages : [userVillage]
 
   const [orders, setOrders] = useState<any[]>([])
   const [editingId, setEditingId] = useState<number | null>(null)
 
-  const [village, setVillage] = useState(getInitialVillage())
+  const [village, setVillage] = useState(userVillage)
   const [title, setTitle] = useState('')
   const [unitNumber, setUnitNumber] = useState('')
   const [category, setCategory] = useState('')
@@ -57,9 +45,7 @@ function PurchaseOrders() {
   async function loadOrders() {
     const url = isAdmin
       ? `${API_BASE_URL}/api/purchase-orders/admin/all`
-      : `${API_BASE_URL}/api/purchase-orders/village/${encodeURIComponent(
-          userVillage,
-        )}`
+      : `${API_BASE_URL}/api/purchase-orders/village/${userVillage}`
 
     const response = await fetch(url)
 
@@ -71,7 +57,7 @@ function PurchaseOrders() {
 
   function resetForm() {
     setEditingId(null)
-    setVillage(getInitialVillage())
+    setVillage(userVillage)
     setTitle('')
     setUnitNumber('')
     setCategory('')
@@ -84,7 +70,7 @@ function PurchaseOrders() {
 
   function handleEdit(order: any) {
     setEditingId(order.id)
-    setVillage(order.village || getInitialVillage())
+    setVillage(order.village || userVillage)
     setTitle(order.title || '')
     setUnitNumber(order.unitNumber || '')
     setCategory(order.category || '')
@@ -99,7 +85,7 @@ function PurchaseOrders() {
 
   async function handleDelete(id: number) {
     const confirmDelete = window.confirm(
-      'Are you sure you want to delete this purchase order?',
+      'Are you sure you want to delete this purchase order?'
     )
 
     if (!confirmDelete) return
@@ -124,7 +110,7 @@ function PurchaseOrders() {
       title,
       category,
       supplier,
-      estimatedCost: estimatedCost ? Number(estimatedCost) : 0,
+      estimatedCost: Number(estimatedCost),
       priority,
       status,
       notes,
@@ -366,14 +352,6 @@ function PurchaseOrders() {
                     </td>
                   </tr>
                 ))}
-
-                {orders.length === 0 && (
-                  <tr>
-                    <td colSpan={10} className="text-center text-secondary py-4">
-                      No purchase orders found.
-                    </td>
-                  </tr>
-                )}
               </tbody>
             </table>
           </div>
