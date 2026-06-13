@@ -1,10 +1,11 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
-COPY server/server.csproj ./
-RUN dotnet restore
+COPY server/server.csproj ./server/
+RUN dotnet restore ./server/server.csproj
 
-COPY . ./
+COPY server/ ./server/
+WORKDIR /src/server
 RUN dotnet publish -c Release -o /app/out
 
 FROM mcr.microsoft.com/dotnet/aspnet:9.0
