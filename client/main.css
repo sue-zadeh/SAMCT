@@ -13,8 +13,8 @@ body {
   background: var(--page-bg);
   color: var(--text-main);
   font-family: "Cairo", system-ui, sans-serif; 
-
 }
+
 .navbar,
 header {
   background: rgba(255, 255, 255, 0.94) !important;
