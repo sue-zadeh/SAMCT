@@ -26,11 +26,11 @@ function Footer() {
                   Login
                 </Link>
               </li>
-              <li className="mb-2">
+              {/* <li className="mb-2">
                 <Link to="/register" className="text-decoration-none text-dark">
                   Register
                 </Link>
-              </li>
+              </li> */}
               <li>
                 <Link to="/contactus" className="text-decoration-none text-dark">
                   Contact
