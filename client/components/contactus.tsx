@@ -109,7 +109,7 @@ function ContactUs() {
 
       <main className="container py-5">
         <section className="mb-4 samct-hero" data-aos="fade-down">
-          <div className="p-5 border rounded-4 shadow-sm text-center">
+          <div className="p-5 border rounded-4 shadow text-center">
             <p className="text-uppercase text-info fw-semibold mb-2">
               Contact SAMCT
             </p>
@@ -124,7 +124,7 @@ function ContactUs() {
         <section className="row g-4 mb-4">
           <div className="col-md-6" data-aos="fade-right">
             <Link to="/about" className="text-decoration-none text-dark">
-              <div className="p-4 samct-card h-100 border rounded-4 shadow-sm bg-white">
+              <div className="p-4 samct-card h-100 border rounded-4 shadow bg-white">
                 <h5 className="fw-bold text-center">Village Information</h5>
                 <p className="text-secondary text-center mb-0">
                   Learn more about Ngatea, and Whitianga village options.
@@ -135,7 +135,7 @@ function ContactUs() {
 
           <div className="col-md-6" data-aos="zoom-in">
             <Link to="/marketing" className="text-decoration-none text-dark">
-              <div className="p-4 samct-card h-100 border rounded-4 shadow-sm bg-white">
+              <div className="p-4 samct-card h-100 border rounded-4 shadow bg-white">
                 <h5 className="fw-bold text-center">Marketing</h5>
                 <p className="text-secondary text-center mb-0">
                   Send an enquiry about current or future retirement living
@@ -146,7 +146,7 @@ function ContactUs() {
           </div>
 
           {/* <div className="col-md-6" data-aos="fade-left">
-            <div className="p-4 samct-card h-100 border rounded-4 shadow-sm bg-white">
+            <div className="p-4 samct-card h-100 border rounded-4 shadow bg-white">
               <h5 className="fw-bold">Resident Support</h5>
               <p className="text-secondary mb-0">
                 Contact SAMCT for general questions, documents, or support.

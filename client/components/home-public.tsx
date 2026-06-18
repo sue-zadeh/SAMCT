@@ -165,11 +165,11 @@ function HomePublic() {
           </p>
 
           <div className="d-flex justify-content-center flex-wrap gap-3">
-            <Link to="/contactUs" className="btn btn-primary btn-lg">
+            <Link to="/contactUs" className="btn btn-primary btn-lg shadow">
               Contact SAMCT
             </Link>
 
-            <Link to="/marketing" className="btn btn-outline-dark btn-lg">
+            <Link to="/marketing" className="btn btn-outline-dark btn-lg shadow">
               View Marketing
             </Link>
           </div>
