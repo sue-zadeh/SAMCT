@@ -4,8 +4,8 @@ import { Link } from 'react-router-dom'
 import AOS from 'aos'
 
 function ContactUs() {
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5072";
+  const API_BASE_URL =
+    import.meta.env.VITE_API_BASE_URL || 'http://localhost:5072'
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [subject, setSubject] = useState('')
@@ -122,21 +122,20 @@ const API_BASE_URL =
         </section>
 
         <section className="row g-4 mb-4">
-          <div className="col-md-4" data-aos="fade-right">
+          <div className="col-md-6" data-aos="fade-right">
             <Link to="/about" className="text-decoration-none text-dark">
               <div className="p-4 samct-card h-100 border rounded-4 shadow-sm bg-white">
                 <h5 className="fw-bold">Village Information</h5>
                 <p className="text-secondary mb-0">
-                  Learn more about Ngatea, and Whitianga village
-                  options.
+                  Learn more about Ngatea, and Whitianga village options.
                 </p>
               </div>
             </Link>
           </div>
 
-          <div className="col-md-4" data-aos="zoom-in">
+          <div className="col-md-6" data-aos="zoom-in">
             <Link to="/marketing" className="text-decoration-none text-dark">
-              <div className="p-4 samct-card h-100">
+              <div className="p-4 samct-card h-100 border rounded-4 shadow-sm bg-white">
                 <h5 className="fw-bold">Marketing</h5>
                 <p className="text-secondary mb-0">
                   Send an enquiry about current or future retirement living
@@ -146,14 +145,14 @@ const API_BASE_URL =
             </Link>
           </div>
 
-          <div className="col-md-4" data-aos="fade-left">
+          {/* <div className="col-md-6" data-aos="fade-left">
             <div className="p-4 samct-card h-100 border rounded-4 shadow-sm bg-white">
               <h5 className="fw-bold">Resident Support</h5>
               <p className="text-secondary mb-0">
                 Contact SAMCT for general questions, documents, or support.
               </p>
             </div>
-          </div>
+          </div> */}
         </section>
 
         {(success || error) && (
