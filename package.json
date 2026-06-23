@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "aos": "^2.3.4",
@@ -19,7 +20,9 @@
     "react-router-dom": "^7.14.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.0",
     "@types/aos": "^3.0.8",
+    "@types/node": "^26.0.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",

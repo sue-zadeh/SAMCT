@@ -205,7 +205,7 @@ namespace server.Controllers
         [HttpGet("summary/admin")]
         public async Task<IActionResult> GetAdminSummary()
         {
-            var villages = new[] { "Papakura", "Ngatea", "Whitianga" };
+            var villages = new[] {"Ngatea", "Whitianga" };
             var result = new List<object>();
 
             foreach (var village in villages)

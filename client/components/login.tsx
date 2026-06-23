@@ -91,11 +91,13 @@ function Login({ onLoginSuccess }: LoginProps) {
 
               <form onSubmit={handleLogin}>
                 <div className="mb-3">
-                  <label className="form-label fw-semibold">
+                  <label className="form-label fw-semibold" htmlFor="username">
                     <FaUser className="me-2" />
                     Username
                   </label>
                   <input
+                    id="username"
+                    name="username"
                     type="text"
                     className="form-control"
                     value={userName}
@@ -105,13 +107,15 @@ function Login({ onLoginSuccess }: LoginProps) {
                 </div>
 
                 <div className="mb-3">
-                  <label className="form-label fw-semibold">
+                  <label className="form-label fw-semibold" htmlFor="password">
                     <FaLock className="me-2" />
                     Password
                   </label>
 
                   <div className="input-group">
                     <input
+                    id="password"
+                    name="password"
                       type={showPassword ? "text" : "password"}
                       className="form-control"
                       value={password}

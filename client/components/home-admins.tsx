@@ -255,7 +255,10 @@ function HomeAdmins() {
                 <h2 className="fw-bold mb-0">Village Maintenance Status</h2>
               </div>
 
-              <Link to="/admin/maintenance" className="btn btn-outline-primary">
+              <Link
+                to="/admin/maintenance"
+                className="btn btn-outline-primary shadow"
+              >
                 View Maintenance
               </Link>
             </div>
