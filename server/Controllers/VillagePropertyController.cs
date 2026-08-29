@@ -277,12 +277,12 @@ public class VillagePropertyController(
     private static string DecodeVillage(string village) =>
         Uri.UnescapeDataString(village).Trim();
 
-    private static bool ParseBoolean(string value) =>
+    private static bool ParseBoolean(string? value) =>
         bool.TryParse(value, out var parsed) && parsed;
 
-    private static int ParseResidentCount(string value) =>
+    private static int ParseResidentCount(string? value) =>
         int.TryParse(value, out var count) ? Math.Clamp(count, 0, 20) : 0;
 
-    private static bool ValidText(string value, int maxLength) =>
+    private static bool ValidText(string? value, int maxLength) =>
         !string.IsNullOrWhiteSpace(value) && value.Trim().Length <= maxLength;
 }

@@ -38,9 +38,9 @@ public class DocumentNoticeController(
     [Authorize(Policy = SecurityPolicies.AdminOnly)]
     public async Task<IActionResult> GetAllDocuments()
     {
-        return Ok(await ProjectDocuments(context.DocumentNotices)
-            .OrderByDescending(document => document.CreatedAt)
-            .ToListAsync());
+        var query = context.DocumentNotices
+            .OrderByDescending(document => document.CreatedAt);
+        return Ok(await ProjectDocuments(query).ToListAsync());
     }
 
     [HttpGet("village/{village}")]
@@ -50,10 +50,10 @@ public class DocumentNoticeController(
         var decodedVillage = DecodeVillage(village);
         if (!User.CanAccessVillage(decodedVillage)) return Forbid();
 
-        return Ok(await ProjectDocuments(context.DocumentNotices
-                .Where(document => document.Village == decodedVillage))
-            .OrderByDescending(document => document.CreatedAt)
-            .ToListAsync());
+        var query = context.DocumentNotices
+            .Where(document => document.Village == decodedVillage)
+            .OrderByDescending(document => document.CreatedAt);
+        return Ok(await ProjectDocuments(query).ToListAsync());
     }
 
     [HttpGet("resident/{village}")]
@@ -62,11 +62,11 @@ public class DocumentNoticeController(
         var decodedVillage = DecodeVillage(village);
         if (!CanReadResidentDocuments(decodedVillage)) return Forbid();
 
-        return Ok(await ProjectDocuments(context.DocumentNotices
-                .Where(document =>
-                    document.Village == decodedVillage && document.IsVisibleToResidents))
-            .OrderByDescending(document => document.CreatedAt)
-            .ToListAsync());
+        var query = context.DocumentNotices
+            .Where(document =>
+                document.Village == decodedVillage && document.IsVisibleToResidents)
+            .OrderByDescending(document => document.CreatedAt);
+        return Ok(await ProjectDocuments(query).ToListAsync());
     }
 
     [HttpPost]

@@ -21,11 +21,11 @@ namespace server.Services
             string message
         )
         {
-            var smtpHost = _configuration["EmailSettings:SmtpHost"];
+            var smtpHost = RequiredSetting("EmailSettings:SmtpHost");
             var smtpPort = int.Parse(_configuration["EmailSettings:SmtpPort"] ?? "587");
-            var smtpUser = _configuration["EmailSettings:SmtpUser"];
-            var smtpPassword = _configuration["EmailSettings:SmtpPassword"];
-            var toEmail = _configuration["EmailSettings:ToEmail"];
+            var smtpUser = RequiredSetting("EmailSettings:SmtpUser");
+            var smtpPassword = RequiredSetting("EmailSettings:SmtpPassword");
+            var toEmail = RequiredSetting("EmailSettings:ToEmail");
 
             var emailMessage = new MimeMessage();
 
@@ -58,10 +58,10 @@ Message:
 
         public async Task SendPasswordResetEmail(string toEmail, string resetLink)
         {
-            var smtpHost = _configuration["EmailSettings:SmtpHost"];
+            var smtpHost = RequiredSetting("EmailSettings:SmtpHost");
             var smtpPort = int.Parse(_configuration["EmailSettings:SmtpPort"] ?? "587");
-            var smtpUser = _configuration["EmailSettings:SmtpUser"];
-            var smtpPassword = _configuration["EmailSettings:SmtpPassword"];
+            var smtpUser = RequiredSetting("EmailSettings:SmtpUser");
+            var smtpPassword = RequiredSetting("EmailSettings:SmtpPassword");
 
             var emailMessage = new MimeMessage();
 
@@ -87,5 +87,10 @@ $@"
             await smtp.SendAsync(emailMessage);
             await smtp.DisconnectAsync(true);
         }
+
+        private string RequiredSetting(string key) =>
+            !string.IsNullOrWhiteSpace(_configuration[key])
+                ? _configuration[key]!
+                : throw new InvalidOperationException($"{key} is not configured.");
     }
 }
