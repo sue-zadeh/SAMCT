@@ -32,4 +32,5 @@ export async function login(page: Page, username: string, password: string) {
     .fill(password)
 
   await page.getByRole('button', { name: /^login$/i }).click()
+  await page.waitForURL((url) => url.pathname !== '/login')
 }
