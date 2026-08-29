@@ -28,7 +28,7 @@ function ProfileResident() {
 
   const loadProfile = async () => {
     try {
-      const username = localStorage.getItem("username") || "";
+      const username = sessionStorage.getItem("username") || "";
       if (!username) return;
 
       const response = await axios.get(`${API_BASE_URL}/api/users/profile/${username}`);
@@ -43,14 +43,14 @@ function ProfileResident() {
       setRole(user.role || "");
       setProfileImageUrl(user.profileImageUrl || "");
 
-      localStorage.setItem("username", user.userName || "");
-      localStorage.setItem("firstname", user.firstName || "");
-      localStorage.setItem("lastname", user.lastName || "");
-      localStorage.setItem("fullname", user.fullName || "");
-      localStorage.setItem("email", user.email || "");
-      localStorage.setItem("role", user.role || "");
-      localStorage.setItem("village", user.village || "");
-      localStorage.setItem("profileImageUrl", user.profileImageUrl || "");
+      sessionStorage.setItem("username", user.userName || "");
+      sessionStorage.setItem("firstname", user.firstName || "");
+      sessionStorage.setItem("lastname", user.lastName || "");
+      sessionStorage.setItem("fullname", user.fullName || "");
+      sessionStorage.setItem("email", user.email || "");
+      sessionStorage.setItem("role", user.role || "");
+      sessionStorage.setItem("village", user.village || "");
+      sessionStorage.setItem("profileImageUrl", user.profileImageUrl || "");
     } catch {
       setMessage("Failed to load profile.");
     }
@@ -79,7 +79,7 @@ function ProfileResident() {
     formData.append("file", file);
 
     try {
-      const username = localStorage.getItem("username") || userName || "";
+      const username = sessionStorage.getItem("username") || userName || "";
 
       const response = await axios.post(
         `${API_BASE_URL}/api/users/profile-image`,
@@ -103,14 +103,14 @@ function ProfileResident() {
       setVillage(updatedUser.village || "");
       setRole(updatedUser.role || "");
 
-      localStorage.setItem("username", updatedUser.userName || "");
-      localStorage.setItem("firstname", updatedUser.firstName || "");
-      localStorage.setItem("lastname", updatedUser.lastName || "");
-      localStorage.setItem("fullname", updatedUser.fullName || "");
-      localStorage.setItem("email", updatedUser.email || "");
-      localStorage.setItem("role", updatedUser.role || "");
-      localStorage.setItem("village", updatedUser.village || "");
-      localStorage.setItem("profileImageUrl", updatedUser.profileImageUrl || "");
+      sessionStorage.setItem("username", updatedUser.userName || "");
+      sessionStorage.setItem("firstname", updatedUser.firstName || "");
+      sessionStorage.setItem("lastname", updatedUser.lastName || "");
+      sessionStorage.setItem("fullname", updatedUser.fullName || "");
+      sessionStorage.setItem("email", updatedUser.email || "");
+      sessionStorage.setItem("role", updatedUser.role || "");
+      sessionStorage.setItem("village", updatedUser.village || "");
+      sessionStorage.setItem("profileImageUrl", updatedUser.profileImageUrl || "");
 
       setMessage("Profile image updated successfully.");
     } catch (error: any) {

@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import Navbar from "./navbar";
 import { useEffect } from 'react'
 import AOS from 'aos'
+import Seo from './seo'
 
 function HomePublic() {
   useEffect(() => {
@@ -13,6 +14,11 @@ function HomePublic() {
 }, [])
   return (
     <>
+      <Seo
+        title="SAMCT Villages | Retirement village information"
+        description="Learn about SAMCT retirement village communities, view public availability information, or securely access resident and staff services."
+        path="/"
+      />
       <Navbar userType="public" />
       
     <main>

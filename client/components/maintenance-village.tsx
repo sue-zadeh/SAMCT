@@ -19,8 +19,8 @@ type MaintenanceRequest = {
 
 function MaintenanceVillage() {
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5072";
-  const village = localStorage.getItem('village') || 'Ngatea'
-  const managerUserName = localStorage.getItem('username') || ''
+  const village = sessionStorage.getItem('village') || 'Ngatea'
+  const managerUserName = sessionStorage.getItem('username') || ''
 
   const [requests, setRequests] = useState<MaintenanceRequest[]>([])
   const [answers, setAnswers] = useState<Record<number, string>>({})

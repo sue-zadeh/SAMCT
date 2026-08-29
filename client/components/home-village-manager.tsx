@@ -34,15 +34,15 @@ type DocumentNotice = {
 function HomeVillageManager() {
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5072";
 
-  const firstName = localStorage.getItem('firstname') || 'Village'
-  const lastName = localStorage.getItem('lastname') || 'Manager'
+  const firstName = sessionStorage.getItem('firstname') || 'Village'
+  const lastName = sessionStorage.getItem('lastname') || 'Manager'
   const fullName =
-    localStorage.getItem('fullname') || `${firstName} ${lastName}`
-  const village = localStorage.getItem('village') || 'Ngatea'
-  const role = localStorage.getItem('role') || 'VillageManager'
+    sessionStorage.getItem('fullname') || `${firstName} ${lastName}`
+  const village = sessionStorage.getItem('village') || 'Ngatea'
+  const role = sessionStorage.getItem('role') || 'VillageManager'
 
   const savedImage =
-    localStorage.getItem('profileImageUrl') || 'https://via.placeholder.com/100'
+    sessionStorage.getItem('profileImageUrl') || 'https://via.placeholder.com/100'
 
   const profileImageUrl = savedImage.startsWith('http')
     ? `${savedImage}?t=${Date.now()}`

@@ -29,7 +29,7 @@ function ProfileVillage() {
 
   const loadProfile = async () => {
     try {
-      const username = localStorage.getItem("username") || "";
+      const username = sessionStorage.getItem("username") || "";
       if (!username) return;
 
       const response = await axios.get(`${API_BASE_URL}/api/users/profile/${username}`);
@@ -71,7 +71,7 @@ function ProfileVillage() {
     formData.append("file", file);
 
     try {
-      const username = localStorage.getItem("username") || userName || "";
+      const username = sessionStorage.getItem("username") || userName || "";
 
       const response = await axios.post(
         `${API_BASE_URL}/api/users/profile-image`,

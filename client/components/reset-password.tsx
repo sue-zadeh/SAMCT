@@ -3,9 +3,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import Navbar from "./navbar";
 import { FaEye, FaEyeSlash, FaLock } from "react-icons/fa";
+import { API_BASE_URL } from "../lib/api";
+import Seo from "./seo";
 
 function ResetPassword() {
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5072";
   const navigate = useNavigate();
   const { token } = useParams();
 
@@ -33,6 +34,17 @@ function ResetPassword() {
         return;
       }
 
+      if (
+        newPassword.length < 12 ||
+        !/[a-z]/.test(newPassword) ||
+        !/[A-Z]/.test(newPassword) ||
+        !/\d/.test(newPassword) ||
+        !/[^A-Za-z0-9]/.test(newPassword)
+      ) {
+        setError("Use at least 12 characters with upper/lowercase, a number and a symbol.");
+        return;
+      }
+
       const response = await axios.put(`${API_BASE_URL}/api/reset-password`, {
         token,
         newPassword,
@@ -50,6 +62,12 @@ function ResetPassword() {
 
   return (
     <>
+      <Seo
+        title="Choose a new portal password | SAMCT Villages"
+        description="Complete a secure SAMCT portal password reset."
+        path="/reset-password"
+        noIndex
+      />
       <Navbar userType="public" />
 
       <main className="container py-5">

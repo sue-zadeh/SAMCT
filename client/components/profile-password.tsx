@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FaEye, FaEyeSlash, FaLock } from "react-icons/fa";
 import Navbar from "./navbar";
+import { clearSession } from "../lib/auth";
+import { API_BASE_URL } from "../lib/api";
 
 type UserType = "resident" | "admin" | "villageManager";
 
@@ -14,8 +16,6 @@ type ProfilePasswordProps = {
 
 function ProfilePassword({ userType, backPath, title }: ProfilePasswordProps) {
   const navigate = useNavigate();
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5072";
-
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -41,14 +41,24 @@ function ProfilePassword({ userType, backPath, title }: ProfilePasswordProps) {
         return;
       }
 
-      const userName = localStorage.getItem("username") || "";
+      if (
+        newPassword.length < 12 ||
+        !/[a-z]/.test(newPassword) ||
+        !/[A-Z]/.test(newPassword) ||
+        !/\d/.test(newPassword) ||
+        !/[^A-Za-z0-9]/.test(newPassword)
+      ) {
+        setError("Use at least 12 characters with upper/lowercase, a number and a symbol.");
+        return;
+      }
+
+      const userName = sessionStorage.getItem("username") || "";
       if (!userName) {
         setError("Username not found.");
         return;
       }
 
       const response = await axios.put(`${API_BASE_URL}/api/users/password`, {
-        userName,
         currentPassword,
         newPassword,
       });
@@ -59,9 +69,8 @@ function ProfilePassword({ userType, backPath, title }: ProfilePasswordProps) {
       setNewPassword("");
       setConfirmPassword("");
 
-      setTimeout(() => {
-        navigate(backPath);
-      }, 700);
+      clearSession();
+      setTimeout(() => navigate("/login"), 700);
     } catch (error: any) {
       setError(error?.response?.data?.message || "Failed to update password.");
     }

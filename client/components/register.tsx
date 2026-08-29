@@ -10,18 +10,16 @@ import {
   FaBuilding,
 } from 'react-icons/fa'
 import Navbar from './navbar'
+import { API_BASE_URL } from '../lib/api'
 
 function Register() {
-  const API_BASE_URL =
-    import.meta.env.VITE_API_BASE_URL || 'http://localhost:5072'
-
   const [formData, setFormData] = useState({
     userName: '',
     firstName: '',
     lastName: '',
     email: '',
     role: 'Resident',
-    village: 'ngatea',
+    village: 'Ngatea',
     password: '',
     confirmPassword: '',
   })
@@ -34,8 +32,6 @@ function Register() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
-  const loggedInRole = localStorage.getItem('role')
-  const isVillageManager = loggedInRole === 'VillageManager'
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
@@ -62,8 +58,14 @@ function Register() {
       return 'Passwords do not match.'
     }
 
-    if (formData.password.length < 6) {
-      return 'Password should be at least 6 characters.'
+    if (
+      formData.password.length < 12 ||
+      !/[a-z]/.test(formData.password) ||
+      !/[A-Z]/.test(formData.password) ||
+      !/\d/.test(formData.password) ||
+      !/[^A-Za-z0-9]/.test(formData.password)
+    ) {
+      return 'Use at least 12 characters with upper/lowercase, a number and a symbol.'
     }
 
     return ''
@@ -133,15 +135,7 @@ function Register() {
 
   return (
     <>
-      <Navbar
-        userType={
-          loggedInRole === 'VillageManager'
-            ? 'villageManager'
-            : loggedInRole === 'Admin'
-              ? 'admin'
-              : 'public'
-        }
-      />
+      <Navbar userType="admin" />
       <main className="container py-5">
         <div className="row justify-content-center">
           <div className="col-lg-6">
@@ -170,6 +164,8 @@ function Register() {
                     name="userName"
                     value={formData.userName}
                     onChange={handleChange}
+                    autoComplete="off"
+                    required
                   />
                 </div>
 
@@ -185,6 +181,8 @@ function Register() {
                       name="firstName"
                       value={formData.firstName}
                       onChange={handleChange}
+                      autoComplete="given-name"
+                      required
                     />
                   </div>
 
@@ -199,6 +197,8 @@ function Register() {
                       name="lastName"
                       value={formData.lastName}
                       onChange={handleChange}
+                      autoComplete="family-name"
+                      required
                     />
                   </div>
                 </div>
@@ -214,6 +214,8 @@ function Register() {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
+                    autoComplete="email"
+                    required
                   />
                 </div>
 
@@ -230,21 +232,12 @@ function Register() {
                       onChange={handleChange}
                     >
                       <option value="Resident">Resident</option>
-
-                      {!isVillageManager && (
-                        <>
-                          <option value="VillageManager">
-                            Village Manager
-                          </option>
-                          <option value="CompanySecretary">
-                            Company Secretary
-                          </option>
-                          <option value="FinancialAdvisor">
-                            Financial Advisor
-                          </option>
-                          <option value="Chairman">Chairman</option>
-                        </>
-                      )}
+                      <option value="VillageManager">Village Manager</option>
+                      <option value="CompanySecretary">Company Secretary</option>
+                      <option value="FinancialAdvisor">Financial Advisor</option>
+                      <option value="FinancialAdministrator">Financial Administrator</option>
+                      <option value="Chairman">Chairman</option>
+                      <option value="Director">Director</option>
                     </select>
                   </div>
 
@@ -259,7 +252,6 @@ function Register() {
                       value={formData.village}
                       onChange={handleChange}
                     >
-                      {/* <option value="Papakura">Papakura</option> */}
                       <option value="Ngatea">Ngatea</option>
                       <option value="Whitianga">Whitianga</option>
                     </select>
@@ -274,7 +266,7 @@ function Register() {
                   <input
                     type="file"
                     className="form-control"
-                    accept="image/*"
+                    accept="image/jpeg,image/png,image/webp"
                     onChange={(e) =>
                       setProfileImage(e.target.files?.[0] || null)
                     }
@@ -293,6 +285,8 @@ function Register() {
                       name="password"
                       value={formData.password}
                       onChange={handleChange}
+                      autoComplete="new-password"
+                      required
                     />
                     <button
                       type="button"
@@ -316,6 +310,8 @@ function Register() {
                       name="confirmPassword"
                       value={formData.confirmPassword}
                       onChange={handleChange}
+                      autoComplete="new-password"
+                      required
                     />
                     <button
                       type="button"

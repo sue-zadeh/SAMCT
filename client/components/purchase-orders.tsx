@@ -7,7 +7,7 @@ function PurchaseOrders() {
   const API_BASE_URL =
     import.meta.env.VITE_API_BASE_URL || 'http://localhost:5072'
 
-  const userVillage = localStorage.getItem('village') || 'Ngatea'
+  const userVillage = sessionStorage.getItem('village') || 'Ngatea'
   const location = useLocation()
   const isAdmin = location.pathname.startsWith('/admin')
   
@@ -114,7 +114,7 @@ function PurchaseOrders() {
       priority,
       status,
       notes,
-      createdByUserName: localStorage.getItem('username') || '',
+      createdByUserName: sessionStorage.getItem('username') || '',
     }
 
     const url = editingId

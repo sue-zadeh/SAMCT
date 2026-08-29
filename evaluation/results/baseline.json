@@ -1,0 +1,95 @@
+{
+  "label": "baseline",
+  "evaluatedRef": "0529271",
+  "primaryMetric": "security control cases passed",
+  "passed": 0,
+  "total": 17,
+  "scorePercent": 0,
+  "cases": [
+    {
+      "id": "AUTH-01",
+      "title": "Authentication middleware is configured and activated",
+      "pass": false
+    },
+    {
+      "id": "AUTH-02",
+      "title": "JWT issuer, audience, signature and lifetime are validated",
+      "pass": false
+    },
+    {
+      "id": "AUTH-03",
+      "title": "Admin-only registration is enforced by the API",
+      "pass": false
+    },
+    {
+      "id": "AUTH-04",
+      "title": "Registration is absent from public and manager navigation",
+      "pass": false
+    },
+    {
+      "id": "AUTH-05",
+      "title": "Private React routes have role guards",
+      "pass": false
+    },
+    {
+      "id": "AUTH-06",
+      "title": "Password and role changes invalidate old access tokens",
+      "pass": false
+    },
+    {
+      "id": "AUTH-07",
+      "title": "Login and password recovery are rate limited",
+      "pass": false
+    },
+    {
+      "id": "AUTH-08",
+      "title": "Reset tokens are random, hashed, short-lived and non-enumerating",
+      "pass": false
+    },
+    {
+      "id": "DATA-01",
+      "title": "Maintenance resources require authentication",
+      "pass": false
+    },
+    {
+      "id": "DATA-02",
+      "title": "Document resources require authentication and village scope",
+      "pass": false
+    },
+    {
+      "id": "DATA-03",
+      "title": "Public marketing DTO excludes resident and document fields",
+      "pass": false
+    },
+    {
+      "id": "DATA-04",
+      "title": "Purchase orders require manager or admin authorization",
+      "pass": false
+    },
+    {
+      "id": "DATA-05",
+      "title": "Non-marketing uploads require an authenticated request",
+      "pass": false
+    },
+    {
+      "id": "HTTP-01",
+      "title": "Security headers and API no-store caching are applied",
+      "pass": false
+    },
+    {
+      "id": "HTTP-02",
+      "title": "CORS uses an explicit origin allow-list",
+      "pass": false
+    },
+    {
+      "id": "PRIV-01",
+      "title": "Secrets, personal uploads and real-user seed are not tracked",
+      "pass": false
+    },
+    {
+      "id": "CI-01",
+      "title": "CI runs build, audit, secret scan, unit and integration tests",
+      "pass": false
+    }
+  ]
+}

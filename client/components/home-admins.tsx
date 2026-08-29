@@ -30,12 +30,12 @@ type VillageProperty = {
 function HomeAdmins() {
   const API_BASE_URL =
     import.meta.env.VITE_API_BASE_URL || 'http://localhost:5072'
-  const fullName = localStorage.getItem('fullname') || 'Admin'
-  const firstName = localStorage.getItem('firstname') || 'Admin'
-  const role = localStorage.getItem('role') || 'Administrator'
+  const fullName = sessionStorage.getItem('fullname') || 'Admin'
+  const firstName = sessionStorage.getItem('firstname') || 'Admin'
+  const role = sessionStorage.getItem('role') || 'Administrator'
 
   const savedImage =
-    localStorage.getItem('profileImageUrl') || 'https://via.placeholder.com/100'
+    sessionStorage.getItem('profileImageUrl') || 'https://via.placeholder.com/100'
 
   const profileImageSrc = savedImage.startsWith('http')
     ? `${savedImage}?t=${Date.now()}`

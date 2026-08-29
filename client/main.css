@@ -12,7 +12,23 @@
 body {
   background: var(--page-bg);
   color: var(--text-main);
-  font-family: "Cairo", system-ui, sans-serif; 
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.6;
+}
+
+h1,
+h2,
+h3 {
+  letter-spacing: -0.025em;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.35);
+  outline-offset: 3px;
 }
 
 .navbar,
@@ -59,12 +75,44 @@ header {
   animation: softFloat 1.1s ease both;
 }
 
-.samct-card {
-  cursor: pointer;
-}
-
 .samct-card:hover {
   transform: translateY(-7px) scale(1.01);
+}
+
+.about-hero {
+  background:
+    radial-gradient(circle at 85% 20%, rgba(37, 99, 235, 0.14), transparent 34%),
+    linear-gradient(180deg, #fff 0%, var(--soft-blue) 100%);
+  border-bottom: 1px solid var(--border);
+}
+
+.eyebrow {
+  color: var(--primary);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.trust-panel {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  box-shadow: 0 18px 50px rgba(15, 23, 42, 0.1);
+  padding: 2rem;
+}
+
+.trust-panel li {
+  padding-left: 1.7rem;
+  position: relative;
+}
+
+.trust-panel li::before {
+  color: var(--primary);
+  content: "✓";
+  font-weight: 800;
+  left: 0;
+  position: absolute;
 }
 
 .samct-button:hover {
@@ -85,5 +133,16 @@ header {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
   }
 }

@@ -237,6 +237,37 @@ namespace server.Migrations
                     b.ToTable("PurchaseOrders");
                 });
 
+            modelBuilder.Entity("server.Models.RevokedToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("ExpiresAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("JwtId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("RevokedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExpiresAtUtc");
+
+                    b.HasIndex("JwtId")
+                        .IsUnique();
+
+                    b.ToTable("RevokedTokens");
+                });
+
             modelBuilder.Entity("server.Models.User", b =>
                 {
                     b.Property<int>("Id")
@@ -281,6 +312,9 @@ namespace server.Migrations
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int>("TokenVersion")
+                        .HasColumnType("integer");
 
                     b.Property<string>("UserName")
                         .IsRequired()

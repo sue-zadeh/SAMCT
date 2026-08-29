@@ -6,7 +6,7 @@ export default defineConfig({
   retries: 0,
 
   use: {
-    baseURL: process.env.BASE_URL || 'https://samct-production.up.railway.app',
+    baseURL: process.env.BASE_URL || 'http://127.0.0.1:5173',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
@@ -17,4 +17,11 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
+
+  webServer: {
+    command: 'npm run dev -- --host 127.0.0.1',
+    url: 'http://127.0.0.1:5173',
+    reuseExistingServer: !process.env.CI,
+    timeout: 120_000,
+  },
 })

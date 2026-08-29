@@ -15,11 +15,11 @@ function ProfileResidentEdit() {
   const navigate = useNavigate();
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5072";
 
-  const [firstName, setFirstName] = useState(localStorage.getItem("firstname") || "");
-  const [lastName, setLastName] = useState(localStorage.getItem("lastname") || "");
-  const [email, setEmail] = useState(localStorage.getItem("email") || "");
-  const [village, setVillage] = useState(localStorage.getItem("village") || "Ngatea");
-  const userName = localStorage.getItem("username") || "";
+  const [firstName, setFirstName] = useState(sessionStorage.getItem("firstname") || "");
+  const [lastName, setLastName] = useState(sessionStorage.getItem("lastname") || "");
+  const [email, setEmail] = useState(sessionStorage.getItem("email") || "");
+  const [village, setVillage] = useState(sessionStorage.getItem("village") || "Ngatea");
+  const userName = sessionStorage.getItem("username") || "";
 
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -40,13 +40,13 @@ function ProfileResidentEdit() {
 
       const updatedUser = response.data;
 
-      localStorage.setItem("firstname", updatedUser.firstName || "");
-      localStorage.setItem("lastname", updatedUser.lastName || "");
-      localStorage.setItem("fullname", updatedUser.fullName || "");
-      localStorage.setItem("email", updatedUser.email || "");
-      localStorage.setItem("role", updatedUser.role || "");
-      localStorage.setItem("village", updatedUser.village || "");
-      localStorage.setItem("profileImageUrl", updatedUser.profileImageUrl || "");
+      sessionStorage.setItem("firstname", updatedUser.firstName || "");
+      sessionStorage.setItem("lastname", updatedUser.lastName || "");
+      sessionStorage.setItem("fullname", updatedUser.fullName || "");
+      sessionStorage.setItem("email", updatedUser.email || "");
+      sessionStorage.setItem("role", updatedUser.role || "");
+      sessionStorage.setItem("village", updatedUser.village || "");
+      sessionStorage.setItem("profileImageUrl", updatedUser.profileImageUrl || "");
 
       setMessage("Profile updated successfully.");
 

@@ -1,8 +1,9 @@
 import { test, expect } from '@playwright/test'
-import { login } from './helpers'
+import { login, testAccount } from './helpers'
 
 test('resident can login and open maintenance page', async ({ page }) => {
-  await login(page, 'resident1', '123Suezx@')
+  const account = testAccount('resident')
+  await login(page, account.username, account.password)
 
   await expect(page).toHaveURL(/resident/)
 

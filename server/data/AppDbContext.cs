@@ -15,5 +15,18 @@ namespace server.Data
         public DbSet<DocumentNotice> DocumentNotices { get; set; }
         public DbSet<VillageProperty> VillageProperties { get; set; }
         public DbSet<PurchaseOrder> PurchaseOrders { get; set; }
+        public DbSet<RevokedToken> RevokedTokens { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<RevokedToken>()
+                .HasIndex(token => token.JwtId)
+                .IsUnique();
+
+            modelBuilder.Entity<RevokedToken>()
+                .HasIndex(token => token.ExpiresAtUtc);
+        }
     }
 }

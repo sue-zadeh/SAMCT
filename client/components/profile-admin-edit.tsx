@@ -14,11 +14,11 @@ function ProfileAdminEdit() {
   const navigate = useNavigate();
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5072";
 
-  const [firstName, setFirstName] = useState(localStorage.getItem("firstname") || "");
-  const [lastName, setLastName] = useState(localStorage.getItem("lastname") || "");
-  const [userName, setUserName] = useState(localStorage.getItem("username") || "");
-  const [email, setEmail] = useState(localStorage.getItem("email") || "");
-  const [village, setVillage] = useState(localStorage.getItem("village") || "Ngatea");
+  const [firstName, setFirstName] = useState(sessionStorage.getItem("firstname") || "");
+  const [lastName, setLastName] = useState(sessionStorage.getItem("lastname") || "");
+  const [userName, setUserName] = useState(sessionStorage.getItem("username") || "");
+  const [email, setEmail] = useState(sessionStorage.getItem("email") || "");
+  const [village, setVillage] = useState(sessionStorage.getItem("village") || "Ngatea");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -27,7 +27,7 @@ function ProfileAdminEdit() {
       setError("");
       setMessage("");
 
-      const currentUsername = localStorage.getItem("username") || "";
+      const currentUsername = sessionStorage.getItem("username") || "";
 
       const response = await axios.put(`${API_BASE_URL}/api/users/profile`, {
         currentUsername,
@@ -40,14 +40,14 @@ function ProfileAdminEdit() {
 
       const updatedUser = response.data;
 
-      localStorage.setItem("username", updatedUser.userName || "");
-      localStorage.setItem("firstname", updatedUser.firstName || "");
-      localStorage.setItem("lastname", updatedUser.lastName || "");
-      localStorage.setItem("fullname", updatedUser.fullName || "");
-      localStorage.setItem("email", updatedUser.email || "");
-      localStorage.setItem("role", updatedUser.role || "");
-      localStorage.setItem("village", updatedUser.village || "");
-      localStorage.setItem("profileImageUrl", updatedUser.profileImageUrl || "");
+      sessionStorage.setItem("username", updatedUser.userName || "");
+      sessionStorage.setItem("firstname", updatedUser.firstName || "");
+      sessionStorage.setItem("lastname", updatedUser.lastName || "");
+      sessionStorage.setItem("fullname", updatedUser.fullName || "");
+      sessionStorage.setItem("email", updatedUser.email || "");
+      sessionStorage.setItem("role", updatedUser.role || "");
+      sessionStorage.setItem("village", updatedUser.village || "");
+      sessionStorage.setItem("profileImageUrl", updatedUser.profileImageUrl || "");
 
       setMessage("Profile updated successfully.");
 

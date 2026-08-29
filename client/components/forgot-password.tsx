@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import axios from 'axios'
 import Navbar from './navbar'
+import { API_BASE_URL } from '../lib/api'
+import Seo from './seo'
 
 function ForgotPassword() {
-  const API_BASE_URL =
-    import.meta.env.VITE_API_BASE_URL || 'http://localhost:5072'
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
@@ -32,6 +32,12 @@ function ForgotPassword() {
 
   return (
     <>
+      <Seo
+        title="Reset portal password | SAMCT Villages"
+        description="Request a secure SAMCT portal password reset link."
+        path="/forgot-password"
+        noIndex
+      />
       <Navbar userType="public" />
 
       <main className="container py-5">

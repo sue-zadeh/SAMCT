@@ -1,8 +1,9 @@
 import { test, expect } from '@playwright/test'
-import { login } from './helpers'
+import { login, testAccount } from './helpers'
 
 test('village manager can open main pages', async ({ page }) => {
-  await login(page, 'village1', '123Suezx@')
+  const account = testAccount('manager')
+  await login(page, account.username, account.password)
 
   await expect(page).toHaveURL(/village-manager/)
 

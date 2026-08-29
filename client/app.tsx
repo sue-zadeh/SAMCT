@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom'
+import { Navigate, Routes, Route } from 'react-router-dom'
 
 import HomePublic from './components/home-public'
 import HomeAdmins from './components/home-admins'
@@ -37,6 +37,12 @@ import MaintenanceAdmin from './components/maintenance-admin'
 import AdminVillageProperties from './components/admin-village-properties'
 
 import MyVillage from './components/my-village'
+import ProtectedRoute from './components/protected-route'
+import {
+  ADMIN_ROLES,
+  MANAGER_ROLES,
+  RESIDENT_ROLES,
+} from './lib/auth'
 // forgot password
 import ForgotPassword from "./components/forgot-password";
 import ResetPassword from "./components/reset-password";
@@ -54,94 +60,85 @@ function App() {
 
         {/* Auth */}
         <Route path="/login" element={<Login onLoginSuccess={() => {}} />} />
-        <Route path="/register" element={<Register />} />
+        <Route element={<ProtectedRoute allowedRoles={RESIDENT_ROLES} />}>
+          <Route path="/resident" element={<HomeResidents />} />
+          <Route path="/resident/profile" element={<ProfileResident />} />
+          <Route path="/resident/profile/edit" element={<ProfileResidentEdit />} />
+          <Route path="/resident/maintenance" element={<ResidentMaintenance />} />
+          <Route path="/resident/documents" element={<DocumentsResident />} />
+          <Route
+            path="/resident/profile/password"
+            element={
+              <ProfilePassword
+                userType="resident"
+                backPath="/resident/profile"
+                title="Change Resident Password"
+              />
+            }
+          />
+        </Route>
 
-        {/* Resident */}
-        <Route path="/resident" element={<HomeResidents />} />
-        <Route path="/resident/profile" element={<ProfileResident />} />
-        <Route
-          path="/resident/profile/edit"
-          element={<ProfileResidentEdit />}
-        />
-        <Route path="/resident/maintenance" element={<ResidentMaintenance />} />
+        <Route element={<ProtectedRoute allowedRoles={ADMIN_ROLES} />}>
+          <Route path="/register" element={<Register />} />
+          <Route path="/admin" element={<HomeAdmins />} />
+          <Route path="/admin/profile" element={<ProfileAdmin />} />
+          <Route path="/admin/profile/edit" element={<ProfileAdminEdit />} />
+          <Route path="/admin/people" element={<ManageUsers />} />
+          <Route path="/admin/maintenance" element={<MaintenanceAdmin />} />
+          <Route path="/admin/documents" element={<DocumentsAdmin />} />
+          <Route path="/admin/purchase-orders" element={<PurchaseOrders />} />
+          <Route
+            path="/admin/village-properties"
+            element={<AdminVillageProperties />}
+          />
+          <Route
+            path="/admin/profile/password"
+            element={
+              <ProfilePassword
+                userType="admin"
+                backPath="/admin/profile"
+                title="Change Admin Password"
+              />
+            }
+          />
+        </Route>
 
-        <Route
-          path="/resident/profile/password"
-          element={
-            <ProfilePassword
-              userType="resident"
-              backPath="/resident/profile"
-              title="Change Resident Password"
-            />
-          }
-        />
-
-        <Route
-          path="/village-manager/purchase-orders"
-          element={<PurchaseOrders />}
-        />
-        {/* Admin */}
-        <Route path="/admin" element={<HomeAdmins />} />
-        <Route path="/admin/profile" element={<ProfileAdmin />} />
-        <Route path="/admin/profile/edit" element={<ProfileAdminEdit />} />
-        <Route path="/admin/people" element={<ManageUsers />} />
-        <Route path="/admin/maintenance" element={<MaintenanceAdmin />} />
-        <Route path="/admin/documents" element={<DocumentsAdmin />} />
-        <Route path="/admin/purchase-orders" element={<PurchaseOrders />} />
-
-        <Route path="/resident/documents" element={<DocumentsResident />} />
-
-        <Route
-          path="/admin/profile/password"
-          element={
-            <ProfilePassword
-              userType="admin"
-              backPath="/admin/profile"
-              title="Change Admin Password"
-            />
-          }
-        />
-        <Route
-          path="/admin/village-properties"
-          element={<AdminVillageProperties />}
-        />
-
-        {/* Village Manager */}
-        <Route path="/village-manager" element={<HomeVillageManager />} />
-        <Route path="/village-manager/profile" element={<ProfileVillage />} />
-        <Route
-          path="/village-manager/profile/edit"
-          element={<ProfileVillageEdit />}
-        />
-        <Route
-          path="/village-manager/documents"
-          element={<DocumentsVillage />}
-        />
-
-        <Route path="/village-manager/my-village" element={<MyVillage />} />
-
-        <Route
-          path="/village-manager/residents"
-          element={<ManageUsersVillage />}
-        />
-        <Route
-          path="/village-manager/maintenance"
-          element={<MaintenanceVillage />}
-        />
-
-        <Route
-          path="/village-manager/profile/password"
-          element={
-            <ProfilePassword
-              userType="villageManager"
-              backPath="/village-manager/profile"
-              title="Change Village Manager Password"
-            />
-          }
-        />
+        <Route element={<ProtectedRoute allowedRoles={MANAGER_ROLES} />}>
+          <Route path="/village-manager" element={<HomeVillageManager />} />
+          <Route path="/village-manager/profile" element={<ProfileVillage />} />
+          <Route
+            path="/village-manager/profile/edit"
+            element={<ProfileVillageEdit />}
+          />
+          <Route path="/village-manager/documents" element={<DocumentsVillage />} />
+          <Route path="/village-manager/my-village" element={<MyVillage />} />
+          <Route
+            path="/village-manager/residents"
+            element={<ManageUsersVillage />}
+          />
+          <Route
+            path="/village-manager/maintenance"
+            element={<MaintenanceVillage />}
+          />
+          <Route
+            path="/village-manager/purchase-orders"
+            element={<PurchaseOrders />}
+          />
+          <Route
+            path="/village-manager/profile/password"
+            element={
+              <ProfilePassword
+                userType="villageManager"
+                backPath="/village-manager/profile"
+                title="Change Village Manager Password"
+              />
+            }
+          />
+        </Route>
           {/* forgot password */}
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
       <Footer />

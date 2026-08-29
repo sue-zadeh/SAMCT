@@ -150,7 +150,8 @@ bin/
 obj/
 server/bin/
 server/obj/
-*appsettings.json
+server/appsettings*.json
+!server/appsettings.example.json
 
 # VS Code / IDE
 .vscode/
@@ -168,3 +169,10 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Runtime uploads and browser-test artefacts
+server/wwwroot/uploads/**/*
+!server/wwwroot/uploads/**/.gitkeep
+test-results/
+playwright-report/
+blob-report/

@@ -38,7 +38,7 @@ type UserOption = {
 
 function MyVillage() {
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5072";
-  const village = localStorage.getItem('village') || 'Ngatea'
+  const village = sessionStorage.getItem('village') || 'Ngatea'
   const navigate = useNavigate()
 
   const [properties, setProperties] = useState<VillageProperty[]>([])

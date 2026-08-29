@@ -1,8 +1,11 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import axios, { AxiosError } from "axios";
 import { FaUser, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 import Navbar from "./navbar";
+import { homeForRole, saveSession } from "../lib/auth";
+import { API_BASE_URL } from "../lib/api";
+import Seo from "./seo";
 
 type LoginProps = {
   onLoginSuccess: () => void;
@@ -10,7 +13,7 @@ type LoginProps = {
 
 function Login({ onLoginSuccess }: LoginProps) {
   const navigate = useNavigate();
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5072";
+  const [searchParams] = useSearchParams();
 
   const savedUserName = localStorage.getItem("rememberedUsername") || "";
 
@@ -19,10 +22,12 @@ function Login({ onLoginSuccess }: LoginProps) {
   const [rememberMe, setRememberMe] = useState(!!savedUserName);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
     try {
       const response = await axios.post(`${API_BASE_URL}/api/login`, {
@@ -31,14 +36,7 @@ function Login({ onLoginSuccess }: LoginProps) {
       });
 
       if (response.status === 200) {
-        localStorage.setItem("username", response.data.userName || "");
-        localStorage.setItem("firstname", response.data.firstName || "");
-        localStorage.setItem("lastname", response.data.lastName || "");
-        localStorage.setItem("fullname", response.data.fullName || "");
-        localStorage.setItem("email", response.data.email || "");
-        localStorage.setItem("role", response.data.role || "");
-        localStorage.setItem("village", response.data.village || "");
-        localStorage.setItem("profileImageUrl", response.data.profileImageUrl || "");
+        saveSession(response.data);
 
         if (rememberMe) {
           localStorage.setItem("rememberedUsername", userName);
@@ -48,19 +46,7 @@ function Login({ onLoginSuccess }: LoginProps) {
 
         onLoginSuccess();
 
-        const role = response.data.role;
-
-        if (
-          role === "CompanySecretary" ||
-          role === "FinancialAdvisor" ||
-          role === "Chairman"
-        ) {
-          navigate("/admin");
-        } else if (role === "VillageManager") {
-          navigate("/village-manager");
-        } else {
-          navigate("/resident");
-        }
+        navigate(homeForRole(response.data.role), { replace: true });
       }
     } catch (err) {
       const axiosError = err as AxiosError<{ message: string }>;
@@ -72,11 +58,19 @@ function Login({ onLoginSuccess }: LoginProps) {
       } else {
         setError("An unexpected error occurred. Please try again.");
       }
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <>
+      <Seo
+        title="Secure portal login | SAMCT Villages"
+        description="Authorised login for SAMCT residents and staff."
+        path="/login"
+        noIndex
+      />
       <Navbar userType="public" />
 
       <main className="container py-5">
@@ -88,6 +82,12 @@ function Login({ onLoginSuccess }: LoginProps) {
               </h3>
 
               <h2 className="h3 text-center fst-italic mb-4">Login</h2>
+
+              {searchParams.get('session') === 'expired' && !error && (
+                <div className="alert alert-info" role="status">
+                  Your secure session expired. Please log in again.
+                </div>
+              )}
 
               <form onSubmit={handleLogin}>
                 <div className="mb-3">
@@ -103,6 +103,7 @@ function Login({ onLoginSuccess }: LoginProps) {
                     value={userName}
                     onChange={(e) => setUserName(e.target.value)}
                     autoComplete="username"
+                    required
                   />
                 </div>
 
@@ -121,6 +122,7 @@ function Login({ onLoginSuccess }: LoginProps) {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       autoComplete="current-password"
+                      required
                     />
                     <button
                       type="button"
@@ -147,8 +149,8 @@ function Login({ onLoginSuccess }: LoginProps) {
                   </label>
                 </div>
 
-                <button type="submit" className="btn btn-primary w-100">
-                  Login
+                <button type="submit" className="btn btn-primary w-100" disabled={loading}>
+                  {loading ? 'Signing in…' : 'Login'}
                 </button>
 
                 <div className="text-center mt-3">

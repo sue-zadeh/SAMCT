@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import Navbar from './navbar'
 import { Link } from 'react-router-dom'
 import AOS from 'aos'
+import Seo from './seo'
+import { API_BASE_URL } from '../lib/api'
 
 type MarketingProperty = {
   id: number
@@ -18,12 +20,12 @@ type MarketingProperty = {
 }
 
 function Marketing() {
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5072";
-
   const [properties, setProperties] = useState<MarketingProperty[]>([])
   const [selectedVillage, setSelectedVillage] = useState('All')
   const [selectedProperty, setSelectedProperty] =
     useState<MarketingProperty | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     AOS.init({
@@ -36,13 +38,22 @@ function Marketing() {
   }, [])
 
   const loadMarketingProperties = async () => {
-    const response = await fetch(
-      `${API_BASE_URL}/api/village-properties/marketing`,
-    )
-    const data = await response.json()
-
-    if (response.ok) {
+    try {
+      setError('')
+      const response = await fetch(
+        `${API_BASE_URL}/api/village-properties/marketing`,
+      )
+      if (!response.ok) throw new Error('Marketing listings are temporarily unavailable.')
+      const data = await response.json()
       setProperties(Array.isArray(data) ? data : [])
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : 'Marketing listings are temporarily unavailable.',
+      )
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -65,6 +76,11 @@ function Marketing() {
 
   return (
     <>
+      <Seo
+        title="Village information and availability | SAMCT Villages"
+        description="Explore public information and available retirement village units in Ngatea and Whitianga, and contact SAMCT for current details."
+        path="/marketing"
+      />
       <Navbar userType="public" />
 
       <main className="container py-5">
@@ -76,16 +92,14 @@ function Marketing() {
             SAMCT Villages
           </p>
 
-          <h3 className="fw-bold mb-3">
-            Safe, supportive village living in South Auckland and beyond
-          </h3>
+          <h1 className="fw-bold mb-3">Village information and availability</h1>
 
           <p
             className="text-secondary  mb-4 mx-auto"
             style={{ maxWidth: '850px' }}
           >
-            Explore available village units, photos, and information for
-            Ngatea, and Whitianga.
+            Explore published village information for Ngatea and Whitianga.
+            Availability can change, so contact SAMCT to confirm current details.
           </p>
 
           <div className="d-flex justify-content-center gap-3 flex-wrap">
@@ -121,10 +135,28 @@ function Marketing() {
         </section>
 
         <section className="row g-4">
-          {filteredProperties.length === 0 ? (
+          {loading ? (
+            <div className="col-12 text-center py-5" role="status">
+              <div className="spinner-border text-primary" aria-hidden="true" />
+              <p className="mt-3 text-secondary">Loading village information…</p>
+            </div>
+          ) : error ? (
             <div className="col-12">
-              <div className="alert alert-info text-center">
-                No marketing listings available yet.
+              <div className="alert alert-warning text-center" role="alert">
+                {error}{' '}
+                <button className="btn btn-link p-0" onClick={loadMarketingProperties}>
+                  Try again
+                </button>
+              </div>
+            </div>
+          ) : filteredProperties.length === 0 ? (
+            <div className="col-12">
+              <div className="samct-card p-5 text-center">
+                <h2 className="h4 fw-bold">No published listings right now</h2>
+                <p className="text-secondary">
+                  Contact SAMCT for current village information and availability.
+                </p>
+                <Link to="/contactUs" className="btn btn-primary">Contact SAMCT</Link>
               </div>
             </div>
           ) : (
@@ -195,15 +227,18 @@ function Marketing() {
             className="modal d-block"
             tabIndex={-1}
             style={{ background: 'rgba(0,0,0,0.55)' }}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="property-dialog-title"
           >
             <div className="modal-dialog modal-xl modal-dialog-centered">
               <div className="modal-content rounded-4">
                 <div className="modal-header">
                   <div>
-                    <h5 className="modal-title fw-bold">
+                    <h2 id="property-dialog-title" className="modal-title h5 fw-bold">
                       {selectedProperty.marketingTitle ||
                         `Unit ${selectedProperty.unitNumber}`}
-                    </h5>
+                    </h2>
                     <p className="text-secondary mb-0">
                       {selectedProperty.village} | {selectedProperty.address}
                     </p>
@@ -213,6 +248,7 @@ function Marketing() {
                     type="button"
                     className="btn-close"
                     onClick={() => setSelectedProperty(null)}
+                    aria-label="Close property details"
                   />
                 </div>
 
@@ -227,7 +263,7 @@ function Marketing() {
                       <div className="col-md-6" key={image}>
                         <img
                           src={`${API_BASE_URL}${image}`}
-                          alt={`Gallery ${index + 1}`}
+                          alt={`${selectedProperty.marketingTitle || selectedProperty.village} — photo ${index + 1}`}
                           className="w-100 rounded-4 border"
                           style={{
                             height: '300px',

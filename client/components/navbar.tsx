@@ -1,6 +1,8 @@
 import { NavLink, Link, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import logoImage from '../assets/icon5.png'
+import { clearSession } from '../lib/auth'
+import { API_BASE_URL } from '../lib/api'
 
 type UserType = 'public' | 'resident' | 'admin' | 'villageManager'
 
@@ -28,16 +30,13 @@ export default function Navbar({ userType }: NavbarProps) {
     return () => window.removeEventListener('resize', checkScreen)
   }, [])
 
-  const handleLogout = () => {
-    localStorage.removeItem('firstname')
-    localStorage.removeItem('lastname')
-    localStorage.removeItem('fullname')
-    localStorage.removeItem('role')
-    localStorage.removeItem('profileImageUrl')
-    localStorage.removeItem('email')
-    localStorage.removeItem('username')
-    localStorage.removeItem('village')
-    navigate('/')
+  const handleLogout = async () => {
+    try {
+      await fetch(`${API_BASE_URL}/api/logout`, { method: 'POST' })
+    } finally {
+      clearSession()
+      navigate('/', { replace: true })
+    }
   }
 
   const publicLinks = [
@@ -46,7 +45,6 @@ export default function Navbar({ userType }: NavbarProps) {
     { label: 'Marketing', path: '/marketing' },
     { label: 'Contact', path: '/contactUs' },
     { label: 'Login', path: '/login' },
-    { label: 'Register', path: '/register' },
   ]
 
   const residentLinks = [
@@ -72,7 +70,6 @@ export default function Navbar({ userType }: NavbarProps) {
     { label: 'Residents', path: '/village-manager/residents' },
     { label: 'Documents & Notices', path: '/village-manager/documents' },
     { label: 'Purchase Orders', path: '/village-manager/purchase-orders' },
-    { label: 'Register', path: '/register' },
   ]
 
   let links = publicLinks
@@ -96,6 +93,8 @@ export default function Navbar({ userType }: NavbarProps) {
           type="button"
           style={styles.dropdownButton}
           onClick={() => setShowProfileMenu(!showProfileMenu)}
+          aria-expanded={showProfileMenu}
+          aria-haspopup="menu"
         >
           Profile
         </button>
@@ -142,6 +141,8 @@ export default function Navbar({ userType }: NavbarProps) {
             type="button"
             style={styles.hamburger}
             onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Toggle navigation"
+            aria-expanded={menuOpen}
           >
             ☰
           </button>

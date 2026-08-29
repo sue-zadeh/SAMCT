@@ -7,7 +7,11 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:e2e:security": "playwright test client/tests/e2e/security.spec.ts",
+    "eval:baseline": "node evaluation/security-evaluation.mjs --ref 0529271 --label baseline --out evaluation/results/baseline.json",
+    "eval:final": "node evaluation/security-evaluation.mjs --label final --out evaluation/results/final.json",
+    "eval:all": "npm run eval:baseline && npm run eval:final"
   },
   "dependencies": {
     "aos": "^2.3.4",

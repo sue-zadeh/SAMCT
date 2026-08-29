@@ -3,6 +3,8 @@ namespace server.DTOs
     public class LoginResponseDto
     {
         public string Message { get; set; } = "";
+        public string AccessToken { get; set; } = "";
+        public DateTime ExpiresAtUtc { get; set; }
         public string UserName { get; set; } = "";
         public string FirstName { get; set; } = "";
         public string LastName { get; set; } = "";

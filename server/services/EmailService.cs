@@ -76,7 +76,7 @@ $@"
 <p>Hello,</p>
 <p>Please click the link below to reset your password:</p>
 <p><a href='{resetLink}'>Reset Password</a></p>
-<p>This link will expire in 1 hour.</p>
+<p>This link will expire in 30 minutes.</p>
 "
             };
 

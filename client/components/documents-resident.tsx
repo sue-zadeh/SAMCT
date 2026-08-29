@@ -16,7 +16,7 @@ type DocumentNotice = {
 function DocumentsResident() {
   const API_BASE_URL =
     import.meta.env.VITE_API_BASE_URL || 'http://localhost:5072'
-  const village = localStorage.getItem('village') || 'Ngatea'
+  const village = sessionStorage.getItem('village') || 'Ngatea'
 
   const [documents, setDocuments] = useState<DocumentNotice[]>([])
   const [error, setError] = useState('')

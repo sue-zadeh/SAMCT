@@ -17,12 +17,12 @@ type MaintenanceRequest = {
 function HomeResidents() {
   const API_BASE_URL =
     import.meta.env.VITE_API_BASE_URL || 'http://localhost:5072'
-  const fullName = localStorage.getItem('fullname') || 'Resident User'
-  const firstName = localStorage.getItem('firstname') || 'Resident'
-  const village = localStorage.getItem('village') || 'Ngatea'
-  const userName = localStorage.getItem('username') || ''
+  const fullName = sessionStorage.getItem('fullname') || 'Resident User'
+  const firstName = sessionStorage.getItem('firstname') || 'Resident'
+  const village = sessionStorage.getItem('village') || 'Ngatea'
+  const userName = sessionStorage.getItem('username') || ''
   const profileImageUrl =
-    localStorage.getItem('profileImageUrl') || 'https://via.placeholder.com/80'
+    sessionStorage.getItem('profileImageUrl') || 'https://via.placeholder.com/80'
 
   const profileImageSrc = profileImageUrl.startsWith('http')
     ? profileImageUrl

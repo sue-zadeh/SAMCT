@@ -1,0 +1,142 @@
+name: PortalShield CI
+
+on:
+  push:
+    branches: [hackathon/portalshield]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: portalshield-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  frontend:
+    name: Frontend build and dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm audit --audit-level=high
+      - run: npm run build
+
+  backend:
+    name: Backend build and security unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+      - run: dotnet restore SAMCT.sln
+      - run: dotnet build SAMCT.sln --configuration Release --no-restore
+      - run: >-
+          dotnet test server.tests/server.tests.csproj
+          --configuration Release
+          --no-build
+          --collect:"XPlat Code Coverage"
+
+  secrets:
+    name: Working-tree secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan committed files with Gitleaks
+        run: >-
+          docker run --rm
+          -v "$PWD:/source"
+          ghcr.io/gitleaks/gitleaks:v8.24.3
+          detect --source /source --no-git --redact --exit-code 1
+
+  integration:
+    name: Role-boundary integration tests
+    needs: [frontend, backend, secrets]
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: samct_test
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d samct_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: dotnet build server/server.csproj --configuration Release
+
+      - name: Generate ephemeral test credentials
+        run: |
+          echo "JWT_TEST_KEY=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+          echo "TEST_USER_PASSWORD=Aa9!$(openssl rand -hex 12)" >> "$GITHUB_ENV"
+
+      - name: Start API and apply migrations
+        env:
+          ASPNETCORE_ENVIRONMENT: Development
+          ASPNETCORE_URLS: http://127.0.0.1:5072
+          ConnectionStrings__DefaultConnection: Host=127.0.0.1;Port=5432;Database=samct_test;Username=postgres
+          Jwt__Issuer: SAMCT.CI
+          Jwt__Audience: SAMCT.CI.Web
+          Cors__AllowedOrigins__0: http://127.0.0.1:5173
+          Database__ApplyMigrationsOnStartup: "true"
+        run: |
+          Jwt__Key="$JWT_TEST_KEY" dotnet run \
+            --project server/server.csproj \
+            --configuration Release \
+            --no-build > "$RUNNER_TEMP/samct-api.log" 2>&1 &
+          for attempt in {1..30}; do
+            curl --fail --silent http://127.0.0.1:5072/health && exit 0
+            sleep 2
+          done
+          sed -E 's/(Password|Key|Token)=[^; ]+/\1=[REDACTED]/gi' "$RUNNER_TEMP/samct-api.log"
+          exit 1
+
+      - name: Seed synthetic users
+        run: >-
+          psql "host=127.0.0.1 port=5432 dbname=samct_test user=postgres"
+          -v seed_password="$TEST_USER_PASSWORD"
+          -f server/data/seed-users.example.sql
+
+      - name: Run browser and API security tests
+        env:
+          BASE_URL: http://127.0.0.1:5173
+          API_BASE_URL: http://127.0.0.1:5072
+          VITE_API_BASE_URL: http://127.0.0.1:5072
+          VITE_PUBLIC_SITE_URL: http://127.0.0.1:5173
+          TEST_ADMIN_USERNAME: demo.admin
+          TEST_MANAGER_USERNAME: demo.manager
+          TEST_RESIDENT_USERNAME: demo.resident
+        run: npm run test:e2e
+
+      - name: Upload failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: portalshield-failure-evidence
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7
