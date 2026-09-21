@@ -55,6 +55,8 @@ The database is the source of portal data and dashboard counts. No production de
 
 Install **Node.js 24**, the **.NET 9 SDK** and PostgreSQL. Install a current supported .NET 9 patch; plan the next supported runtime upgrade before .NET 9 reaches end of support.
 
+For a local PostgreSQL container, set `SAMCT_LOCAL_DATABASE_PASSWORD` in your terminal and run `docker compose -f compose.local.yml up -d`. It listens only on `127.0.0.1:5433`, with database `samctdb` and user `postgres`; use those values in your local connection string. This developer configuration replaces the previous `docker-compose.locall..yml` filename and preserves its named data volume. Changing the environment variable does not rotate the password inside an existing database; update that database role separately. It is not the disposable E2E database.
+
 ```bash
 npm ci
 cp .env.example .env.local

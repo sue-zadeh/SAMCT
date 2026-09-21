@@ -5,10 +5,10 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres123
+      POSTGRES_PASSWORD: ${SAMCT_LOCAL_DATABASE_PASSWORD:?Set SAMCT_LOCAL_DATABASE_PASSWORD}
       POSTGRES_DB: samctdb
     ports:
-      - "5433:5432"
+      - "127.0.0.1:5433:5432"
     volumes:
       - samct_postgres_data:/var/lib/postgresql/data
 
