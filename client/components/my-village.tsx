@@ -561,7 +561,7 @@ function MyVillage() {
                   <input
                     type="file"
                     className="form-control"
-                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                    accept=".pdf,.docx,.jpg,.jpeg,.png"
                     onChange={(e) => setDocument1(e.target.files?.[0] || null)}
                   />
                 </div>
@@ -573,7 +573,7 @@ function MyVillage() {
                   <input
                     type="file"
                     className="form-control"
-                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                    accept=".pdf,.docx,.jpg,.jpeg,.png"
                     onChange={(e) => setDocument2(e.target.files?.[0] || null)}
                   />
                 </div>

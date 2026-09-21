@@ -1,12 +1,16 @@
 import { test, expect } from '@playwright/test'
-import { readFile } from 'node:fs/promises'
+import { copyFile, mkdir, mkdtemp, readFile, rm } from 'node:fs/promises'
+import { execFile } from 'node:child_process'
+import { tmpdir } from 'node:os'
+import { join, resolve } from 'node:path'
+import { promisify } from 'node:util'
 import { state, write } from './helpers'
 
 test('API responses have security headers and prevent private response caching', async ({ request }) => {
   const response = await request.get('/api/csrf')
   expect(response.headers()['x-content-type-options']).toBe('nosniff')
   expect(response.headers()['x-frame-options']).toBe('DENY')
-  expect(response.headers()['cache-control']).toBe('no-store')
+  expect(response.headers()['cache-control'].split(',').map(value => value.trim())).toContain('no-store')
   expect(response.headers()['referrer-policy']).toBe('no-referrer')
   expect(response.headers()['content-security-policy']).toContain("frame-ancestors 'none'")
   expect(response.headers()['x-robots-tag']).toContain('noindex')
@@ -41,4 +45,24 @@ test('private pages remain noindex after navigation from a public page', async (
 })
 test('built fallback HTML never allows portal indexing', async () => {
   expect(await readFile('dist/portal.html','utf8')).toContain('name="robots" content="noindex, nofollow"')
+})
+
+test('production SEO indexes only public pages and keeps the private fallback noindex', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'samct-seo-'))
+  try {
+    await mkdir(join(directory, 'dist'))
+    await copyFile('dist/portal.html', join(directory, 'dist/index.html'))
+    await promisify(execFile)(process.execPath, [resolve('scripts/build-seo.mjs')], {
+      cwd: directory, env: {...process.env, VITE_SITE_URL:'https://samct.example', VITE_ALLOW_INDEXING:'true'},
+    })
+    for (const path of ['', '/about', '/marketing', '/contactUs']) {
+      const html = await readFile(join(directory, `dist${path}/index.html`), 'utf8')
+      expect(html).toContain('name="robots" content="index, follow"')
+      expect(html).toContain(`rel="canonical" href="https://samct.example${path || '/'}"`)
+    }
+    const sitemap = await readFile(join(directory, 'dist/sitemap.xml'), 'utf8')
+    expect(sitemap.match(/<url>/g)).toHaveLength(4)
+    expect(sitemap).not.toMatch(/resident|admin|village-manager|login|register|reset-password/)
+    expect(await readFile(join(directory, 'dist/portal.html'), 'utf8')).toContain('name="robots" content="noindex, nofollow"')
+  } finally { await rm(directory, {recursive:true, force:true}) }
 })

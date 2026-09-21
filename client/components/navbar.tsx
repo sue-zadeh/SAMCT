@@ -1,6 +1,6 @@
 import { API_BASE_URL, apiFetch } from '../security/api'
-import { useSession } from '../security/session'
-import { NavLink, Link, useNavigate } from 'react-router-dom'
+import { cacheUser } from '../security/session'
+import { NavLink, Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import logoImage from '../assets/icon5.png'
 
@@ -11,8 +11,6 @@ type NavbarProps = {
 }
 
 export default function Navbar({ userType }: NavbarProps) {
-  const navigate = useNavigate()
-  const { refresh } = useSession()
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
@@ -32,18 +30,13 @@ export default function Navbar({ userType }: NavbarProps) {
   }, [])
 
   const handleLogout = async () => {
-    const response = await apiFetch(`${API_BASE_URL}/api/logout`, { method: 'POST' })
-    if (!response.ok && response.status !== 401) { window.alert('Logout failed. Please try again.'); return }
-    await refresh()
-    localStorage.removeItem('firstname')
-    localStorage.removeItem('lastname')
-    localStorage.removeItem('fullname')
-    localStorage.removeItem('role')
-    localStorage.removeItem('profileImageUrl')
-    localStorage.removeItem('email')
-    localStorage.removeItem('username')
-    localStorage.removeItem('village')
-    navigate('/')
+    try {
+      const response = await apiFetch(`${API_BASE_URL}/api/logout`, { method: 'POST' })
+      if (!response.ok && response.status !== 401) throw new Error('Logout failed')
+      cacheUser(null)
+      // A fresh document also clears private component state and avoids racing the route guard.
+      window.location.replace('/')
+    } catch { window.alert('Logout failed. Please try again.') }
   }
 
   const publicLinks = [

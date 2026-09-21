@@ -3,7 +3,7 @@ import { loadEnv } from 'vite'
 const environment = { ...loadEnv('production', process.cwd(), ''), ...process.env }
 const site = environment.VITE_SITE_URL?.replace(/\/$/, '')
 const enabled = environment.VITE_ALLOW_INDEXING === 'true'
-if (enabled && (!site || new URL(site).protocol !== 'https:' || new URL(site).pathname !== '/')) throw new Error('Indexing requires VITE_SITE_URL to be the approved HTTPS site origin.')
+if ((enabled && !site) || (site && (new URL(site).protocol !== 'https:' || new URL(site).origin !== site))) throw new Error('VITE_SITE_URL must be the approved HTTPS origin, without a path, query, fragment or credentials.')
 const escape = value => value.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
 const pages = [
   ['/', 'SAMCT Villages | Ngatea and Whitianga', 'Learn about South Auckland Masonic Charitable Trust villages in Ngatea and Whitianga, explore available homes and contact the SAMCT team.'],

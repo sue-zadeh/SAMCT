@@ -163,7 +163,7 @@ function ProfileResident() {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*"
+                  accept="image/png,image/jpeg"
                   onChange={handleImageChange}
                   style={{ display: "none" }}
                 />

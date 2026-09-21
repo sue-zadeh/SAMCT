@@ -86,13 +86,24 @@ test.describe('manager workflows', () => {
     expect((await resident.get(document.fileUrl)).status()).toBe(404)
     await resident.dispose(); await otherManager.dispose()
   })
+  test('document uploads reject legacy Office formats and disguised VBA packages', async ({ request }) => {
+    const macroPackage = Buffer.from('UEsDBBQAAAAAAAAAIVzHHBc8CAAAAAgAAAATAAAAW0NvbnRlbnRfVHlwZXNdLnhtbDxUeXBlcy8+UEsDBBQAAAAAAAAAIVxfW9FMCwAAAAsAAAARAAAAd29yZC9kb2N1bWVudC54bWw8ZG9jdW1lbnQvPlBLAwQUAAAAAAAAACFcM3pK7xIAAAASAAAAEwAAAHdvcmQvdmJhUHJvamVjdC5iaW51bnNhZmUgVkJBIHBheWxvYWRQSwECFAMUAAAAAAAAACFcxxwXPAgAAAAIAAAAEwAAAAAAAAAAAAAAgAEAAAAAW0NvbnRlbnRfVHlwZXNdLnhtbFBLAQIUAxQAAAAAAAAAIVxfW9FMCwAAAAsAAAARAAAAAAAAAAAAAACAATkAAAB3b3JkL2RvY3VtZW50LnhtbFBLAQIUAxQAAAAAAAAAIVwzekrvEgAAABIAAAATAAAAAAAAAAAAAACAAXMAAAB3b3JkL3ZiYVByb2plY3QuYmluUEsFBgAAAAADAAMAwQAAALYAAAAAAA==', 'base64')
+    for (const file of [
+      {name:'legacy.doc',mimeType:'application/msword',buffer:Buffer.from([208,207,17,224,161,177,26,225])},
+      {name:'legacy.xls',mimeType:'application/vnd.ms-excel',buffer:Buffer.from([208,207,17,224,161,177,26,225])},
+      {name:'disguised.docx',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',buffer:macroPackage},
+    ]) {
+      const response = await write(request,'POST','/api/documents',{multipart:{title:'Blocked file',type:'Notice',description:'Invalid upload',village:'Ngatea',isVisibleToResidents:'false',file}})
+      expect(response.status(), file.name).toBe(400)
+    }
+  })
   test('document form saves a real notice and renders script text without executing it', async ({ page }) => {
     await page.goto('/village-manager/documents')
     const text = '<img src=x onerror="window.samctInjected=true">'
     await page.getByLabel('Title',{exact:true}).fill(text)
     await page.getByLabel('Description',{exact:true}).fill('Test notice description')
     await page.getByRole('button',{name:/save document/i}).click()
-    await expect(page.getByText('Document or notice saved successfully.')).toBeVisible()
+    await expect(page.getByText('Document saved successfully.')).toBeVisible()
     await page.reload()
     await expect(page.getByText(text,{exact:true})).toBeVisible()
     expect(await page.evaluate(() => (window as any).samctInjected)).toBeUndefined()

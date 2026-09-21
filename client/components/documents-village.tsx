@@ -257,7 +257,7 @@ function DocumentsVillage() {
                 <input
                   type="file"
                   className="form-control"
-                  accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
+                  accept=".pdf,.docx,.xlsx,.jpg,.jpeg,.png"
                   onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
                 />
                 <p className="small text-secondary mt-1 mb-0">
