@@ -1,0 +1,5 @@
+bin
+obj
+storage
+wwwroot/uploads
+appsettings.Local.json

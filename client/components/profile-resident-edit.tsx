@@ -1,6 +1,7 @@
+import { API_BASE_URL } from '../security/api'
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "../security/api";
 import {
   FaPen,
   FaUser,
@@ -13,10 +14,10 @@ import Navbar from "./navbar";
 
 function ProfileResidentEdit() {
   const navigate = useNavigate();
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5072";
 
   const [firstName, setFirstName] = useState(localStorage.getItem("firstname") || "");
   const [lastName, setLastName] = useState(localStorage.getItem("lastname") || "");
+  const [currentPassword, setCurrentPassword] = useState("");
   const [email, setEmail] = useState(localStorage.getItem("email") || "");
   const [village, setVillage] = useState(localStorage.getItem("village") || "Ngatea");
   const userName = localStorage.getItem("username") || "";
@@ -35,6 +36,7 @@ function ProfileResidentEdit() {
         firstName,
         lastName,
         email,
+        currentPassword,
         village,
       });
 
@@ -112,10 +114,14 @@ function ProfileResidentEdit() {
             <div className="col-md-6">
               <label className="form-label fw-semibold d-flex align-items-center gap-2">
                <FaMapMarkerAlt />Village</label>
-              <input className="form-control" value={village} readOnly />
+              <input className="form-control" value={village} disabled readOnly />
             </div>
           </div>
 
+          <div className="mt-3">
+            <label htmlFor="confirmEmailPassword" className="form-label">Current password (required when changing your email)</label>
+            <input id="confirmEmailPassword" type="password" className="form-control" autoComplete="current-password" maxLength={72} value={currentPassword} onChange={event => setCurrentPassword(event.target.value)} />
+          </div>
           <div className="mt-4 d-flex gap-2">
             <button className="btn btn-primary" onClick={handleSave}>
               Save Changes

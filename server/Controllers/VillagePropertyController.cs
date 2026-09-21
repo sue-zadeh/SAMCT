@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authorization;
+using server.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using server.Data;
@@ -7,22 +9,24 @@ using server.Models;
 namespace server.Controllers
 {
     [ApiController]
+    [Authorize(Roles = AccessRules.StaffRoles)]
     [Route("api/village-properties")]
     public class VillagePropertyController : ControllerBase
     {
         private readonly AppDbContext _context;
-        private readonly IWebHostEnvironment _env;
+        private readonly UploadStorage _uploads;
 
-        public VillagePropertyController(AppDbContext context, IWebHostEnvironment env)
+        public VillagePropertyController(AppDbContext context, UploadStorage uploads)
         {
             _context = context;
-            _env = env;
+            _uploads = uploads;
         }
 
         [HttpGet("{village}")]
         public async Task<IActionResult> GetByVillage(string village)
         {
-            var decodedVillage = Uri.UnescapeDataString(village).Trim();
+            var decodedVillage = village;
+            if (!User.CanManageVillage(village)) return Forbid();
 
             var data = await _context.VillageProperties
                 .Where(v => v.Village == decodedVillage)
@@ -33,6 +37,7 @@ namespace server.Controllers
         }
 
         [HttpGet("admin/all")]
+        [Authorize(Roles = AccessRules.AdminRoles)]
         public async Task<IActionResult> GetAllForAdmin()
         {
             var data = await _context.VillageProperties
@@ -44,49 +49,52 @@ namespace server.Controllers
         }
 
         [HttpGet("marketing")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetMarketingProperties()
         {
-            var data = await _context.VillageProperties
-                .Where(v => v.IsVisibleOnMarketing)
-                .OrderBy(v => v.Village)
-                .ThenBy(v => v.UnitNumber)
-                .ToListAsync();
-
-            return Ok(data);
+            // Explicit allow-list: never expose resident details, private documents or notes.
+            return Ok(await _context.VillageProperties.AsNoTracking()
+                .Where(property => property.IsVisibleOnMarketing).OrderBy(property => property.Village)
+                .ThenBy(property => property.UnitNumber).Select(property => new {
+                    property.Id, property.Village, property.UnitNumber, property.Address,
+                    property.MarketingTitle, property.MarketingDescription,
+                    property.MarketingImageUrl1, property.MarketingImageUrl2, property.MarketingImageUrl3,
+                    property.MarketingImageUrl4, property.MarketingImageUrl5
+                }).ToListAsync());
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create()
+        public async Task<IActionResult> Create([FromForm] VillagePropertyWriteDto request)
         {
-            var form = Request.Form;
+            if (!User.CanManageVillage(request.Village)) return Forbid();
 
             var property = new VillageProperty
             {
-                Village = form["village"].ToString(),
-                UnitNumber = form["unitNumber"].ToString(),
-                Address = form["address"].ToString(),
-                ResidentCount = int.TryParse(form["residentCount"], out var count) ? count : 1,
-                ResidentName = form["residentName"].ToString(),
-                ResidentEmail = form["residentEmail"].ToString(),
-                ResidentOccupation = form["residentOccupation"].ToString(),
-                VillageManagerName = form["villageManagerName"].ToString(),
-                Notes = form["notes"].ToString(),
+                Village = request.Village,
+                UnitNumber = request.UnitNumber,
+                Address = request.Address,
+                ResidentCount = request.ResidentCount,
+                ResidentName = request.ResidentName,
+                ResidentEmail = request.ResidentEmail ?? "",
+                ResidentOccupation = request.ResidentOccupation,
+                VillageManagerName = request.VillageManagerName,
+                Notes = request.Notes,
 
-                IsVisibleOnMarketing = form["isVisibleOnMarketing"] == "true",
-                MarketingTitle = form["marketingTitle"].ToString(),
-                MarketingDescription = form["marketingDescription"].ToString(),
+                IsVisibleOnMarketing = request.IsVisibleOnMarketing,
+                MarketingTitle = request.MarketingTitle,
+                MarketingDescription = request.MarketingDescription,
 
                 CreatedAt = DateTime.UtcNow
             };
 
-            property.DocumentUrl1 = await SaveFile(form.Files["document1"], "village-properties");
-            property.DocumentUrl2 = await SaveFile(form.Files["document2"], "village-properties");
+            property.DocumentUrl1 = await _uploads.Save(request.Document1, "village-properties");
+            property.DocumentUrl2 = await _uploads.Save(request.Document2, "village-properties");
 
-            property.MarketingImageUrl1 = await SaveFile(form.Files["marketingImage1"], "marketing");
-            property.MarketingImageUrl2 = await SaveFile(form.Files["marketingImage2"], "marketing");
-            property.MarketingImageUrl3 = await SaveFile(form.Files["marketingImage3"], "marketing");
-            property.MarketingImageUrl4 = await SaveFile(form.Files["marketingImage4"], "marketing");
-            property.MarketingImageUrl5 = await SaveFile(form.Files["marketingImage5"], "marketing");
+            property.MarketingImageUrl1 = await _uploads.Save(request.MarketingImage1, "marketing", imagesOnly: true);
+            property.MarketingImageUrl2 = await _uploads.Save(request.MarketingImage2, "marketing", imagesOnly: true);
+            property.MarketingImageUrl3 = await _uploads.Save(request.MarketingImage3, "marketing", imagesOnly: true);
+            property.MarketingImageUrl4 = await _uploads.Save(request.MarketingImage4, "marketing", imagesOnly: true);
+            property.MarketingImageUrl5 = await _uploads.Save(request.MarketingImage5, "marketing", imagesOnly: true);
 
             _context.VillageProperties.Add(property);
             await _context.SaveChangesAsync();
@@ -95,7 +103,7 @@ namespace server.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id)
+        public async Task<IActionResult> Update(int id, [FromForm] VillagePropertyWriteDto request)
         {
             var property = await _context.VillageProperties.FindAsync(id);
 
@@ -103,32 +111,33 @@ namespace server.Controllers
             {
                 return NotFound(new { message = "Property not found." });
             }
+            if (!User.CanManageVillage(property.Village)) return Forbid();
 
-            var form = Request.Form;
+            if (request.Village != property.Village) return BadRequest(new { message = "A property cannot be moved to another village." });
 
-            property.UnitNumber = form["unitNumber"].ToString();
-            property.Address = form["address"].ToString();
-            property.ResidentCount = int.TryParse(form["residentCount"], out var count) ? count : 1;
-            property.ResidentName = form["residentName"].ToString();
-            property.ResidentEmail = form["residentEmail"].ToString();
-            property.ResidentOccupation = form["residentOccupation"].ToString();
-            property.VillageManagerName = form["villageManagerName"].ToString();
-            property.Notes = form["notes"].ToString();
+            property.UnitNumber = request.UnitNumber;
+            property.Address = request.Address;
+            property.ResidentCount = request.ResidentCount;
+            property.ResidentName = request.ResidentName;
+            property.ResidentEmail = request.ResidentEmail ?? "";
+            property.ResidentOccupation = request.ResidentOccupation;
+            property.VillageManagerName = request.VillageManagerName;
+            property.Notes = request.Notes;
 
-            property.IsVisibleOnMarketing = form["isVisibleOnMarketing"] == "true";
-            property.MarketingTitle = form["marketingTitle"].ToString();
-            property.MarketingDescription = form["marketingDescription"].ToString();
+            property.IsVisibleOnMarketing = request.IsVisibleOnMarketing;
+            property.MarketingTitle = request.MarketingTitle;
+            property.MarketingDescription = request.MarketingDescription;
 
             property.UpdatedAt = DateTime.UtcNow;
 
-            var document1 = await SaveFile(form.Files["document1"], "village-properties");
-            var document2 = await SaveFile(form.Files["document2"], "village-properties");
+            var document1 = await _uploads.Save(request.Document1, "village-properties");
+            var document2 = await _uploads.Save(request.Document2, "village-properties");
 
-            var marketingImage1 = await SaveFile(form.Files["marketingImage1"], "marketing");
-            var marketingImage2 = await SaveFile(form.Files["marketingImage2"], "marketing");
-            var marketingImage3 = await SaveFile(form.Files["marketingImage3"], "marketing");
-            var marketingImage4 = await SaveFile(form.Files["marketingImage4"], "marketing");
-            var marketingImage5 = await SaveFile(form.Files["marketingImage5"], "marketing");
+            var marketingImage1 = await _uploads.Save(request.MarketingImage1, "marketing", imagesOnly: true);
+            var marketingImage2 = await _uploads.Save(request.MarketingImage2, "marketing", imagesOnly: true);
+            var marketingImage3 = await _uploads.Save(request.MarketingImage3, "marketing", imagesOnly: true);
+            var marketingImage4 = await _uploads.Save(request.MarketingImage4, "marketing", imagesOnly: true);
+            var marketingImage5 = await _uploads.Save(request.MarketingImage5, "marketing", imagesOnly: true);
 
             if (!string.IsNullOrWhiteSpace(document1)) property.DocumentUrl1 = document1;
             if (!string.IsNullOrWhiteSpace(document2)) property.DocumentUrl2 = document2;
@@ -156,6 +165,7 @@ namespace server.Controllers
             {
                 return NotFound(new { message = "Property not found." });
             }
+            if (!User.CanManageVillage(property.Village)) return Forbid();
 
             property.IsVisibleOnMarketing = request.IsVisibleOnMarketing;
             property.UpdatedAt = DateTime.UtcNow;
@@ -174,6 +184,7 @@ namespace server.Controllers
             {
                 return NotFound(new { message = "Property not found." });
             }
+            if (!User.CanManageVillage(property.Village)) return Forbid();
 
             _context.VillageProperties.Remove(property);
             await _context.SaveChangesAsync();
@@ -181,28 +192,5 @@ namespace server.Controllers
             return Ok(new { message = "Village property deleted successfully." });
         }
 
-        private async Task<string> SaveFile(IFormFile? file, string folderName)
-        {
-            if (file == null || file.Length == 0) return "";
-
-            var allowedExtensions = new[] { ".pdf", ".doc", ".docx", ".jpg", ".jpeg", ".png" };
-            var extension = Path.GetExtension(file.FileName).ToLower();
-
-            if (!allowedExtensions.Contains(extension))
-            {
-                throw new Exception("Only PDF, Word, JPG, JPEG, and PNG files are allowed.");
-            }
-
-            var folder = Path.Combine(_env.WebRootPath, "uploads", folderName);
-            Directory.CreateDirectory(folder);
-
-            var fileName = $"{Guid.NewGuid()}-{file.FileName}";
-            var filePath = Path.Combine(folder, fileName);
-
-            using var stream = new FileStream(filePath, FileMode.Create);
-            await file.CopyToAsync(stream);
-
-            return $"/uploads/{folderName}/{fileName}";
-        }
     }
 }

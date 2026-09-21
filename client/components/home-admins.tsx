@@ -1,3 +1,4 @@
+import { API_BASE_URL, apiFetch } from '../security/api'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Navbar from './navbar'
@@ -28,14 +29,12 @@ type VillageProperty = {
 }
 
 function HomeAdmins() {
-  const API_BASE_URL =
-    import.meta.env.VITE_API_BASE_URL || 'http://localhost:5072'
   const fullName = localStorage.getItem('fullname') || 'Admin'
   const firstName = localStorage.getItem('firstname') || 'Admin'
   const role = localStorage.getItem('role') || 'Administrator'
 
   const savedImage =
-    localStorage.getItem('profileImageUrl') || 'https://via.placeholder.com/100'
+    localStorage.getItem('profileImageUrl') || '/profile-placeholder.svg'
 
   const profileImageSrc = savedImage.startsWith('http')
     ? `${savedImage}?t=${Date.now()}`
@@ -55,7 +54,7 @@ function HomeAdmins() {
     try {
       setError('')
 
-      const maintenanceResponse = await fetch(
+      const maintenanceResponse = await apiFetch(
         `${API_BASE_URL}/api/maintenance/summary/admin`,
       )
 
@@ -67,7 +66,7 @@ function HomeAdmins() {
         )
       }
 
-      const propertiesResponse = await fetch(
+      const propertiesResponse = await apiFetch(
         `${API_BASE_URL}/api/village-properties/admin/all`,
       )
 

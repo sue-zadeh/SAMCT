@@ -1,11 +1,11 @@
+import { API_BASE_URL, apiFetch } from '../security/api'
 import { useEffect, useState } from 'react'
 import Navbar from './navbar'
 import { Link } from 'react-router-dom'
 import AOS from 'aos'
 
 function ContactUs() {
-  const API_BASE_URL =
-    import.meta.env.VITE_API_BASE_URL || 'http://localhost:5072'
+  const [website, setWebsite] = useState('')
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [subject, setSubject] = useState('')
@@ -71,10 +71,11 @@ function ContactUs() {
     try {
       setIsSending(true)
 
-      const response = await fetch(`${API_BASE_URL}/api/contact`, {
+      const response = await apiFetch(`${API_BASE_URL}/api/contact`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          website,
           fullName,
           email,
           subject,
@@ -173,53 +174,56 @@ function ContactUs() {
               data-aos="fade-up"
             >
               <form onSubmit={handleSubmit}>
+                  <div aria-hidden="true" style={{ position: 'absolute', left: '-10000px' }}>
+                    <label htmlFor="contact-website">Website</label><input id="contact-website" name="website" tabIndex={-1} autoComplete="off" value={website} onChange={event => setWebsite(event.target.value)} />
+                  </div>
                 <div className="row g-3">
                   <div className="col-md-6" data-aos="fade-right">
-                    <label className="form-label fw-semibold">Full Name</label>
+                    <label htmlFor="contactus-fullName" className="form-label fw-semibold">Full Name</label>
                     <input
                       className="form-control"
-                      value={fullName}
+                      id="contactus-fullName" maxLength={160} value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       placeholder="Your full name"
                     />
                   </div>
 
                   <div className="col-md-6" data-aos="fade-left">
-                    <label className="form-label fw-semibold">Email</label>
+                    <label htmlFor="contactus-email" className="form-label fw-semibold">Email</label>
                     <input
                       className="form-control"
-                      value={email}
+                      id="contactus-email" maxLength={254} value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="your@email.com"
                     />
                   </div>
 
                   <div className="col-md-6" data-aos="fade-right">
-                    <label className="form-label fw-semibold">Subject</label>
+                    <label htmlFor="contactus-subject" className="form-label fw-semibold">Subject</label>
                     <input
                       className="form-control"
-                      value={subject}
+                      id="contactus-subject" maxLength={160} value={subject}
                       onChange={(e) => setSubject(e.target.value)}
                       placeholder="What is this about?"
                     />
                   </div>
 
                   <div className="col-md-6" data-aos="fade-left">
-                    <label className="form-label fw-semibold">Phone</label>
+                    <label htmlFor="contactus-phone" className="form-label fw-semibold">Phone</label>
                     <input
                       className="form-control"
-                      value={phone}
+                      id="contactus-phone" maxLength={40} value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="Your phone number"
                     />
                   </div>
 
                   <div className="col-12" data-aos="fade-up">
-                    <label className="form-label fw-semibold">Message</label>
+                    <label htmlFor="contactus-messageText" className="form-label fw-semibold">Message</label>
                     <textarea
                       className="form-control"
                       rows={6}
-                      value={messageText}
+                      id="contactus-messageText" maxLength={1500} value={messageText}
                       onChange={(e) => setMessageText(e.target.value)}
                       placeholder="Write your message clearly..."
                     />

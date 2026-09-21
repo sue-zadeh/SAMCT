@@ -1,3 +1,5 @@
+import { API_BASE_URL, apiFetch } from '../security/api'
+import { useSession } from '../security/session'
 import { NavLink, Link, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import logoImage from '../assets/icon5.png'
@@ -10,6 +12,7 @@ type NavbarProps = {
 
 export default function Navbar({ userType }: NavbarProps) {
   const navigate = useNavigate()
+  const { refresh } = useSession()
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
@@ -28,7 +31,10 @@ export default function Navbar({ userType }: NavbarProps) {
     return () => window.removeEventListener('resize', checkScreen)
   }, [])
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    const response = await apiFetch(`${API_BASE_URL}/api/logout`, { method: 'POST' })
+    if (!response.ok && response.status !== 401) { window.alert('Logout failed. Please try again.'); return }
+    await refresh()
     localStorage.removeItem('firstname')
     localStorage.removeItem('lastname')
     localStorage.removeItem('fullname')

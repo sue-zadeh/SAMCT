@@ -1,0 +1,52 @@
+name: SAMCT security and end-to-end tests
+on:
+  pull_request:
+  push:
+    branches: [main, 'security/**']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: samct_e2e
+          POSTGRES_USER: samct_e2e
+          POSTGRES_PASSWORD: ci-disposable-database-only
+        ports: ['55432:5432']
+        options: >-
+          --health-cmd "pg_isready -U samct_e2e -d samct_e2e"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      SAMCT_E2E_DATABASE_URL: postgresql://samct_e2e:ci-disposable-database-only@127.0.0.1:55432/samct_e2e
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm audit --audit-level=moderate
+      - run: npm run build
+      - run: dotnet build server --configuration Release --warnaserror
+      - run: dotnet list server package --vulnerable --include-transitive --format json > nuget-audit.json
+      - name: Fail on known vulnerable NuGet packages
+        run: node scripts/check-nuget-audit.mjs nuget-audit.json
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-failures
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 3

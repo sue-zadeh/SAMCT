@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authorization;
+using server.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using server.Data;
@@ -7,19 +9,24 @@ using server.Models;
 namespace server.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/maintenance")]
     public class MaintenanceController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly UploadStorage _uploads;
 
-        public MaintenanceController(AppDbContext context)
+        public MaintenanceController(AppDbContext context, UploadStorage uploads)
         {
             _context = context;
+            _uploads = uploads;
         }
 
+        [Authorize(Roles = "Resident")]
         [HttpGet("resident/{userName}")]
         public async Task<IActionResult> GetResidentRequests(string userName)
         {
+            if (!User.IsSelf(userName)) return Forbid();
             var requests = await _context.MaintenanceRequests
                 .Include(r => r.User)
                 .Where(r => r.User != null && r.User.UserName == userName)
@@ -46,51 +53,19 @@ namespace server.Controllers
             return Ok(requests);
         }
 
+        [Authorize(Roles = "Resident")]
         [HttpPost("resident")]
         public async Task<IActionResult> CreateResidentMaintenance([FromForm] CreateMaintenanceRequestDto request)
         {
-            var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.UserName == request.UserName && u.IsActive);
-
-            if (user == null)
-                return NotFound(new { message = "Resident user not found." });
-
-            string imageUrl1 = "";
-            string imageUrl2 = "";
-
-            var uploadFolder = Path.Combine(
-                Directory.GetCurrentDirectory(),
-                "wwwroot",
-                "uploads",
-                "maintenance"
-            );
-
-            Directory.CreateDirectory(uploadFolder);
-
-            async Task<string> SaveImage(IFormFile file)
-            {
-                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
-                var extension = Path.GetExtension(file.FileName).ToLower();
-
-                if (!allowedExtensions.Contains(extension))
-                    throw new Exception("Only JPG, JPEG, and PNG images are allowed.");
-
-                var fileName = $"{Guid.NewGuid()}{extension}";
-                var path = Path.Combine(uploadFolder, fileName);
-
-                using var stream = new FileStream(path, FileMode.Create);
-                await file.CopyToAsync(stream);
-
-                return $"/uploads/maintenance/{fileName}";
-            }
-
-            if (request.Image1 != null) imageUrl1 = await SaveImage(request.Image1);
-            if (request.Image2 != null) imageUrl2 = await SaveImage(request.Image2);
+            var user = await _context.Users.SingleAsync(item => item.Id == User.UserId());
+            if (!User.IsSelf(request.UserName) || request.Village != user.Village) return Forbid();
+            var imageUrl1 = await _uploads.Save(request.Image1, "maintenance", imagesOnly: true);
+            var imageUrl2 = await _uploads.Save(request.Image2, "maintenance", imagesOnly: true);
 
             var maintenance = new MaintenanceRequest
             {
                 UserId = user.Id,
-                Village = request.Village,
+                Village = user.Village,
                 Title = request.Title,
                 Description = request.Description,
                 UnitOrAddress = request.UnitOrAddress,
@@ -109,10 +84,12 @@ namespace server.Controllers
             return Ok(new { message = "Maintenance request submitted successfully." });
         }
 
+        [Authorize(Roles = "VillageManager")]
         [HttpGet("village/{village}")]
         public async Task<IActionResult> GetVillageRequests(string village)
         {
-            var decodedVillage = Uri.UnescapeDataString(village);
+            var decodedVillage = village;
+            if (!User.CanManageVillage(decodedVillage)) return Forbid();
 
             var requests = await _context.MaintenanceRequests
                 .Include(r => r.User)
@@ -140,6 +117,7 @@ namespace server.Controllers
             return Ok(requests);
         }
 
+        [Authorize(Roles = "VillageManager")]
         [HttpPut("{id}/manager-response")]
         public async Task<IActionResult> UpdateManagerResponse(
             int id,
@@ -151,26 +129,26 @@ namespace server.Controllers
             if (maintenance == null)
                 return NotFound(new { message = "Maintenance request not found." });
 
-            var manager = await _context.Users
-                .FirstOrDefaultAsync(u => u.UserName == request.ManagerUserName && u.IsActive);
-
+            if (!User.CanManageVillage(maintenance.Village)) return Forbid();
+            if (!string.IsNullOrEmpty(request.ManagerUserName) && !User.IsSelf(request.ManagerUserName)) return Forbid();
             maintenance.ManagerAnswer = request.ManagerAnswer;
             maintenance.Status = request.Status;
             maintenance.UpdatedAt = DateTime.UtcNow;
             maintenance.IsReadByResident = false;
             maintenance.IsReadByManager = true;
 
-            if (manager != null)
-                maintenance.HandledById = manager.Id;
+            maintenance.HandledById = User.UserId();
 
             await _context.SaveChangesAsync();
 
             return Ok(new { message = "Maintenance request updated successfully." });
         }
 
+        [Authorize(Roles = "Resident")]
         [HttpGet("summary/resident/{userName}")]
         public async Task<IActionResult> GetResidentSummary(string userName)
         {
+            if (!User.IsSelf(userName)) return Forbid();
             var requests = _context.MaintenanceRequests
                 .Include(r => r.User)
                 .Where(r => r.User != null && r.User.UserName == userName);
@@ -184,10 +162,12 @@ namespace server.Controllers
             });
         }
 
+        [Authorize(Roles = "VillageManager")]
         [HttpGet("summary/village/{village}")]
         public async Task<IActionResult> GetVillageSummary(string village)
         {
-            var decodedVillage = Uri.UnescapeDataString(village);
+            var decodedVillage = village;
+            if (!User.CanManageVillage(decodedVillage)) return Forbid();
 
             var requests = await _context.MaintenanceRequests
                 .Where(r => r.Village == decodedVillage)
@@ -195,13 +175,14 @@ namespace server.Controllers
 
             return Ok(new
             {
-                openMaintenanceCount = requests.Count,
+                openMaintenanceCount = requests.Count(item => item.Status != "Completed"),
                 pending = requests.Count(r => r.Status == "Pending"),
                 inProgress = requests.Count(r => r.Status == "In Progress"),
                 completed = requests.Count(r => r.Status == "Completed")
             });
         }
 
+        [Authorize(Roles = AccessRules.AdminRoles)]
         [HttpGet("summary/admin")]
         public async Task<IActionResult> GetAdminSummary()
         {

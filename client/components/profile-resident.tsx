@@ -1,6 +1,7 @@
+import { API_BASE_URL } from '../security/api'
 import { Link } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
-import axios from "axios";
+import axios from "../security/api";
 import Navbar from "./navbar";
 import {
   FaPen,
@@ -12,7 +13,6 @@ import {
 } from "react-icons/fa";
 
 function ProfileResident() {
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5072";
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -62,7 +62,7 @@ function ProfileResident() {
 
   const profileImageSrc =
     !profileImageUrl
-      ? "https://via.placeholder.com/120"
+      ? "/profile-placeholder.svg"
       : profileImageUrl.startsWith("http")
       ? profileImageUrl
       : `${API_BASE_URL}${profileImageUrl}`;

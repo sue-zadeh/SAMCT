@@ -1,3 +1,4 @@
+import { API_BASE_URL, apiFetch } from '../security/api'
 import { useEffect, useState } from 'react'
 import Navbar from './navbar'
 
@@ -28,7 +29,7 @@ const API_BASE_URL =
     try {
       setError('')
 
-      const response = await fetch(`${API_BASE_URL}/api/documents/admin`)
+      const response = await apiFetch(`${API_BASE_URL}/api/documents/admin`)
       const data = await response.json()
 
       if (!response.ok) {
