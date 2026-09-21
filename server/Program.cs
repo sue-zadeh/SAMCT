@@ -19,7 +19,8 @@ builder.Services.Configure<FormOptions>(options => {
     options.ValueLengthLimit = 10000;
     options.ValueCountLimit = 100;
 });
-builder.Services.AddControllers(options => options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute()))
+// MVC's built-in antiforgery filters are registered by AddControllersWithViews.
+builder.Services.AddControllersWithViews(options => options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute()))
     .ConfigureApiBehaviorOptions(options => options.InvalidModelStateResponseFactory = context =>
         new BadRequestObjectResult(new { message = "Please check the form fields.", errors = context.ModelState
             .Where(item => item.Value?.Errors.Count > 0)
@@ -49,6 +50,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 });
 builder.Services.AddAuthorization(options => options.FallbackPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
 builder.Services.AddAntiforgery(options => {
+    options.SuppressXFrameOptionsHeader = true; // The application consistently sends DENY.
     options.HeaderName = "X-CSRF-TOKEN";
     options.Cookie.Name = localEnvironment ? "Samct.Csrf" : "__Host-Samct.Csrf";
     options.Cookie.HttpOnly = true;

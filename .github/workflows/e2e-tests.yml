@@ -2,7 +2,7 @@ name: SAMCT security and end-to-end tests
 on:
   pull_request:
   push:
-    branches: [main, 'security/**']
+    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read

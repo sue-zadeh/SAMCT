@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process'
 import { resolve } from 'node:path'
-import { mkdir } from 'node:fs/promises'
+import { mkdir, rm } from 'node:fs/promises'
 import { dotnetConnection } from './e2e-database.mjs'
 const environment = {
   ...process.env, ASPNETCORE_ENVIRONMENT: 'Testing', ASPNETCORE_URLS: 'http://127.0.0.1:5072',
@@ -11,6 +11,7 @@ const environment = {
   // Tests use the same-origin proxy and never inherit a developer's remote API URL.
   VITE_API_BASE_URL: '', VITE_ALLOW_INDEXING: 'false', VITE_SITE_URL: '', SAMCT_API_PROXY: 'http://127.0.0.1:5072',
 }
+await rm('.playwright/outbox', { recursive: true, force: true })
 await mkdir('.playwright/outbox', { recursive: true })
 const dotnet = process.env.SAMCT_DOTNET || 'dotnet'
 function run(command, arguments_) {

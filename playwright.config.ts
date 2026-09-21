@@ -17,7 +17,7 @@ export default defineConfig({
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: [
-    { command: `${process.env.SAMCT_DOTNET || 'dotnet'} run --project server --no-build --no-launch-profile`, url: 'http://127.0.0.1:5072/api/health', reuseExistingServer: false, timeout: 90000 },
+    { command: `${process.env.SAMCT_DOTNET || 'dotnet'} run --project server --no-build --no-launch-profile`, url: 'http://127.0.0.1:5072/api/health', reuseExistingServer: false, timeout: 90000, stdout: 'pipe', stderr: 'pipe' },
     { command: 'npm run dev', url: 'http://127.0.0.1:5173', reuseExistingServer: false, timeout: 30000 },
   ],
 })
