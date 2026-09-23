@@ -1,6 +1,7 @@
+import { API_BASE_URL } from '../security/api'
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "../security/api";
 import Navbar from "./navbar";
 import {
   FaPen,
@@ -14,11 +15,11 @@ import {
 
 function ProfileVillageEdit() {
   const navigate = useNavigate();
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5072";
 
   const [firstName, setFirstName] = useState(localStorage.getItem("firstname") || "");
   const [lastName, setLastName] = useState(localStorage.getItem("lastname") || "");
   const [userName, setUserName] = useState(localStorage.getItem("username") || "");
+  const [currentPassword, setCurrentPassword] = useState("");
   const [email, setEmail] = useState(localStorage.getItem("email") || "");
   const [village, setVillage] = useState(localStorage.getItem("village") || "Ngatea");
   const [message, setMessage] = useState("");
@@ -37,6 +38,7 @@ function ProfileVillageEdit() {
         firstName,
         lastName,
         email,
+        currentPassword,
         village,
       });
 
@@ -119,7 +121,7 @@ function ProfileVillageEdit() {
                <FaMapMarkerAlt />Village</label>
               <select
                 className="form-select"
-                value={village}
+                value={village} disabled
                 onChange={(e) => setVillage(e.target.value)}
               >
                 {/* <option value="Papakura">Papakura</option> */}
@@ -129,6 +131,10 @@ function ProfileVillageEdit() {
             </div>
           </div>
 
+          <div className="mt-3">
+            <label htmlFor="confirmEmailPassword" className="form-label">Current password (required when changing your email)</label>
+            <input id="confirmEmailPassword" type="password" className="form-control" autoComplete="current-password" maxLength={72} value={currentPassword} onChange={event => setCurrentPassword(event.target.value)} />
+          </div>
           <div className="mt-4 d-flex gap-2">
             <button className="btn btn-primary" onClick={handleSave}>
               Save Changes

@@ -1,6 +1,7 @@
+import { API_BASE_URL } from '../security/api'
 import { Link } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
-import axios from "axios";
+import axios from "../security/api";
 import Navbar from "./navbar";
 import {
   FaPen,
@@ -13,7 +14,6 @@ import {
 
 
 function ProfileVillage() {
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5072";
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -54,7 +54,7 @@ function ProfileVillage() {
 
   const profileImageSrc =
     !profileImageUrl
-      ? "https://via.placeholder.com/120"
+      ? "/profile-placeholder.svg"
       : profileImageUrl.startsWith("http")
       ? profileImageUrl
       : `${API_BASE_URL}${profileImageUrl}`;
@@ -136,7 +136,7 @@ function ProfileVillage() {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*"
+                  accept="image/png,image/jpeg"
                   onChange={handleImageChange}
                   style={{ display: "none" }}
                 />

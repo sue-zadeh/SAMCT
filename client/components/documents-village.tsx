@@ -1,3 +1,4 @@
+import { API_BASE_URL, apiFetch } from '../security/api'
 import { useEffect, useState } from 'react'
 import Navbar from './navbar'
 
@@ -14,8 +15,6 @@ type DocumentNotice = {
 }
 
 function DocumentsVillage() {
-  const API_BASE_URL =
-    import.meta.env.VITE_API_BASE_URL || 'http://localhost:5072'
   const village = localStorage.getItem('village') || 'Ngatea'
   const userName = localStorage.getItem('username') || ''
 
@@ -39,7 +38,7 @@ function DocumentsVillage() {
     try {
       setError('')
 
-      const response = await fetch(
+      const response = await apiFetch(
         `${API_BASE_URL}/api/documents/village/${encodeURIComponent(village)}`,
       )
 
@@ -94,7 +93,7 @@ function DocumentsVillage() {
         ? `${API_BASE_URL}/api/documents/${editingId}`
         : `${API_BASE_URL}/api/documents`
 
-      const response = await fetch(url, {
+      const response = await apiFetch(url, {
         method: editingId ? 'PUT' : 'POST',
         body: formData,
       })
@@ -136,7 +135,7 @@ function DocumentsVillage() {
       setMessage('')
       setError('')
 
-      const response = await fetch(`${API_BASE_URL}/api/documents/${id}`, {
+      const response = await apiFetch(`${API_BASE_URL}/api/documents/${id}`, {
         method: 'DELETE',
       })
 
@@ -158,7 +157,7 @@ function DocumentsVillage() {
       setMessage('')
       setError('')
 
-      const response = await fetch(
+      const response = await apiFetch(
         `${API_BASE_URL}/api/documents/${doc.id}/visibility`,
         {
           method: 'PUT',
@@ -210,20 +209,20 @@ function DocumentsVillage() {
 
             <div className="row g-3">
               <div className="col-md-6">
-                <label className="form-label fw-semibold">Title</label>
+                <label htmlFor="documents-village-title" className="form-label fw-semibold">Title</label>
                 <input
                   className="form-control"
-                  value={title}
+                  id="documents-village-title" maxLength={160} value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Example: Water shutdown notice"
                 />
               </div>
 
               <div className="col-md-3">
-                <label className="form-label fw-semibold">Type</label>
+                <label htmlFor="documents-village-type" className="form-label fw-semibold">Type</label>
                 <select
                   className="form-select"
-                  value={type}
+                  id="documents-village-type" value={type}
                   onChange={(e) => setType(e.target.value)}
                 >
                   <option value="Notice">Notice</option>
@@ -243,11 +242,11 @@ function DocumentsVillage() {
               </div>
 
               <div className="col-12">
-                <label className="form-label fw-semibold">Description</label>
+                <label htmlFor="documents-village-description" className="form-label fw-semibold">Description</label>
                 <textarea
                   className="form-control"
                   rows={4}
-                  value={description}
+                  id="documents-village-description" maxLength={2000} value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Write the notice or document details..."
                 />
@@ -258,7 +257,7 @@ function DocumentsVillage() {
                 <input
                   type="file"
                   className="form-control"
-                  accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
+                  accept=".pdf,.docx,.xlsx,.jpg,.jpeg,.png"
                   onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
                 />
                 <p className="small text-secondary mt-1 mb-0">

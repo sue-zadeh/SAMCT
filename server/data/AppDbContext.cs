@@ -15,5 +15,12 @@ namespace server.Data
         public DbSet<DocumentNotice> DocumentNotices { get; set; }
         public DbSet<VillageProperty> VillageProperties { get; set; }
         public DbSet<PurchaseOrder> PurchaseOrders { get; set; }
+        public DbSet<AuthSession> AuthSessions { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<AuthSession>().Property(session => session.Id).HasMaxLength(64);
+            modelBuilder.Entity<AuthSession>().HasIndex(session => session.ExpiresAt);
+        }
     }
 }

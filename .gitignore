@@ -168,3 +168,14 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Local secrets, runtime uploads and browser artifacts
+!/.env.example
+!server/appsettings.json
+server/appsettings.Local.json
+server/storage/
+server/wwwroot/uploads/
+.playwright/
+playwright-report/
+test-results/
+artifacts/

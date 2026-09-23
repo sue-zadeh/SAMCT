@@ -1,3 +1,4 @@
+import { API_BASE_URL, apiFetch } from '../security/api'
 import { useEffect, useState } from 'react'
 import Navbar from './navbar'
 
@@ -18,7 +19,6 @@ type MaintenanceRequest = {
 }
 
 function MaintenanceVillage() {
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5072";
   const village = localStorage.getItem('village') || 'Ngatea'
   const managerUserName = localStorage.getItem('username') || ''
 
@@ -44,7 +44,7 @@ function MaintenanceVillage() {
     try {
       setError('')
 
-      const response = await fetch(
+      const response = await apiFetch(
         `${API_BASE_URL}/api/maintenance/village/${encodeURIComponent(village)}`,
       )
 
@@ -78,7 +78,7 @@ function MaintenanceVillage() {
         return
       }
 
-      const response = await fetch(
+      const response = await apiFetch(
         `${API_BASE_URL}/api/maintenance/${id}/manager-response`,
         {
           method: 'PUT',

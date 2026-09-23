@@ -1,91 +1,41 @@
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using MimeKit;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 
-namespace server.Services
+namespace server.Services;
+
+public class EmailService(IConfiguration configuration, IWebHostEnvironment environment) : IEmailService
 {
-    public class EmailService : IEmailService
+    private string Setting(string name) => configuration["EmailSettings:" + name] is { Length: > 0 } value
+        ? value : throw new InvalidOperationException("Email service is not configured.");
+
+    private async Task Send(string recipient, string subject, TextPart body, string? replyName = null, string? replyEmail = null)
     {
-        private readonly IConfiguration _configuration;
-
-        public EmailService(IConfiguration configuration)
-        {
-            _configuration = configuration;
+        // No network email during isolated E2E tests. There is no HTTP endpoint to read this outbox.
+        if (environment.IsEnvironment("Testing") && configuration["Testing:OutboxPath"] is { Length: > 0 } outbox) {
+            Directory.CreateDirectory(outbox);
+            await File.WriteAllTextAsync(Path.Combine(outbox, Guid.NewGuid() + ".json"), JsonSerializer.Serialize(new { recipient, subject, body = body.Text }));
+            return;
         }
-
-        public async Task SendContactEmail(
-            string fullName,
-            string email,
-            string subject,
-            string phone,
-            string message
-        )
-        {
-            var smtpHost = _configuration["EmailSettings:SmtpHost"];
-            var smtpPort = int.Parse(_configuration["EmailSettings:SmtpPort"] ?? "587");
-            var smtpUser = _configuration["EmailSettings:SmtpUser"];
-            var smtpPassword = _configuration["EmailSettings:SmtpPassword"];
-            var toEmail = _configuration["EmailSettings:ToEmail"];
-
-            var emailMessage = new MimeMessage();
-
-            emailMessage.From.Add(new MailboxAddress("SAMCT Website", smtpUser));
-            emailMessage.To.Add(MailboxAddress.Parse(toEmail));
-            emailMessage.ReplyTo.Add(new MailboxAddress(fullName, email));
-            emailMessage.Subject = $"Contact Form: {subject}";
-
-            emailMessage.Body = new TextPart("plain")
-            {
-                Text =
-$@"New contact message from SAMCT website
-
-Name: {fullName}
-Email: {email}
-Subject: {subject}
-Phone: {phone}
-
-Message:
-{message}"
-            };
-
-            using var smtp = new SmtpClient();
-
-            await smtp.ConnectAsync(smtpHost, smtpPort, SecureSocketOptions.StartTls);
-            await smtp.AuthenticateAsync(smtpUser, smtpPassword);
-            await smtp.SendAsync(emailMessage);
-            await smtp.DisconnectAsync(true);
-        }
-
-        public async Task SendPasswordResetEmail(string toEmail, string resetLink)
-        {
-            var smtpHost = _configuration["EmailSettings:SmtpHost"];
-            var smtpPort = int.Parse(_configuration["EmailSettings:SmtpPort"] ?? "587");
-            var smtpUser = _configuration["EmailSettings:SmtpUser"];
-            var smtpPassword = _configuration["EmailSettings:SmtpPassword"];
-
-            var emailMessage = new MimeMessage();
-
-            emailMessage.From.Add(new MailboxAddress("SAMCT Villages", smtpUser));
-            emailMessage.To.Add(MailboxAddress.Parse(toEmail));
-            emailMessage.Subject = "Reset your SAMCT password";
-
-            emailMessage.Body = new TextPart("html")
-            {
-                Text =
-$@"
-<p>Hello,</p>
-<p>Please click the link below to reset your password:</p>
-<p><a href='{resetLink}'>Reset Password</a></p>
-<p>This link will expire in 1 hour.</p>
-"
-            };
-
-            using var smtp = new SmtpClient();
-
-            await smtp.ConnectAsync(smtpHost, smtpPort, SecureSocketOptions.StartTls);
-            await smtp.AuthenticateAsync(smtpUser, smtpPassword);
-            await smtp.SendAsync(emailMessage);
-            await smtp.DisconnectAsync(true);
-        }
+        var message = new MimeMessage();
+        message.From.Add(new MailboxAddress("SAMCT Villages", Setting("SmtpUser")));
+        message.To.Add(MailboxAddress.Parse(recipient));
+        if (replyEmail is not null) message.ReplyTo.Add(new MailboxAddress(replyName, replyEmail));
+        message.Subject = subject;
+        message.Body = body;
+        using var smtp = new SmtpClient { Timeout = 15000 };
+        var port = int.Parse(configuration["EmailSettings:SmtpPort"] ?? "587");
+        await smtp.ConnectAsync(Setting("SmtpHost"), port, port == 465 ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.StartTls);
+        await smtp.AuthenticateAsync(Setting("SmtpUser"), Setting("SmtpPassword"));
+        await smtp.SendAsync(message);
+        await smtp.DisconnectAsync(true);
     }
+    public Task SendContactEmail(string fullName, string email, string subject, string phone, string message) =>
+        Send(Setting("ToEmail"), $"Contact Form: {subject}", new TextPart("plain") {
+            Text = $"New SAMCT contact message\n\nName: {fullName}\nEmail: {email}\nPhone: {phone}\nSubject: {subject}\n\n{message}"
+        }, fullName, email);
+    public Task SendPasswordResetEmail(string toEmail, string resetLink) => Send(toEmail, "Reset your SAMCT password",
+        new TextPart("html") { Text = $"<p>Hello,</p><p><a href=\"{HtmlEncoder.Default.Encode(resetLink)}\">Reset your SAMCT password</a></p><p>This link expires in 30 minutes. If you did not request this, you can ignore this email.</p>" });
 }

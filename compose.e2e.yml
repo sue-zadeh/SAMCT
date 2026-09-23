@@ -1,0 +1,16 @@
+services:
+  database:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: samct_e2e
+      POSTGRES_USER: samct_e2e
+      POSTGRES_PASSWORD: ${SAMCT_E2E_DATABASE_PASSWORD:?Set a disposable test database password}
+    ports:
+      - "127.0.0.1:55432:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U samct_e2e -d samct_e2e"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
