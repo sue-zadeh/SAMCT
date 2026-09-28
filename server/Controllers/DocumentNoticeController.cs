@@ -1,19 +1,24 @@
 using Microsoft.AspNetCore.Mvc;
+// Gives EF Core async methods such as ToListAsync().
 using Microsoft.EntityFrameworkCore;
 using server.Data;
 using server.Models;
 
 namespace server.Controllers
 {
+  // Tell ASP.NET this class is an API controller.
     [ApiController]
+    // Base endpoint for everything in this controller.
     [Route("api/documents")]
     public class DocumentNoticeController : ControllerBase
     {
+    // Store our database context.
         private readonly AppDbContext _context;
         private readonly IWebHostEnvironment _environment;
 
         public DocumentNoticeController(AppDbContext context, IWebHostEnvironment environment)
         {
+      // Save it so our methods can access the database.
             _context = context;
             _environment = environment;
         }
@@ -191,7 +196,7 @@ namespace server.Controllers
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteDocument(int id)
-        {
+        { 
             var document = await _context.DocumentNotices.FindAsync(id);
 
             if (document == null)

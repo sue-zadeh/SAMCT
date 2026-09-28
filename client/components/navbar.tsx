@@ -46,7 +46,7 @@ export default function Navbar({ userType }: NavbarProps) {
     { label: 'Marketing', path: '/marketing' },
     { label: 'Contact', path: '/contactUs' },
     { label: 'Login', path: '/login' },
-    { label: 'Register', path: '/register' },
+    // { label: 'Register', path: '/register' },
   ]
 
   const residentLinks = [

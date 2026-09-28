@@ -3,8 +3,10 @@ using server.Models;
 
 namespace server.Data
 {
+  // Represents our connection/session with the database.
     public class AppDbContext : DbContext
     {
+     // ASP.NET passes database configuration into this constructor.
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
         }
