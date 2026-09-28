@@ -1,11 +1,10 @@
+import { API_BASE_URL, apiFetch } from '../security/api'
 import { useEffect, useState } from 'react'
 import Navbar from './navbar'
 import { useLocation } from 'react-router-dom'
 
 
 function PurchaseOrders() {
-  const API_BASE_URL =
-    import.meta.env.VITE_API_BASE_URL || 'http://localhost:5072'
 
   const userVillage = localStorage.getItem('village') || 'Ngatea'
   const location = useLocation()
@@ -47,7 +46,7 @@ function PurchaseOrders() {
       ? `${API_BASE_URL}/api/purchase-orders/admin/all`
       : `${API_BASE_URL}/api/purchase-orders/village/${userVillage}`
 
-    const response = await fetch(url)
+    const response = await apiFetch(url)
 
     if (response.ok) {
       const data = await response.json()
@@ -90,7 +89,7 @@ function PurchaseOrders() {
 
     if (!confirmDelete) return
 
-    const response = await fetch(`${API_BASE_URL}/api/purchase-orders/${id}`, {
+    const response = await apiFetch(`${API_BASE_URL}/api/purchase-orders/${id}`, {
       method: 'DELETE',
     })
 
@@ -123,7 +122,7 @@ function PurchaseOrders() {
 
     const method = editingId ? 'PUT' : 'POST'
 
-    const response = await fetch(url, {
+    const response = await apiFetch(url, {
       method,
       headers: {
         'Content-Type': 'application/json',
@@ -179,22 +178,22 @@ function PurchaseOrders() {
               </div>
 
               <div className="col-md-5">
-                <label className="form-label">Title</label>
+                <label htmlFor="purchase-orders-title" className="form-label">Title</label>
 
                 <input
                   className="form-control"
-                  value={title}
+                  id="purchase-orders-title" maxLength={160} value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   required
                 />
               </div>
 
               <div className="col-md-3">
-                <label className="form-label">Unit Number</label>
+                <label htmlFor="purchase-orders-unitNumber" className="form-label">Unit Number</label>
 
                 <input
                   className="form-control"
-                  value={unitNumber}
+                  id="purchase-orders-unitNumber" maxLength={30} value={unitNumber}
                   onChange={(e) => setUnitNumber(e.target.value)}
                 />
               </div>
@@ -251,33 +250,33 @@ function PurchaseOrders() {
               </div>
 
               <div className="col-md-3">
-                <label className="form-label">Supplier</label>
+                <label htmlFor="purchase-orders-supplier" className="form-label">Supplier</label>
 
                 <input
                   className="form-control"
-                  value={supplier}
+                  id="purchase-orders-supplier" maxLength={160} value={supplier}
                   onChange={(e) => setSupplier(e.target.value)}
                 />
               </div>
 
               <div className="col-md-4">
-                <label className="form-label">Estimated Cost</label>
+                <label htmlFor="purchase-orders-estimatedCost" className="form-label">Estimated Cost</label>
 
                 <input
                   type="number"
                   className="form-control"
-                  value={estimatedCost}
+                  id="purchase-orders-estimatedCost" value={estimatedCost}
                   onChange={(e) => setEstimatedCost(e.target.value)}
                 />
               </div>
 
               <div className="col-12">
-                <label className="form-label">Notes</label>
+                <label htmlFor="purchase-orders-notes" className="form-label">Notes</label>
 
                 <textarea
                   rows={4}
                   className="form-control"
-                  value={notes}
+                  id="purchase-orders-notes" maxLength={2000} value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                 />
               </div>

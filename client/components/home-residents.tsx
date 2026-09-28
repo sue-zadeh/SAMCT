@@ -1,3 +1,4 @@
+import { API_BASE_URL, apiFetch } from '../security/api'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Navbar from './navbar'
@@ -15,14 +16,12 @@ type MaintenanceRequest = {
 }
 
 function HomeResidents() {
-  const API_BASE_URL =
-    import.meta.env.VITE_API_BASE_URL || 'http://localhost:5072'
   const fullName = localStorage.getItem('fullname') || 'Resident User'
   const firstName = localStorage.getItem('firstname') || 'Resident'
   const village = localStorage.getItem('village') || 'Ngatea'
   const userName = localStorage.getItem('username') || ''
   const profileImageUrl =
-    localStorage.getItem('profileImageUrl') || 'https://via.placeholder.com/80'
+    localStorage.getItem('profileImageUrl') || '/profile-placeholder.svg'
 
   const profileImageSrc = profileImageUrl.startsWith('http')
     ? profileImageUrl
@@ -36,7 +35,7 @@ function HomeResidents() {
       if (!userName) return
 
       try {
-        const response = await fetch(
+        const response = await apiFetch(
           `${API_BASE_URL}/api/maintenance/resident/${userName}`,
         )
 
@@ -51,7 +50,7 @@ function HomeResidents() {
 
     async function loadDocumentSummary() {
       try {
-        const response = await fetch(
+        const response = await apiFetch(
           `${API_BASE_URL}/api/documents/summary/resident/${encodeURIComponent(
             village,
           )}`,

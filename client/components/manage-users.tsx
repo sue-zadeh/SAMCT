@@ -1,5 +1,6 @@
+import { API_BASE_URL } from '../security/api'
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../security/api";
 import Navbar from "./navbar";
 
 type UserItem = {
@@ -16,13 +17,12 @@ type UserItem = {
 };
 
 function ManageUsers() {
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5072";
   const [users, setUsers] = useState<UserItem[]>([]);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
   const getImageSrc = (url: string) => {
-    if (!url) return "https://via.placeholder.com/56";
+    if (!url) return "/profile-placeholder.svg";
     if (url.startsWith("http")) return url;
     return `${API_BASE_URL}${url}`;
   };

@@ -1,6 +1,8 @@
+import { useSession } from '../security/session'
+import { API_BASE_URL } from '../security/api'
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "../security/api";
 import { FaEye, FaEyeSlash, FaLock } from "react-icons/fa";
 import Navbar from "./navbar";
 
@@ -14,7 +16,7 @@ type ProfilePasswordProps = {
 
 function ProfilePassword({ userType, backPath, title }: ProfilePasswordProps) {
   const navigate = useNavigate();
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5072";
+  const { refresh } = useSession();
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -53,15 +55,14 @@ function ProfilePassword({ userType, backPath, title }: ProfilePasswordProps) {
         newPassword,
       });
 
+      await refresh();
+      navigate("/login");
       setMessage(response.data.message || "Password updated successfully.");
 
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
 
-      setTimeout(() => {
-        navigate(backPath);
-      }, 700);
     } catch (error: any) {
       setError(error?.response?.data?.message || "Failed to update password.");
     }

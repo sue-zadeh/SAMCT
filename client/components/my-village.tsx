@@ -1,3 +1,4 @@
+import { API_BASE_URL, apiFetch } from '../security/api'
 import { useEffect, useState } from 'react'
 import Navbar from './navbar'
 import { useNavigate } from 'react-router-dom'
@@ -37,7 +38,6 @@ type UserOption = {
 }
 
 function MyVillage() {
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5072";
   const village = localStorage.getItem('village') || 'Ngatea'
   const navigate = useNavigate()
 
@@ -87,7 +87,7 @@ function MyVillage() {
     try {
       setError('')
 
-      const response = await fetch(
+      const response = await apiFetch(
         `${API_BASE_URL}/api/village-properties/${encodeURIComponent(village)}`,
       )
 
@@ -105,7 +105,7 @@ function MyVillage() {
 
   const loadUsers = async () => {
     try {
-      const response = await fetch(
+      const response = await apiFetch(
         `${API_BASE_URL}/api/users/by-village/${encodeURIComponent(village)}`,
       )
 
@@ -206,7 +206,7 @@ function MyVillage() {
           ? `${API_BASE_URL}/api/village-properties`
           : `${API_BASE_URL}/api/village-properties/${editingId}`
 
-      const response = await fetch(url, {
+      const response = await apiFetch(url, {
         method: editingId === null ? 'POST' : 'PUT',
         body: formData,
       })
@@ -250,7 +250,7 @@ function MyVillage() {
     if (!window.confirm('Are you sure you want to delete this property?'))
       return
 
-    const response = await fetch(
+    const response = await apiFetch(
       `${API_BASE_URL}/api/village-properties/${id}`,
       {
         method: 'DELETE',
@@ -264,7 +264,7 @@ function MyVillage() {
   }
 
   const handleMarketingToggle = async (id: number, visible: boolean) => {
-    const response = await fetch(
+    const response = await apiFetch(
       `${API_BASE_URL}/api/village-properties/${id}/marketing-visibility`,
       {
         method: 'PUT',
@@ -561,7 +561,7 @@ function MyVillage() {
                   <input
                     type="file"
                     className="form-control"
-                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                    accept=".pdf,.docx,.jpg,.jpeg,.png"
                     onChange={(e) => setDocument1(e.target.files?.[0] || null)}
                   />
                 </div>
@@ -573,7 +573,7 @@ function MyVillage() {
                   <input
                     type="file"
                     className="form-control"
-                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                    accept=".pdf,.docx,.jpg,.jpeg,.png"
                     onChange={(e) => setDocument2(e.target.files?.[0] || null)}
                   />
                 </div>

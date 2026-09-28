@@ -1,3 +1,5 @@
+import Seo from './security/seo'
+import { AccessGate } from './security/session'
 import { Routes, Route } from 'react-router-dom'
 
 import HomePublic from './components/home-public'
@@ -44,7 +46,8 @@ import ResetPassword from "./components/reset-password";
 function App() {
   return (
     <>
-      <Routes>
+      <Seo />
+      <AccessGate><Routes>
         {/* Public pages */}
         <Route path="/" element={<HomePublic />} />
         <Route path="/about" element={<About />} />
@@ -142,7 +145,8 @@ function App() {
           {/* forgot password */}
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
-      </Routes>
+      <Route path="*" element={<main className="container py-5"><h1>Page not found</h1></main>} />
+      </Routes></AccessGate>
 
       <Footer />
     </>

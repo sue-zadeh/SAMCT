@@ -1,3 +1,4 @@
+import { API_BASE_URL, apiFetch } from '../security/api'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Navbar from './navbar'
@@ -32,7 +33,6 @@ type DocumentNotice = {
 }
 
 function HomeVillageManager() {
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5072";
 
   const firstName = localStorage.getItem('firstname') || 'Village'
   const lastName = localStorage.getItem('lastname') || 'Manager'
@@ -42,7 +42,7 @@ function HomeVillageManager() {
   const role = localStorage.getItem('role') || 'VillageManager'
 
   const savedImage =
-    localStorage.getItem('profileImageUrl') || 'https://via.placeholder.com/100'
+    localStorage.getItem('profileImageUrl') || '/profile-placeholder.svg'
 
   const profileImageUrl = savedImage.startsWith('http')
     ? `${savedImage}?t=${Date.now()}`
@@ -59,7 +59,7 @@ function HomeVillageManager() {
 
     async function loadMaintenance() {
       try {
-        const response = await fetch(
+        const response = await apiFetch(
           `${API_BASE_URL}/api/maintenance/village/${encodedVillage}`,
         )
 
@@ -74,7 +74,7 @@ function HomeVillageManager() {
 
     async function loadResidents() {
       try {
-        const response = await fetch(
+        const response = await apiFetch(
           `${API_BASE_URL}/api/users/by-village/${encodedVillage}`,
         )
         if (!response.ok) return
@@ -100,7 +100,7 @@ function HomeVillageManager() {
 
     async function loadDocuments() {
       try {
-        const response = await fetch(
+        const response = await apiFetch(
           `${API_BASE_URL}/api/documents/village/${encodedVillage}`,
         )
 

@@ -1,10 +1,9 @@
+import { API_BASE_URL } from '../security/api'
 import { useState } from 'react'
-import axios from 'axios'
+import axios from '../security/api'
 import Navbar from './navbar'
 
 function ForgotPassword() {
-  const API_BASE_URL =
-    import.meta.env.VITE_API_BASE_URL || 'http://localhost:5072'
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')

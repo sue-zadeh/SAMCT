@@ -1,3 +1,4 @@
+import { API_BASE_URL, apiFetch } from '../security/api'
 import { useEffect, useState } from 'react'
 import Navbar from './navbar'
 
@@ -17,7 +18,6 @@ type MaintenanceRequest = {
 }
 
 function MaintenanceResident() {
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5072";
   const userName = localStorage.getItem('username') || ''
   const village = localStorage.getItem('village') || 'Ngatea'
 
@@ -47,7 +47,7 @@ function MaintenanceResident() {
     try {
       setError('')
 
-      const response = await fetch(
+      const response = await apiFetch(
         `${API_BASE_URL}/api/maintenance/resident/${encodeURIComponent(userName)}`,
       )
 
@@ -98,7 +98,7 @@ function MaintenanceResident() {
       if (image1) formData.append('image1', image1)
       if (image2) formData.append('image2', image2)
 
-      const response = await fetch(`${API_BASE_URL}/api/maintenance/resident`, {
+      const response = await apiFetch(`${API_BASE_URL}/api/maintenance/resident`, {
         method: 'POST',
         body: formData,
       })
@@ -163,32 +163,30 @@ function MaintenanceResident() {
             <form onSubmit={handleSubmit}>
               <div className="row g-3">
                 <div className="col-md-6">
-                  <label className="form-label fw-semibold">Issue Title</label>
+                  <label htmlFor="maintenance-resident-title" className="form-label fw-semibold">Issue Title</label>
                   <input
                     className="form-control"
-                    value={title}
+                    id="maintenance-resident-title" maxLength={160} value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Example: Leaking tap"
                   />
                 </div>
 
                 <div className="col-md-3">
-                  <label className="form-label fw-semibold">
-                    Unit / Address
-                  </label>
+                  <label htmlFor="maintenance-resident-unitOrAddress" className="form-label fw-semibold">Unit / Address</label>
                   <input
                     className="form-control"
-                    value={unitOrAddress}
+                    id="maintenance-resident-unitOrAddress" maxLength={250} value={unitOrAddress}
                     onChange={(e) => setUnitOrAddress(e.target.value)}
                     placeholder="Example: Unit 6"
                   />
                 </div>
 
                 <div className="col-md-3">
-                  <label className="form-label fw-semibold">Priority</label>
+                  <label htmlFor="maintenance-resident-priority" className="form-label fw-semibold">Priority</label>
                   <select
                     className="form-select"
-                    value={priority}
+                    id="maintenance-resident-priority" value={priority}
                     onChange={(e) => setPriority(e.target.value)}
                   >
                     <option value="Low">Low</option>
@@ -198,11 +196,11 @@ function MaintenanceResident() {
                 </div>
 
                 <div className="col-12">
-                  <label className="form-label fw-semibold">Description</label>
+                  <label htmlFor="maintenance-resident-description" className="form-label fw-semibold">Description</label>
                   <textarea
                     className="form-control"
                     rows={4}
-                    value={description}
+                    id="maintenance-resident-description" maxLength={2000} value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Write the issue clearly..."
                   />

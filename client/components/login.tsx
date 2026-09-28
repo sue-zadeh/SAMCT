@@ -1,6 +1,9 @@
+import { useSession, homeForRole } from '../security/session'
+import { API_BASE_URL } from '../security/api'
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import axios, { AxiosError } from "axios";
+import axios from "../security/api";
+import { AxiosError } from "axios";
 import { FaUser, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 import Navbar from "./navbar";
 
@@ -10,7 +13,8 @@ type LoginProps = {
 
 function Login({ onLoginSuccess }: LoginProps) {
   const navigate = useNavigate();
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5072";
+  const { refresh } = useSession();
+  const [loading, setLoading] = useState(false);
 
   const savedUserName = localStorage.getItem("rememberedUsername") || "";
 
@@ -23,6 +27,7 @@ function Login({ onLoginSuccess }: LoginProps) {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
     try {
       const response = await axios.post(`${API_BASE_URL}/api/login`, {
@@ -46,21 +51,10 @@ function Login({ onLoginSuccess }: LoginProps) {
           localStorage.removeItem("rememberedUsername");
         }
 
+        await refresh();
         onLoginSuccess();
 
-        const role = response.data.role;
-
-        if (
-          role === "CompanySecretary" ||
-          role === "FinancialAdvisor" ||
-          role === "Chairman"
-        ) {
-          navigate("/admin");
-        } else if (role === "VillageManager") {
-          navigate("/village-manager");
-        } else {
-          navigate("/resident");
-        }
+        navigate(homeForRole(response.data.role));
       }
     } catch (err) {
       const axiosError = err as AxiosError<{ message: string }>;
@@ -72,7 +66,7 @@ function Login({ onLoginSuccess }: LoginProps) {
       } else {
         setError("An unexpected error occurred. Please try again.");
       }
-    }
+    } finally { setLoading(false); }
   };
 
   return (
@@ -97,7 +91,7 @@ function Login({ onLoginSuccess }: LoginProps) {
                   </label>
                   <input
                     id="username"
-                    name="username"
+                    name="username" required maxLength={50}
                     type="text"
                     className="form-control"
                     value={userName}
@@ -115,7 +109,7 @@ function Login({ onLoginSuccess }: LoginProps) {
                   <div className="input-group">
                     <input
                     id="password"
-                    name="password"
+                    name="password" required maxLength={72}
                       type={showPassword ? "text" : "password"}
                       className="form-control"
                       value={password}
@@ -132,7 +126,7 @@ function Login({ onLoginSuccess }: LoginProps) {
                   </div>
                 </div>
 
-                {error && <div className="alert alert-danger">{error}</div>}
+                {error && <div role="alert" className="alert alert-danger">{error}</div>}
 
                 <div className="form-check mb-3">
                   <input
@@ -143,11 +137,11 @@ function Login({ onLoginSuccess }: LoginProps) {
                     onChange={(e) => setRememberMe(e.target.checked)}
                   />
                   <label className="form-check-label" htmlFor="rememberMe">
-                    Remember Me
+                    Remember my username
                   </label>
                 </div>
 
-                <button type="submit" className="btn btn-primary w-100">
+                <button type="submit" disabled={loading} className="btn btn-primary w-100">
                   Login
                 </button>
 

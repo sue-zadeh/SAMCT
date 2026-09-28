@@ -1,3 +1,4 @@
+import { API_BASE_URL, apiFetch } from '../security/api'
 import { useEffect, useState } from "react";
 import Navbar from "./navbar";
 
@@ -15,7 +16,6 @@ type MaintenanceRequest = {
 };
 
 function MaintenanceAdmin() {
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5072";
 
   const [requests, setRequests] = useState<MaintenanceRequest[]>([]);
   const [error, setError] = useState("");
@@ -28,7 +28,7 @@ function MaintenanceAdmin() {
 
       const allData = await Promise.all(
         villages.map(async (village) => {
-          const response = await fetch(
+          const response = await apiFetch(
             `${API_BASE_URL}/api/maintenance/village/${encodeURIComponent(village)}`
           );
 

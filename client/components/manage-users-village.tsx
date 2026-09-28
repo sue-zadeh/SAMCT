@@ -1,5 +1,6 @@
+import { API_BASE_URL } from '../security/api'
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../security/api";
 import Navbar from "./navbar";
 
 type UserItem = {
@@ -16,17 +17,16 @@ type UserItem = {
 };
 
 function ManageUsersVillage() {
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5072";
   const currentVillage = localStorage.getItem("village") || "Ngatea";
 
   const [users, setUsers] = useState<UserItem[]>([]);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  const adminRoles = ["CompanySecretary", "FinancialAdvisor", "Chairman"];
+
 
   const getImageSrc = (url: string) => {
-    if (!url) return "https://via.placeholder.com/48";
+    if (!url) return "/profile-placeholder.svg";
     if (url.startsWith("http")) return url;
     return `${API_BASE_URL}${url}`;
   };
@@ -39,7 +39,7 @@ function ManageUsersVillage() {
       );
 
       const filteredUsers = response.data.filter(
-        (user: UserItem) => !adminRoles.includes(user.role)
+        (user: UserItem) => user.role === "Resident"
       );
 
       setUsers(filteredUsers);
@@ -109,7 +109,7 @@ function ManageUsersVillage() {
           </p>
           <h1 className="fw-bold mb-2">Manage Users in {currentVillage}</h1>
           <p className="text-secondary mb-4">
-            View and manage all user profiles in your village, except admin profiles.
+            Approve and manage resident profiles in your village.
           </p>
 
           {message && <div className="alert alert-success">{message}</div>}
@@ -188,7 +188,7 @@ function ManageUsersVillage() {
                     <td>
                       <select
                         className="form-select"
-                        value={user.role}
+                        value={user.role} disabled
                         onChange={(e) =>
                           handleFieldChange(user.id, "role", e.target.value)
                         }
@@ -201,7 +201,7 @@ function ManageUsersVillage() {
                     <td>
                       <select
                         className="form-select"
-                        value={user.village}
+                        value={user.village} disabled
                         onChange={(e) =>
                           handleFieldChange(user.id, "village", e.target.value)
                         }

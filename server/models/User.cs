@@ -16,5 +16,7 @@ namespace server.Models
 
         public string? PasswordResetToken { get; set; }
         public DateTime? PasswordResetTokenExpiry { get; set; }
+        public int FailedLoginAttempts { get; set; }
+        public DateTime? LockoutEnd { get; set; }
     }
 }

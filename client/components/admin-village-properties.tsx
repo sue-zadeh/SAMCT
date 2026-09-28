@@ -1,3 +1,4 @@
+import { API_BASE_URL, apiFetch } from '../security/api'
 import { useEffect, useState } from 'react'
 import Navbar from './navbar'
 
@@ -32,7 +33,7 @@ const API_BASE_URL =
     try {
       setError('')
 
-      const response = await fetch(
+      const response = await apiFetch(
         `${API_BASE_URL}/api/village-properties/admin/all`,
       )
 

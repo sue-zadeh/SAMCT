@@ -1,0 +1,12 @@
+.git
+node_modules
+dist
+**/bin
+**/obj
+**/storage
+**/wwwroot/uploads
+.env*
+!.env.example
+test-results
+playwright-report
+.playwright

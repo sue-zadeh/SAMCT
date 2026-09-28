@@ -1,3 +1,4 @@
+import { API_BASE_URL, apiFetch } from '../security/api'
 import { useEffect, useState } from 'react'
 import Navbar from './navbar'
 import { Link } from 'react-router-dom'
@@ -18,7 +19,6 @@ type MarketingProperty = {
 }
 
 function Marketing() {
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5072";
 
   const [properties, setProperties] = useState<MarketingProperty[]>([])
   const [selectedVillage, setSelectedVillage] = useState('All')
@@ -36,7 +36,7 @@ function Marketing() {
   }, [])
 
   const loadMarketingProperties = async () => {
-    const response = await fetch(
+    const response = await apiFetch(
       `${API_BASE_URL}/api/village-properties/marketing`,
     )
     const data = await response.json()

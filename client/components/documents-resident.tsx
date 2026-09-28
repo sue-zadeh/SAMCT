@@ -1,3 +1,4 @@
+import { API_BASE_URL, apiFetch } from '../security/api'
 import { useEffect, useState } from 'react'
 import Navbar from './navbar'
 
@@ -14,8 +15,6 @@ type DocumentNotice = {
 }
 
 function DocumentsResident() {
-  const API_BASE_URL =
-    import.meta.env.VITE_API_BASE_URL || 'http://localhost:5072'
   const village = localStorage.getItem('village') || 'Ngatea'
 
   const [documents, setDocuments] = useState<DocumentNotice[]>([])
@@ -30,7 +29,7 @@ function DocumentsResident() {
     try {
       setError('')
 
-      const response = await fetch(
+      const response = await apiFetch(
         `${API_BASE_URL}/api/documents/resident/${encodeURIComponent(village)}`,
       )
 

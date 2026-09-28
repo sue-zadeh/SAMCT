@@ -1,348 +1,68 @@
-import { useState } from 'react'
-import axios from 'axios'
-import {
-  FaUser,
-  FaEnvelope,
-  FaEye,
-  FaEyeSlash,
-  FaLock,
-  FaImage,
-  FaBuilding,
-} from 'react-icons/fa'
+import { useEffect, useState } from 'react'
+import api, { API_BASE_URL } from '../security/api'
+import { adminRoles, useSession } from '../security/session'
 import Navbar from './navbar'
 
-function Register() {
-  const API_BASE_URL =
-    import.meta.env.VITE_API_BASE_URL || 'http://localhost:5072'
-
-  const [formData, setFormData] = useState({
-    userName: '',
-    firstName: '',
-    lastName: '',
-    email: '',
-    role: 'Resident',
-    village: 'ngatea',
-    password: '',
-    confirmPassword: '',
-  })
-
-  const [profileImage, setProfileImage] = useState<File | null>(null)
-  const [notification, setNotification] = useState('')
-  const [isError, setIsError] = useState(false)
-  const [loading, setLoading] = useState(false)
-
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-
-  const loggedInRole = localStorage.getItem('role')
-  const isVillageManager = loggedInRole === 'VillageManager'
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-  ) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    })
-  }
-
-  const validateForm = () => {
-    if (
-      !formData.userName.trim() ||
-      !formData.firstName.trim() ||
-      !formData.lastName.trim() ||
-      !formData.email.trim() ||
-      !formData.role.trim() ||
-      !formData.password ||
-      !formData.confirmPassword
-    ) {
-      return 'Please fill in all required fields.'
+export default function Register() {
+  const { user, loading: sessionLoading } = useSession()
+  const administrator = !!user && adminRoles.includes(user.role)
+  const manager = user?.role === 'VillageManager'
+  const [form, setForm] = useState({ userName: '', firstName: '', lastName: '', email: '', role: 'Resident', village: 'Ngatea', password: '', confirmPassword: '' })
+  const [image, setImage] = useState<File | null>(null)
+  const [message, setMessage] = useState('')
+  const [failed, setFailed] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  useEffect(() => { if (manager && user) setForm(current => ({ ...current, village: user.village, role: 'Resident' })) }, [user?.village, manager])
+  const change = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setForm(current => ({ ...current, [event.target.name]: event.target.value }))
+  async function submit(event: React.FormEvent) {
+    event.preventDefault(); setMessage(''); setFailed(false)
+    if (form.password !== form.confirmPassword) { setFailed(true); setMessage('Passwords do not match.'); return }
+    if (form.password.length < 12 || new TextEncoder().encode(form.password).length > 72) {
+      setFailed(true); setMessage('Use at least 12 characters and no more than 72 UTF-8 bytes for your password.'); return
     }
-
-    if (formData.password !== formData.confirmPassword) {
-      return 'Passwords do not match.'
-    }
-
-    if (formData.password.length < 6) {
-      return 'Password should be at least 6 characters.'
-    }
-
-    return ''
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    const error = validateForm()
-    if (error) {
-      setNotification(error)
-      setIsError(true)
-      return
-    }
-
+    setSubmitting(true)
     try {
-      setLoading(true)
-      setNotification('')
-      setIsError(false)
-
-      const submitData = new FormData()
-      submitData.append('UserName', formData.userName)
-      submitData.append('FirstName', formData.firstName)
-      submitData.append('LastName', formData.lastName)
-      submitData.append('Email', formData.email)
-      submitData.append('Role', formData.role)
-      submitData.append('Village', formData.village)
-      submitData.append('Password', formData.password)
-
-      if (profileImage) {
-        submitData.append('ProfileImage', profileImage)
-      }
-
-      const response = await axios.post(
-        `${API_BASE_URL}/api/register`,
-        submitData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        },
-      )
-
-      setNotification(response.data.message || 'User registered successfully.')
-      setIsError(false)
-
-      setFormData({
-        userName: '',
-        firstName: '',
-        lastName: '',
-        email: '',
-        role: 'Resident',
-        village: 'Ngatea',
-        password: '',
-        confirmPassword: '',
-      })
-      setProfileImage(null)
+      const data = new FormData()
+      for (const [key, value] of Object.entries(form)) if (key !== 'confirmPassword') data.append(key, value)
+      if (image) data.append('profileImage', image)
+      const response = await api.post(`${API_BASE_URL}/api/register`, data)
+      setMessage(response.data.message)
+      setForm(current => ({ ...current, userName: '', firstName: '', lastName: '', email: '', password: '', confirmPassword: '' }))
+      setImage(null)
     } catch (error: any) {
-      setNotification(
-        error?.response?.data?.message || 'Failed to register user.',
-      )
-      setIsError(true)
-    } finally {
-      setLoading(false)
-    }
+      setFailed(true); setMessage(error.response?.data?.message || 'Registration failed. Please try again.')
+    } finally { setSubmitting(false) }
   }
-
-  return (
-    <>
-      <Navbar
-        userType={
-          loggedInRole === 'VillageManager'
-            ? 'villageManager'
-            : loggedInRole === 'Admin'
-              ? 'admin'
-              : 'public'
-        }
-      />
-      <main className="container py-5">
-        <div className="row justify-content-center">
-          <div className="col-lg-6">
-            <div className="p-4 border rounded-4 shadow-sm bg-white">
-              <h1 className="fw-bold text-center mb-4">Register User</h1>
-
-              {notification && (
-                <div
-                  className={`alert ${
-                    isError ? 'alert-danger' : 'alert-success'
-                  }`}
-                >
-                  {notification}
-                </div>
-              )}
-
-              <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                  <label className="form-label fw-semibold">
-                    <FaUser className="me-2" />
-                    Username
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    name="userName"
-                    value={formData.userName}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                <div className="row g-3">
-                  <div className="col-md-6">
-                    <label className="form-label fw-semibold">
-                      <FaUser className="me-2" />
-                      First Name
-                    </label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="firstName"
-                      value={formData.firstName}
-                      onChange={handleChange}
-                    />
-                  </div>
-
-                  <div className="col-md-6">
-                    <label className="form-label fw-semibold">
-                      <FaUser className="me-2" />
-                      Last Name
-                    </label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="lastName"
-                      value={formData.lastName}
-                      onChange={handleChange}
-                    />
-                  </div>
-                </div>
-
-                <div className="mt-3">
-                  <label className="form-label fw-semibold">
-                    <FaEnvelope className="me-2" />
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    className="form-control"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                <div className="row g-3 mt-1">
-                  <div className="col-md-6">
-                    <label className="form-label fw-semibold">
-                      <FaUser className="me-2" />
-                      Role
-                    </label>
-                    <select
-                      className="form-select"
-                      name="role"
-                      value={formData.role}
-                      onChange={handleChange}
-                    >
-                      <option value="Resident">Resident</option>
-
-                      {!isVillageManager && (
-                        <>
-                          <option value="VillageManager">
-                            Village Manager
-                          </option>
-                          <option value="CompanySecretary">
-                            Company Secretary
-                          </option>
-                          <option value="FinancialAdvisor">
-                            Financial Advisor
-                          </option>
-                          <option value="Chairman">Chairman</option>
-                        </>
-                      )}
-                    </select>
-                  </div>
-
-                  <div className="col-md-6">
-                    <label className="form-label fw-semibold">
-                      <FaBuilding className="me-2" />
-                      Village
-                    </label>
-                    <select
-                      className="form-select"
-                      name="village"
-                      value={formData.village}
-                      onChange={handleChange}
-                    >
-                      {/* <option value="Papakura">Papakura</option> */}
-                      <option value="Ngatea">Ngatea</option>
-                      <option value="Whitianga">Whitianga</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="mt-3">
-                  <label className="form-label fw-semibold">
-                    <FaImage className="me-2" />
-                    Profile Image
-                  </label>
-                  <input
-                    type="file"
-                    className="form-control"
-                    accept="image/*"
-                    onChange={(e) =>
-                      setProfileImage(e.target.files?.[0] || null)
-                    }
-                  />
-                </div>
-
-                <div className="mt-3">
-                  <label className="form-label fw-semibold">
-                    <FaLock className="me-2" />
-                    Password
-                  </label>
-                  <div className="input-group">
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      className="form-control"
-                      name="password"
-                      value={formData.password}
-                      onChange={handleChange}
-                    />
-                    <button
-                      type="button"
-                      className="btn btn-outline-secondary"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? <FaEyeSlash /> : <FaEye />}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="mt-3">
-                  <label className="form-label fw-semibold">
-                    <FaLock className="me-2" />
-                    Confirm Password
-                  </label>
-                  <div className="input-group">
-                    <input
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      className="form-control"
-                      name="confirmPassword"
-                      value={formData.confirmPassword}
-                      onChange={handleChange}
-                    />
-                    <button
-                      type="button"
-                      className="btn btn-outline-secondary"
-                      onClick={() =>
-                        setShowConfirmPassword(!showConfirmPassword)
-                      }
-                    >
-                      {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
-                    </button>
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  className="btn btn-primary w-100 mt-4"
-                  disabled={loading}
-                >
-                  {loading ? 'Registering...' : 'Register User'}
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </main>
-    </>
-  )
+  return <>
+    <Navbar userType={administrator ? 'admin' : manager ? 'villageManager' : 'public'} />
+    <main className="container py-5"><div className="row justify-content-center"><div className="col-lg-6 p-4 border rounded-4 shadow-sm">
+      <h1>Register User</h1>
+      {!administrator && !manager && <p>Your village manager or administrator must approve your account before you can log in.</p>}
+      {message && <div role="alert" className={`alert ${failed ? 'alert-danger' : 'alert-success'}`}>{message}</div>}
+      <form onSubmit={submit}>
+        {(['userName', 'firstName', 'lastName', 'email'] as const).map(name => <div className="mb-3" key={name}>
+          <label className="form-label" htmlFor={name}>{{ userName: 'Username', firstName: 'First Name', lastName: 'Last Name', email: 'Email' }[name]}</label>
+          <input className="form-control" id={name} name={name} type={name === 'email' ? 'email' : 'text'} value={form[name]} onChange={change}
+            required minLength={name === 'userName' ? 3 : undefined} maxLength={name === 'email' ? 254 : name === 'userName' ? 50 : 80}
+            pattern={name === 'userName' ? '[A-Za-z0-9_.\\-]+' : undefined} autoComplete={name === 'userName' ? 'username' : name === 'email' ? 'email' : name === 'firstName' ? 'given-name' : 'family-name'} />
+        </div>)}
+        {administrator && <div className="mb-3"><label htmlFor="role" className="form-label">Role</label>
+          <select id="role" name="role" className="form-select" value={form.role} onChange={change}>
+            {['Resident', 'VillageManager', ...adminRoles].map(role => <option key={role} value={role}>{role}</option>)}
+          </select></div>}
+        <div className="mb-3"><label htmlFor="village" className="form-label">Village</label>
+          <select id="village" name="village" className="form-select" value={form.village} onChange={change} disabled={manager}>
+            <option>Ngatea</option><option>Whitianga</option>
+          </select></div>
+        <div className="mb-3"><label htmlFor="profileImage" className="form-label">Profile Image (PNG or JPEG, up to 2 MB)</label>
+          <input id="profileImage" className="form-control" type="file" accept="image/png,image/jpeg" onChange={event => setImage(event.target.files?.[0] || null)} /></div>
+        {(['password', 'confirmPassword'] as const).map(name => <div className="mb-3" key={name}>
+          <label htmlFor={name} className="form-label">{name === 'password' ? 'Password' : 'Confirm Password'}</label>
+          <input id={name} name={name} type="password" className="form-control" value={form[name]} onChange={change} required minLength={12} maxLength={72} autoComplete="new-password" />
+        </div>)}
+        <p className="small">Use a unique password with at least 12 characters.</p>
+        <button type="submit" className="btn btn-primary w-100" disabled={submitting || sessionLoading}>{submitting ? 'Registering…' : 'Register User'}</button>
+      </form>
+    </div></div></main>
+  </>
 }
-
-export default Register
