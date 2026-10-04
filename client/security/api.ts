@@ -2,7 +2,7 @@ import axios from 'axios'
 
 // Use a same-origin /api and /uploads reverse proxy in production.
 export const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '')
-const apiOrigin = new URL(API_BASE_URL || window.location.origin).origin
+const apiOrigin = new URL(API_BASE_URL || (typeof window === 'undefined' ? 'http://localhost' : window.location.origin)).origin
 let csrfToken: Promise<string> | undefined
 export function clearCsrfToken() { csrfToken = undefined }
 
@@ -21,7 +21,7 @@ function isApi(url: string) {
 }
 function needsCsrf(method: string) { return !['GET', 'HEAD', 'OPTIONS'].includes(method.toUpperCase()) }
 function afterResponse(url: string, status: number) {
-  if (/\/api\/(login|logout|reset-password|users\/password)$/.test(url) && status >= 200 && status < 300) clearCsrfToken()
+  if (/\/api\/(login|logout|reset-password|users\/(password|profile)|mfa\/(complete|disable|recovery-codes))$/.test(url) && status >= 200 && status < 300) clearCsrfToken()
   if (status === 401 && !url.endsWith('/api/login') && !url.endsWith('/api/session')) {
     window.dispatchEvent(new Event('samct-session-expired'))
   }

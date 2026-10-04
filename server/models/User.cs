@@ -18,5 +18,10 @@ namespace server.Models
         public DateTime? PasswordResetTokenExpiry { get; set; }
         public int FailedLoginAttempts { get; set; }
         public DateTime? LockoutEnd { get; set; }
+        public string? MfaSecret { get; set; }
+        public string? MfaPendingSecret { get; set; }
+        public DateTime? MfaPendingExpiresAt { get; set; }
+        public long? MfaLastTimeStep { get; set; }
+        public string? MfaRecoveryCodeHashes { get; set; }
     }
 }

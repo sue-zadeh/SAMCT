@@ -76,9 +76,9 @@ function Marketing() {
             SAMCT Villages
           </p>
 
-          <h3 className="fw-bold mb-3">
+          <h1 className="h3 fw-bold mb-3">
             Safe, supportive village living in South Auckland and beyond
-          </h3>
+          </h1>
 
           <p
             className="text-secondary  mb-4 mx-auto"

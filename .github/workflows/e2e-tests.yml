@@ -9,8 +9,14 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     services:
+      scanner:
+        image: clamav/clamav:stable
+        ports: ['3310:3310']
+        options: >-
+          --health-cmd "clamdscan --ping=1"
+          --health-interval 10s --health-timeout 10s --health-retries 30 --health-start-period 60s
       postgres:
         image: postgres:17-alpine
         env:
@@ -32,8 +38,9 @@ jobs:
           cache: npm
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.0.x'
+          dotnet-version: '10.0.x'
       - run: npm ci
+      - run: npm run check:source
       - run: npx playwright install --with-deps chromium
       - run: npm audit --audit-level=moderate
       - run: npm run build

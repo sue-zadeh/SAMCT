@@ -6,7 +6,7 @@ const connection = database()
 await connection.connect()
 try {
   // This command is deliberately destructive ONLY inside a validated disposable local _e2e database.
-  await connection.query('TRUNCATE TABLE "AuthSessions", "MaintenanceRequests", "DocumentNotices", "PurchaseOrders", "VillageProperties", "ContactMessages", "Users" RESTART IDENTITY CASCADE')
+  await connection.query('TRUNCATE TABLE "MfaChallenges", "AuthSessions", "MaintenanceRequests", "DocumentNotices", "PurchaseOrders", "VillageProperties", "ContactMessages", "Users" RESTART IDENTITY CASCADE')
   const password = 'Test-' + randomBytes(20).toString('hex')
   const passwordHash = await bcrypt.hash(password, 12)
   const definitions = [
@@ -14,7 +14,9 @@ try {
     ['manager', 'VillageManager', 'Ngatea'], ['otherManager', 'VillageManager', 'Whitianga'],
     ['admin', 'CompanySecretary', 'Ngatea'], ['financial', 'FinancialAdvisor', 'Ngatea'], ['chairman', 'Chairman', 'Ngatea'], ['genericAdmin', 'Admin', 'Ngatea'],
     ['lockout', 'Resident', 'Ngatea'], ['reset', 'Resident', 'Ngatea'], ['changePassword', 'Resident', 'Ngatea'],
-    ['revoke', 'Resident', 'Ngatea'], ['inactive', 'Resident', 'Ngatea'],
+    ['revoke', 'Resident', 'Ngatea'], ['emailChange', 'Resident', 'Ngatea'],
+    ['mfaEnroll', 'VillageManager', 'Ngatea'], ['mfaLock', 'Admin', 'Ngatea'],
+    ['mfaManage', 'Admin', 'Ngatea'], ['mfaReset', 'Admin', 'Ngatea'], ['mfaResident', 'Resident', 'Ngatea'], ['inactive', 'Resident', 'Ngatea'],
   ]
   const users = {}
   for (const [key, role, village] of definitions) {

@@ -40,9 +40,10 @@ export function AccessGate({ children }: { children: ReactNode }) {
   const { user, loading } = useSession()
   const { pathname } = useLocation()
   const area = pathname.split('/')[1]
-  if (!['resident', 'admin', 'village-manager'].includes(area)) return <>{children}</>
+  if (!['resident', 'admin', 'village-manager', 'account'].includes(area)) return <>{children}</>
   if (loading) return <main className="container py-5" role="status">Checking your session…</main>
   if (!user) return <Navigate to="/login" replace />
+  if (area === 'account') return <>{children}</>
   const allowed = area === 'admin' ? adminRoles.includes(user.role) : area === 'resident' ? user.role === 'Resident' : user.role === 'VillageManager'
   return allowed ? <>{children}</> : <Navigate to={homeForRole(user.role)} replace />
 }

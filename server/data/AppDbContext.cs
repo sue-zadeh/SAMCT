@@ -18,11 +18,15 @@ namespace server.Data
         public DbSet<VillageProperty> VillageProperties { get; set; }
         public DbSet<PurchaseOrder> PurchaseOrders { get; set; }
         public DbSet<AuthSession> AuthSessions { get; set; }
+        public DbSet<MfaChallenge> MfaChallenges { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<AuthSession>().Property(session => session.Id).HasMaxLength(64);
             modelBuilder.Entity<AuthSession>().HasIndex(session => session.ExpiresAt);
+            modelBuilder.Entity<MfaChallenge>().Property(challenge => challenge.Id).HasMaxLength(64);
+            modelBuilder.Entity<MfaChallenge>().Property(challenge => challenge.PasswordStamp).HasMaxLength(64);
+            modelBuilder.Entity<MfaChallenge>().HasIndex(challenge => challenge.ExpiresAt);
         }
     }
 }
