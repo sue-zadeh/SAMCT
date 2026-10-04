@@ -41,6 +41,7 @@ jobs:
           dotnet-version: '10.0.x'
       - run: npm ci
       - run: npm run check:source
+      - run: node --test scripts/e2e-database.test.mjs
       - run: npx playwright install --with-deps chromium
       - run: npm audit --audit-level=moderate
       - run: npm run build

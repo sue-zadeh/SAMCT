@@ -23,7 +23,9 @@ This report covers [PR #2](https://github.com/sue-zadeh/SAMCT/pull/2). It supple
 
 ## Validation
 
-Validation of the final PR revision is in progress. The first CI run passed the frontend build, .NET Release build with warnings treated as errors, both dependency audit gates and 51 of 53 Playwright tests. It exposed an incorrectly wrapped EICAR antivirus test sample and a dependent test's non-unique title. The fixture was changed to an exact EICAR file inside an Office archive, and the outage test was isolated. Final results will replace this paragraph after verification.
+The required GitHub Actions checks are the frontend build, .NET Release build with warnings treated as errors, npm and NuGet vulnerability audits, PostgreSQL migrations, **53 Playwright tests**, and the HTTPS proxy check. The [PR checks](https://github.com/sue-zadeh/SAMCT/pull/2/checks) are the authoritative result for each revision; the PR description records the verified run before handover.
+
+The first run passed both builds and audit gates, with 51 of 53 Playwright tests passing. It exposed an incorrectly wrapped EICAR antivirus fixture and a non-unique test title. The fixture was changed to an exact EICAR file inside an Office archive, and the outage test now uses its own title. The application continues to reject files on scanner errors; tests assert that no rejected file or database record is retained.
 
 The suite uses Chromium, a real PostgreSQL 17 database, real login/CSRF/session code and a real ClamAV daemon. It includes allowed workflows and forbidden requests, across all access areas. Rate limits remain enabled and Playwright retries are disabled. An additional container check exercises the actual Nginx configuration over local HTTPS, including public content with JavaScript disabled, developer credit, canonical routes, private noindex and 404 responses.
 

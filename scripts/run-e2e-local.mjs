@@ -11,7 +11,13 @@ function run(command, args, env = process.env) {
   if (result.error) { console.error(`Could not start ${command}. Install the prerequisites in README.md. ${result.error.message}`); process.exit(1) }
   if (result.status !== 0) process.exit(result.status || 1)
 }
-if (!process.argv.includes('--stop')) run(dotnet, ['--version'])
+if (!process.argv.includes('--stop')) {
+  const sdk = spawnSync(dotnet, ['--version'], { encoding: 'utf8' })
+  if (sdk.error || sdk.status !== 0 || Number(sdk.stdout?.trim().split('.')[0]) < 10) {
+    console.error('Install the .NET 10 SDK before running SAMCT tests. See README.md for all prerequisites.')
+    process.exit(1)
+  }
+}
 run('docker', ['info', '--format', '{{.ServerVersion}}'])
 await mkdir('.playwright', { recursive: true })
 let password
