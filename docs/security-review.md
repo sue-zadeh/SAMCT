@@ -1,10 +1,12 @@
 # SAMCT security and delivery review
 
-Review date: 21 September 2026. Baseline: `0529271` on `main`.
+Historical review: 21 September 2026. Baseline: `0529271` on `main`.
+
+**Superseded for current delivery status by [the 4 October release report](release-readiness.md).** PR #1 was subsequently merged; the results below apply to that earlier tested revision, not every later commit. The follow-up adds MFA, malware scanning and public-page HTML rendering.
 
 ## Delivery decision
 
-The original baseline is not ready for internet delivery with private resident data. The hardening branch addresses the verified code issues below and passes all 43 automated tests. It is ready for code review, with release blocked on credential rotation, historical data exposure review and staging/deployment checks. The changes are in [PR #1](https://github.com/sue-zadeh/SAMCT/pull/1); they have not been merged into main or deployed to production.
+The original baseline is not ready for internet delivery with private resident data. The hardening branch addresses the verified code issues below and passes all 43 automated tests. It is ready for code review, with release blocked on credential rotation, historical data exposure review and staging/deployment checks. The changes are in [PR #1](https://github.com/sue-zadeh/SAMCT/pull/1); that PR has since been merged. Production deployment has not been verified.
 
 ## Verified findings and changes
 

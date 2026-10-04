@@ -125,6 +125,7 @@ function Login({ onLoginSuccess }: LoginProps) {
               </h3>
 
               <h2 className="h3 text-center fst-italic mb-4">Login</h2>
+              {new URLSearchParams(window.location.search).get("emailUpdated") === "true" && <p role="status" className="alert alert-success">Email updated. Please sign in again. Previous reset links no longer work.</p>}
 
               {recoveryCodes.length > 0 ? <section aria-labelledby="recovery-title">
                 <h2 id="recovery-title" className="h4">Save your recovery codes</h2>

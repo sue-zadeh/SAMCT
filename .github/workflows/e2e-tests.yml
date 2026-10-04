@@ -44,15 +44,16 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm audit --audit-level=moderate
       - run: npm run build
+      - run: npm run test:deployment
       - run: dotnet build server --configuration Release --warnaserror
       - run: dotnet list server package --vulnerable --include-transitive --format json > nuget-audit.json
       - name: Fail on known vulnerable NuGet packages
         run: node scripts/check-nuget-audit.mjs nuget-audit.json
       - run: npm run test:e2e
       - uses: actions/upload-artifact@v4
-        if: failure()
+        if: always()
         with:
-          name: playwright-failures
+          name: playwright-results
           path: |
             playwright-report/
             test-results/

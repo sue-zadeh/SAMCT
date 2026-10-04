@@ -71,7 +71,12 @@ export async function loginPage(page: Page, account: Account) {
   if (response.status() === 202) {
     await page.getByRole('button', { name: 'Use a recovery code', exact: true }).click()
     await page.getByLabel('Recovery code', { exact: true }).fill(recoveryCode(account))
-    await page.getByRole('button', { name: 'Verify and sign in', exact: true }).click()
+    const verify = () => {
+      const result = page.waitForResponse(response => response.url().endsWith('/api/mfa/complete'))
+      void page.getByRole('button', { name: 'Verify and sign in', exact: true }).click()
+      return result
+    }
+    if ((await verify()).status() === 429) { await page.waitForTimeout(61000); await verify() }
   }
 }
 export const order = (village = 'Ngatea') => ({ village, title: 'New maintenance order', unitNumber: '4', category: 'Maintenance', supplier: 'Test supplier', estimatedCost: 120, priority: 'Normal', status: 'Pending', notes: 'Test order notes' })

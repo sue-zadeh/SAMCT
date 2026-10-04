@@ -12,7 +12,8 @@
     "test:report": "playwright show-report",
     "check:source": "node scripts/check-source.mjs",
     "typecheck": "tsc --noEmit",
-    "test:e2e:stop": "node scripts/run-e2e-local.mjs --stop"
+    "test:e2e:stop": "node scripts/run-e2e-local.mjs --stop",
+    "test:deployment": "node scripts/check-deployment.mjs"
   },
   "dependencies": {
     "aos": "^2.3.4",
