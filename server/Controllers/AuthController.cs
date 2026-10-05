@@ -19,17 +19,18 @@ namespace server.Controllers;
 [Route("api")]
 [Authorize]
 public class AuthController(AppDbContext database, IEmailService emailService, IConfiguration configuration,
-    UploadStorage uploads, ILogger<AuthController> logger) : ControllerBase
+    UploadStorage uploads, MfaService mfa, ILogger<AuthController> logger) : ControllerBase
 {
     private static readonly string DummyHash = BCrypt.Net.BCrypt.HashPassword(Convert.ToHexString(RandomNumberGenerator.GetBytes(24)), 12);
     private static string Normalize(string value) => value.Trim().ToLowerInvariant();
     private static string TokenHash(string value) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value)));
-    private static UserResponseDto MapUser(User user) => new() {
+    internal static UserResponseDto MapUser(User user) => new() {
         Id = user.Id, UserName = user.UserName, FirstName = user.FirstName, LastName = user.LastName,
         FullName = user.FullName, Email = user.Email, Role = user.Role, Village = user.Village,
         ProfileImageUrl = user.ProfileImageUrl, IsActive = user.IsActive
     };
-    private static bool Verify(string password, string hash) {
+    internal static bool Verify(string password, string hash) {
+        if (Encoding.UTF8.GetByteCount(password) > 72) return false;
         try { return BCrypt.Net.BCrypt.Verify(password, hash); }
         catch (BCrypt.Net.SaltParseException) { return false; }
     }
@@ -91,16 +92,16 @@ public class AuthController(AppDbContext database, IEmailService emailService, I
             logger.LogWarning("Login rejected");
             return Unauthorized(new { message = "Invalid username or password." });
         }
-        user.FailedLoginAttempts = 0;
-        user.LockoutEnd = null;
-        var oldSession = User.FindFirst("session")?.Value;
-        if (oldSession is not null) await database.AuthSessions.Where(item => item.Id == oldSession).ExecuteDeleteAsync();
-        await database.AuthSessions.Where(item => item.ExpiresAt <= DateTime.UtcNow).ExecuteDeleteAsync();
-        var session = new AuthSession { Id = Convert.ToHexString(RandomNumberGenerator.GetBytes(32)), UserId = user.Id, ExpiresAt = DateTime.UtcNow.AddHours(8) };
-        database.AuthSessions.Add(session);
-        await database.SaveChangesAsync();
+        if (user.LockoutEnd <= DateTime.UtcNow) { user.FailedLoginAttempts = 0; user.LockoutEnd = null; }
+        if (MfaService.NeedsChallenge(user)) {
+            await mfa.Challenge(user, HttpContext);
+            await database.SaveChangesAsync();
+            await transaction.CommitAsync();
+            return Accepted(new { twoFactorRequired = true, setupRequired = user.MfaSecret is null });
+        }
+        var session = await mfa.CreateSession(user, HttpContext, false);
         await transaction.CommitAsync();
-        await HttpContext.SignInAsync(AccessRules.Principal(user, session.Id), new AuthenticationProperties { ExpiresUtc = session.ExpiresAt });
+        await mfa.SignIn(user, session, HttpContext);
         logger.LogInformation("Account {UserId} logged in", user.Id);
         return Ok(MapUser(user));
     }
@@ -133,15 +134,25 @@ public class AuthController(AppDbContext database, IEmailService emailService, I
     [HttpPut("users/profile")]
     public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequestDto request) {
         if (!User.IsSelf(request.CurrentUsername)) return Forbid();
-        var user = await database.Users.SingleAsync(item => item.Id == User.UserId());
+        await using var transaction = await database.Database.BeginTransactionAsync();
+        var user = (await mfa.LockUser(User.UserId()))!;
         // A village change is an access change; only the staff management endpoint may do this.
         if (request.Village != user.Village) return Forbid();
-        if (Normalize(request.Email) != Normalize(user.Email) && !Verify(request.CurrentPassword ?? "", user.PasswordHash))
+        var emailChanged = Normalize(request.Email) != Normalize(user.Email);
+        if (emailChanged && !Verify(request.CurrentPassword ?? "", user.PasswordHash))
             return BadRequest(new { message = "Enter your current password to change your email address." });
         if (await IdentityExists(request.UserName, request.Email, user.Id)) return Conflict(new { message = "These account details are already in use." });
         user.UserName = Normalize(request.UserName); user.Email = Normalize(request.Email);
         user.FirstName = request.FirstName.Trim(); user.LastName = request.LastName.Trim(); user.FullName = $"{user.FirstName} {user.LastName}";
+        if (emailChanged) {
+            user.PasswordResetToken = null; user.PasswordResetTokenExpiry = null;
+            user.MfaPendingSecret = null; user.MfaPendingExpiresAt = null;
+            await database.AuthSessions.Where(item => item.UserId == user.Id).ExecuteDeleteAsync();
+            await database.MfaChallenges.Where(item => item.UserId == user.Id).ExecuteDeleteAsync();
+        }
         await database.SaveChangesAsync();
+        await transaction.CommitAsync();
+        if (emailChanged) await HttpContext.SignOutAsync();
         return Ok(MapUser(user));
     }
 
@@ -157,6 +168,7 @@ public class AuthController(AppDbContext database, IEmailService emailService, I
                 .SetProperty(item => item.PasswordResetToken, (string?)null).SetProperty(item => item.PasswordResetTokenExpiry, (DateTime?)null));
         if (changed != 1) return BadRequest(new { message = "Please sign in again before changing your password." });
         await database.AuthSessions.Where(item => item.UserId == user.Id).ExecuteDeleteAsync();
+        await database.MfaChallenges.Where(item => item.UserId == user.Id).ExecuteDeleteAsync();
         await transaction.CommitAsync();
         await HttpContext.SignOutAsync();
         return Ok(new { message = "Password updated. Please log in again." });
@@ -190,6 +202,7 @@ public class AuthController(AppDbContext database, IEmailService emailService, I
         if (accessChanged) {
             user.PasswordResetToken = null; user.PasswordResetTokenExpiry = null;
             await database.AuthSessions.Where(item => item.UserId == id).ExecuteDeleteAsync();
+            await database.MfaChallenges.Where(item => item.UserId == id).ExecuteDeleteAsync();
         }
         await database.SaveChangesAsync();
         await transaction.CommitAsync();
@@ -252,6 +265,7 @@ public class AuthController(AppDbContext database, IEmailService emailService, I
                 .SetProperty(item => item.FailedLoginAttempts, 0).SetProperty(item => item.LockoutEnd, (DateTime?)null));
         if (changed != 1) return BadRequest(new { message = "Invalid or expired reset link." });
         await database.AuthSessions.Where(item => item.UserId == userId).ExecuteDeleteAsync();
+        await database.MfaChallenges.Where(item => item.UserId == userId).ExecuteDeleteAsync();
         await transaction.CommitAsync();
         await HttpContext.SignOutAsync();
         return Ok(new { message = "Password reset successfully. Please log in again." });

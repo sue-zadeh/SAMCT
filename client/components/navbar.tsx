@@ -110,6 +110,7 @@ export default function Navbar({ userType }: NavbarProps) {
             <Link to={`${basePath}/profile/password`} style={styles.dropdownItem}>
               Change Password
             </Link>
+            <Link to="/account/security" style={styles.dropdownItem}>Account Security</Link>
 
             {userType === 'admin' && (
               <Link to="/admin/people" style={styles.dropdownItem}>
@@ -179,7 +180,7 @@ export default function Navbar({ userType }: NavbarProps) {
 
           {userType !== 'public' && (
             <button
-              className="btn btn-outline-danger border-danger text-danger btn-sm shadow"
+            className="btn btn-outline-danger border-danger text-danger btn-sm shadow"
               data-bs-toggle= "popover"
               onClick={handleLogout}
               style={styles.logoutButton}

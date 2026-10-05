@@ -12,7 +12,8 @@ public class SessionValidation(AppDbContext database) : CookieAuthenticationEven
         var sessionId = context.Principal?.FindFirst("session")?.Value;
         var session = await database.AuthSessions.AsNoTracking().Include(item => item.User)
             .SingleOrDefaultAsync(item => item.Id == sessionId && item.ExpiresAt > DateTime.UtcNow);
-        if (session is null || !session.User.IsActive || !AccessRules.Roles.Contains(session.User.Role))
+        if (session is null || !session.User.IsActive || !AccessRules.Roles.Contains(session.User.Role) ||
+            (MfaService.NeedsChallenge(session.User) && !session.MfaVerified))
         {
             context.RejectPrincipal();
             await context.HttpContext.SignOutAsync();

@@ -32,7 +32,7 @@ function Footer() {
                 </Link>
               </li> */}
               <li>
-                <Link to="/contactus" className="text-decoration-none text-dark">
+                <Link to="/contactUs" className="text-decoration-none text-dark">
                   Contact
                 </Link>
               </li>
@@ -53,10 +53,11 @@ function Footer() {
 
         <div className="d-flex flex-column flex-md-row justify-content-between align-items-center">
           <p className="mb-2 mb-md-0 text-secondary">
-            © 2026 SAMCT Villages. All rights reserved.
+            © {new Date().getFullYear()} SAMCT Villages. All rights reserved.
           </p>
           <p className="mb-0 text-secondary">
-            Built for SAMCT portal and public website
+            Developed by Sue Raisianzadeh — Freelance Web Developer,{' '}
+            <a href="https://suewebstudio.com/" className="text-secondary">suewebstudio</a>
           </p>
         </div>
       </div>

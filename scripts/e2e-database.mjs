@@ -1,9 +1,11 @@
 import pg from 'pg'
 export function testDatabaseUrl() {
   const value = process.env.SAMCT_E2E_DATABASE_URL
-  if (!value) throw new Error('Set SAMCT_E2E_DATABASE_URL to a disposable local PostgreSQL database ending in _e2e.')
+  if (!value) throw new Error('Set SAMCT_E2E_DATABASE_URL to a disposable local PostgreSQL database ending in _e2e, or run npm run test:e2e:local to configure isolated test services automatically.')
   const url = new URL(value)
-  if (!['postgres:', 'postgresql:'].includes(url.protocol) || !['127.0.0.1', 'localhost'].includes(url.hostname) || !url.pathname.endsWith('_e2e'))
+  // node-postgres accepts query parameters that can override the parsed host/database.
+  // Reject them before either the migration runner or destructive fixture seeding.
+  if (!['postgres:', 'postgresql:'].includes(url.protocol) || !['127.0.0.1', 'localhost'].includes(url.hostname) || !/^\/[A-Za-z0-9_]+_e2e$/.test(url.pathname) || url.search || url.hash)
     throw new Error('E2E setup only permits a loopback PostgreSQL database whose name ends in _e2e.')
   return value
 }

@@ -1,5 +1,6 @@
 import Seo from './security/seo'
 import { AccessGate } from './security/session'
+import AccountSecurity from './components/account-security'
 import { Routes, Route } from 'react-router-dom'
 
 import HomePublic from './components/home-public'
@@ -56,6 +57,7 @@ function App() {
         <Route path="/marketing" element={<Marketing />} />
 
         {/* Auth */}
+        <Route path="/account/security" element={<AccountSecurity />} />
         <Route path="/login" element={<Login onLoginSuccess={() => {}} />} />
         <Route path="/register" element={<Register />} />
 

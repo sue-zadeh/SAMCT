@@ -4,7 +4,7 @@ namespace server.Security;
 
 public sealed class UploadValidationException(string message) : Exception(message);
 
-public class UploadStorage(IWebHostEnvironment environment, IConfiguration configuration)
+public class UploadStorage(IWebHostEnvironment environment, IConfiguration configuration, MalwareScanner scanner)
 {
     public string Root => Path.GetFullPath(configuration["Storage:UploadPath"] ?? Path.Combine(environment.ContentRootPath, "storage", "uploads"));
     private static readonly Dictionary<string, string> Types = new(StringComparer.OrdinalIgnoreCase) {
@@ -27,6 +27,8 @@ public class UploadStorage(IWebHostEnvironment environment, IConfiguration confi
             throw new UploadValidationException("The file type does not match its extension.");
         await using var input = file.OpenReadStream();
         await ValidateSignature(input, extension);
+        input.Position = 0;
+        await scanner.Scan(input);
         input.Position = 0;
         var filename = $"{Guid.NewGuid():N}{extension}";
         var directory = Path.Combine(Root, folder);

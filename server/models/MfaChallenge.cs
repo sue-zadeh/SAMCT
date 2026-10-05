@@ -1,10 +1,10 @@
 namespace server.Models;
 
-public class AuthSession
+public class MfaChallenge
 {
     public string Id { get; set; } = "";
     public int UserId { get; set; }
     public User User { get; set; } = null!;
+    public string PasswordStamp { get; set; } = "";
     public DateTime ExpiresAt { get; set; }
-    public bool MfaVerified { get; set; }
 }

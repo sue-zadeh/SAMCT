@@ -179,3 +179,4 @@ server/wwwroot/uploads/
 playwright-report/
 test-results/
 artifacts/
+.prerender/

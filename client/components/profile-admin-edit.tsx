@@ -1,3 +1,4 @@
+import { useSession } from '../security/session'
 import { API_BASE_URL } from '../security/api'
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -13,6 +14,7 @@ import {
 
 function ProfileAdminEdit() {
   const navigate = useNavigate();
+  const { refresh } = useSession();
 
   const [firstName, setFirstName] = useState(localStorage.getItem("firstname") || "");
   const [lastName, setLastName] = useState(localStorage.getItem("lastname") || "");
@@ -30,6 +32,7 @@ function ProfileAdminEdit() {
 
       const currentUsername = localStorage.getItem("username") || "";
 
+      const emailChanged = email.trim().toLowerCase() !== (localStorage.getItem("email") || "").trim().toLowerCase();
       const response = await axios.put(`${API_BASE_URL}/api/users/profile`, {
         currentUsername,
         userName,
@@ -41,6 +44,11 @@ function ProfileAdminEdit() {
       });
 
       const updatedUser = response.data;
+      if (emailChanged) {
+        await refresh();
+        navigate("/login?emailUpdated=true");
+        return;
+      }
 
       localStorage.setItem("username", updatedUser.userName || "");
       localStorage.setItem("firstname", updatedUser.firstName || "");

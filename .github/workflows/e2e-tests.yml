@@ -9,8 +9,14 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     services:
+      scanner:
+        image: clamav/clamav:stable
+        ports: ['3310:3310']
+        options: >-
+          --health-cmd "clamdscan --ping=1"
+          --health-interval 10s --health-timeout 10s --health-retries 30 --health-start-period 60s
       postgres:
         image: postgres:17-alpine
         env:
@@ -32,20 +38,23 @@ jobs:
           cache: npm
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.0.x'
+          dotnet-version: '10.0.x'
       - run: npm ci
+      - run: npm run check:source
+      - run: node --test scripts/e2e-database.test.mjs
       - run: npx playwright install --with-deps chromium
       - run: npm audit --audit-level=moderate
       - run: npm run build
+      - run: npm run test:deployment
       - run: dotnet build server --configuration Release --warnaserror
       - run: dotnet list server package --vulnerable --include-transitive --format json > nuget-audit.json
       - name: Fail on known vulnerable NuGet packages
         run: node scripts/check-nuget-audit.mjs nuget-audit.json
       - run: npm run test:e2e
       - uses: actions/upload-artifact@v4
-        if: failure()
+        if: always()
         with:
-          name: playwright-failures
+          name: playwright-results
           path: |
             playwright-report/
             test-results/

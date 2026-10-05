@@ -1,6 +1,7 @@
 import { useSession, homeForRole } from '../security/session'
 import { API_BASE_URL } from '../security/api'
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import QRCode from 'qrcode'
 import { useNavigate, Link } from "react-router-dom";
 import axios from "../security/api";
 import { AxiosError } from "axios";
@@ -23,6 +24,43 @@ function Login({ onLoginSuccess }: LoginProps) {
   const [rememberMe, setRememberMe] = useState(!!savedUserName);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [mfa, setMfa] = useState<'setup' | 'verify' | null>(new URLSearchParams(window.location.search).get('mfa') === 'setup' ? 'setup' : null)
+  const [setup, setSetup] = useState<{ secret: string; account: string; uri: string } | null>(null)
+  const [qr, setQr] = useState('')
+  const [code, setCode] = useState('')
+  const [useRecovery, setUseRecovery] = useState(false)
+  const [recoveryCodes, setRecoveryCodes] = useState<string[]>([])
+  const [destination, setDestination] = useState('/login')
+
+  useEffect(() => {
+    if (mfa !== 'setup') return
+    let cancelled = false
+    axios.post(`${API_BASE_URL}/api/mfa/setup`).then(async response => {
+      const data = response.data
+      const image = await QRCode.toDataURL(data.uri)
+      if (!cancelled) { setSetup(data); setQr(image) }
+    }).catch(() => { if (!cancelled) setError('Setup expired. Select Start again and sign in.') })
+    return () => { cancelled = true }
+  }, [mfa])
+
+  const finishLogin = async (user: { role: string }) => {
+    if (rememberMe) localStorage.setItem('rememberedUsername', userName)
+    else localStorage.removeItem('rememberedUsername')
+    setPassword(''); setCode(''); setSetup(null); setQr('')
+    await refresh(); onLoginSuccess()
+    return homeForRole(user.role)
+  }
+
+  const verifyMfa = async (event: React.FormEvent) => {
+    event.preventDefault(); setLoading(true); setError('')
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/mfa/complete`, useRecovery ? { recoveryCode: code.trim() } : { code: code.trim() })
+      const path = await finishLogin(response.data.user)
+      if (response.data.recoveryCodes.length) { setRecoveryCodes(response.data.recoveryCodes); setDestination(path) }
+      else navigate(path)
+    } catch (error) { setError((error as AxiosError<{ message: string }>).response?.data.message || 'Verification failed. Please try again.') }
+    finally { setLoading(false) }
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,6 +72,11 @@ function Login({ onLoginSuccess }: LoginProps) {
         userName,
         password,
       });
+
+      if (response.status === 202) {
+        setPassword(''); setCode(''); setMfa(response.data.setupRequired ? 'setup' : 'verify')
+        return
+      }
 
       if (response.status === 200) {
         localStorage.setItem("username", response.data.userName || "");
@@ -82,8 +125,27 @@ function Login({ onLoginSuccess }: LoginProps) {
               </h3>
 
               <h2 className="h3 text-center fst-italic mb-4">Login</h2>
+              {new URLSearchParams(window.location.search).get("emailUpdated") === "true" && <p role="status" className="alert alert-success">Email updated. Please sign in again. Previous reset links no longer work.</p>}
 
-              <form onSubmit={handleLogin}>
+              {recoveryCodes.length > 0 ? <section aria-labelledby="recovery-title">
+                <h2 id="recovery-title" className="h4">Save your recovery codes</h2>
+                <p>Store these codes in your password manager or another safe place. Each code works once if you lose access to your authenticator. They will not be shown again.</p>
+                <pre className="small bg-light p-3" data-testid="recovery-codes">{recoveryCodes.join('\n')}</pre>
+                <button className="btn btn-primary" onClick={() => { setRecoveryCodes([]); navigate(destination) }}>I have saved my recovery codes</button>
+              </section> : mfa ? <form onSubmit={verifyMfa}>
+                <h2 className="h4">{mfa === 'setup' ? 'Set up two-factor authentication' : 'Two-factor authentication'}</h2>
+                {mfa === 'setup' && <>
+                  <p>Staff accounts need an authenticator app. Add a new account by scanning this QR code, or enter the setup key manually.</p>
+                  {qr && <img src={qr} alt="Scan this QR code with your authenticator app" width={220} height={220} />}
+                  {setup && <><p>Account: {setup.account}</p><label htmlFor="setup-key">Setup key</label><input id="setup-key" className="form-control mb-3" value={setup.secret} readOnly /></>}
+                </>}
+                <label htmlFor="verification-code" className="form-label">{useRecovery ? 'Recovery code' : 'Authenticator code'}</label>
+                <input id="verification-code" className="form-control mb-3" autoComplete="one-time-code" inputMode={useRecovery ? 'text' : 'numeric'} required maxLength={useRecovery ? 39 : 6} pattern={useRecovery ? '[a-fA-F0-9-]{32,39}' : '[0-9]{6}'} value={code} onChange={event => setCode(event.target.value)} />
+                {error && <div role="alert" className="alert alert-danger">{error}</div>}
+                <button className="btn btn-primary w-100" disabled={loading || (mfa === 'setup' && !setup)}>Verify and sign in</button>
+                {mfa === 'verify' && <button type="button" className="btn btn-link" onClick={() => { setUseRecovery(!useRecovery); setCode('') }}>{useRecovery ? 'Use an authenticator code' : 'Use a recovery code'}</button>}
+                <button type="button" className="btn btn-link" onClick={() => { setMfa(null); setSetup(null); setQr(''); setCode(''); setError('') }}>Start again</button>
+              </form> : <form onSubmit={handleLogin}>
                 <div className="mb-3">
                   <label className="form-label fw-semibold" htmlFor="username">
                     <FaUser className="me-2" />
@@ -118,6 +180,7 @@ function Login({ onLoginSuccess }: LoginProps) {
                     />
                     <button
                       type="button"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
                       className="btn btn-outline-secondary"
                       onClick={() => setShowPassword(!showPassword)}
                     >
@@ -153,7 +216,7 @@ function Login({ onLoginSuccess }: LoginProps) {
                     Forgot Password?
                   </Link>
                 </div>
-              </form>
+              </form>}
             </div>
           </div>
         </div>
