@@ -59,8 +59,10 @@ test.describe('marketing access and uploads', () => {
     expect((await write(request, 'POST', '/api/village-properties', { multipart })).status()).toBe(200)
     const records = await (await request.get('/api/village-properties/Ngatea')).json()
     const created = records.find((entry: any) => entry.unitNumber === 'Gallery-E2E')
-    const publicClient = await playwright.request.newContext({ baseURL: 'http://127.0.0.1:5173' })
+    // Explicitly clear the manager storageState inherited from test.use.
+    const publicClient = await playwright.request.newContext({ baseURL: 'http://127.0.0.1:5173', storageState: { cookies: [], origins: [] } })
     try {
+      expect((await publicClient.get('/api/session')).status()).toBe(401)
       const entries = await (await publicClient.get('/api/village-properties/marketing')).json()
       const published = entries.find((entry: any) => entry.id === created.id)
       expect(new Set(Array.from({ length: 10 }, (_, index) => published[`marketingImageUrl${index + 1}`])).size).toBe(10)
@@ -82,7 +84,9 @@ test.describe('marketing access and uploads', () => {
     const entries = await (await request.get('/api/marketing-content/manage/Ngatea')).json()
     const entry = entries.find((item: any) => item.kind === 'area')
     const foreignImage = entries.find((item: any) => item.id !== entry.id && item.images.length).images[0]
-    const anonymous = await playwright.request.newContext({ baseURL: 'http://127.0.0.1:5173' })
+    // Explicitly clear the manager storageState inherited from test.use.
+    const anonymous = await playwright.request.newContext({ baseURL: 'http://127.0.0.1:5173', storageState: { cookies: [], origins: [] } })
+    expect((await anonymous.get('/api/session')).status()).toBe(401)
     expect((await anonymous.get('/api/marketing-content/manage/Ngatea')).status()).toBe(401)
     expect((await write(anonymous, 'PUT', `/api/marketing-content/${entry.id}`, { multipart: brochureFields })).status()).toBe(401)
     await anonymous.dispose()
@@ -102,9 +106,11 @@ test.describe('marketing access and uploads', () => {
   test('manager edits brochure text and ten photos in the browser, and can unpublish them', async ({ page, playwright }) => {
     const entries = await (await page.request.get('/api/marketing-content/manage/Ngatea')).json()
     const entry = entries.find((item: any) => item.kind === 'area')
-    const publicClient = await playwright.request.newContext({ baseURL: 'http://127.0.0.1:5173' })
+    // Explicitly clear the manager storageState inherited from test.use.
+    const publicClient = await playwright.request.newContext({ baseURL: 'http://127.0.0.1:5173', storageState: { cookies: [], origins: [] } })
     let uploadedImages: string[] = []
     try {
+      expect((await publicClient.get('/api/session')).status()).toBe(401)
       await page.goto('/village-manager/my-village')
       await page.getByText('Manage brochure content — Ngatea', { exact: true }).click()
       await expect(page.getByLabel('Brochure entry')).toBeEnabled()
