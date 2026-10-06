@@ -16,13 +16,17 @@ public class UploadController(AppDbContext database, UploadStorage uploads, Malw
         var url = "/uploads/" + path;
         var property = await database.VillageProperties.AsNoTracking().FirstOrDefaultAsync(item =>
             item.DocumentUrl1 == url || item.DocumentUrl2 == url || item.MarketingImageUrl1 == url ||
-            item.MarketingImageUrl2 == url || item.MarketingImageUrl3 == url || item.MarketingImageUrl4 == url || item.MarketingImageUrl5 == url);
+            item.MarketingImageUrl2 == url || item.MarketingImageUrl3 == url || item.MarketingImageUrl4 == url || item.MarketingImageUrl5 == url ||
+            item.MarketingImageUrl6 == url || item.MarketingImageUrl7 == url || item.MarketingImageUrl8 == url || item.MarketingImageUrl9 == url || item.MarketingImageUrl10 == url);
         var marketingImage = property is not null && new[] {property.MarketingImageUrl1, property.MarketingImageUrl2,
-            property.MarketingImageUrl3, property.MarketingImageUrl4, property.MarketingImageUrl5}.Contains(url) && UploadStorage.IsImage(path);
-        var publicImage = marketingImage && property!.IsVisibleOnMarketing;
+            property.MarketingImageUrl3, property.MarketingImageUrl4, property.MarketingImageUrl5, property.MarketingImageUrl6, property.MarketingImageUrl7, property.MarketingImageUrl8, property.MarketingImageUrl9, property.MarketingImageUrl10}.Contains(url) && UploadStorage.IsImage(path);
+        var brochure = await database.MarketingContents.AsNoTracking().FirstOrDefaultAsync(content => content.Images.Contains(url));
+        var publicImage = (marketingImage && property!.IsVisibleOnMarketing) ||
+            (brochure is not null && brochure.IsPublished && UploadStorage.IsImage(path));
         if (!publicImage) {
             if (User.Identity?.IsAuthenticated != true) return Unauthorized();
-            var allowed = property is not null && User.CanManageVillage(property.Village);
+            var allowed = (property is not null && User.CanManageVillage(property.Village)) ||
+                (brochure is not null && User.CanManageVillage(brochure.Village));
             if (!allowed) {
                 var document = await database.DocumentNotices.AsNoTracking().FirstOrDefaultAsync(item => item.FileUrl == url);
                 allowed = document is not null && (User.CanManageVillage(document.Village) ||

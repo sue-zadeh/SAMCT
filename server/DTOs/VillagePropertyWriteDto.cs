@@ -21,4 +21,9 @@ public class VillagePropertyWriteDto
     public IFormFile? MarketingImage3 { get; set; }
     public IFormFile? MarketingImage4 { get; set; }
     public IFormFile? MarketingImage5 { get; set; }
+    public IFormFile? MarketingImage6 { get; set; }
+    public IFormFile? MarketingImage7 { get; set; }
+    public IFormFile? MarketingImage8 { get; set; }
+    public IFormFile? MarketingImage9 { get; set; }
+    public IFormFile? MarketingImage10 { get; set; }
 }

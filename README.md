@@ -68,7 +68,7 @@ At minimum the API needs:
 
 ```bash
 export ASPNETCORE_ENVIRONMENT=Development
-export ConnectionStrings__DefaultConnection='Host=127.0.0.1;Port=5432;Database=samct;Username=samct;Password=YOUR_LOCAL_PASSWORD'
+export ConnectionStrings__DefaultConnection='Host=127.0.0.1;Port=5433;Database=samctdb;Username=postgres;Password=YOUR_LOCAL_PASSWORD'
 dotnet run --project server --no-launch-profile -- --migrate
 ```
 
@@ -80,6 +80,18 @@ npm run dev
 ```
 
 Open `http://127.0.0.1:5173`. Vite proxies `/api` and `/uploads` to the API. Leave `VITE_API_BASE_URL` empty for this setup. Use the same hostname consistently when working with cookies.
+
+If Vite prints `ECONNREFUSED 127.0.0.1:5072`, the API is not listening at the expected address. `npm run dev` starts only the frontend. The backend command is **`dotnet run`**, not `run dotnet`. In a second terminal, set the development environment and your database connection above, check that `dotnet --version` starts with `10.`, apply the migrations, and run the API with `ASPNETCORE_URLS=http://127.0.0.1:5072`. Open `http://127.0.0.1:5072/api/health`; it should return `{"status":"ok"}`. Keep that terminal running, reload `/login`, and use an active account from your own development database. Staff login continues to authenticator setup/verification. The test accounts are separate and must not be seeded into your real database.
+
+## Ngatea marketing brochure and photo galleries
+
+The September 2026 client booklet is represented by 22 editable PostgreSQL `MarketingContents` entries and 26 extracted photographs: five village areas, four unit adverts, nine FAQs, an overview, next steps, contacts and local information. This table is separate from resident/occupancy records in `VillageProperties`. The `AddNgateaMarketingContent` migration adds and seeds it, and extends existing property photo columns from five to ten without replacing the first five. Run the normal migration command before starting this version of the API.
+
+The public `/marketing` page reads both tables through their allow-listed API responses. It includes village filters, a gallery that supports ten photos, dated prices/statuses, and explicit loading/error/retry states. A current published property with the same normalized full address takes precedence over its brochure advert. Only public fields are returned; operational resident details and documents stay private. Brochure images are shipped outside the web root and served through the same database publication, authorization and malware checks as uploaded photos.
+
+Village managers can open **My Village → Manage brochure content** to update titles, descriptions, source dates, unit prices/statuses, publication and up to ten photos per entry. Administrators have the same brochure editor below **Village Property Data**. Property records also accept ten image slots in the existing form. JPEG/PNG uploads remain limited to 2 MB each. Unpublishing a brochure entry prevents anonymous access to its photos; editors can remove/replace photos without deleting files referenced elsewhere.
+
+The booklet marks 11 Masons Way, 4 Masonic Place and 14 Masonic Place **Under offer** and lists 1A Masons Way for applications. Prices and terms are explicitly attributed to September 2026, not asserted to be current. Confirm availability and current ORA/service-fee terms with the owner before changing their source labels. The original Windows photo folders were not uploaded; only identifiable photos extracted from the supplied PDF are included. Area photos are labelled as representative and are not assigned to individual unit adverts. See [the source and migration notes](docs/ngatea-marketing.md).
 
 For a new production database, provision the first administrator through a reviewed operator procedure with a unique password hash. There is deliberately no public bootstrap-admin route or default administrator password. The test seed command is for disposable test databases only.
 

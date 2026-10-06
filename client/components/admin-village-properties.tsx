@@ -1,6 +1,7 @@
 import { API_BASE_URL, apiFetch } from '../security/api'
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import Navbar from './navbar'
+const MarketingContentEditor = lazy(() => import('./marketing-content-editor'))
 
 type VillageProperty = {
   id: number
@@ -22,8 +23,7 @@ type VillageProperty = {
 }
 
 function AdminVillageProperties() {
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5072";
+
   const [properties, setProperties] = useState<VillageProperty[]>([])
   const [mainSearch, setMainSearch] = useState('')
   const [villageSearch, setVillageSearch] = useState('')
@@ -282,6 +282,7 @@ const API_BASE_URL =
             )}
           </div>
         </section>
+        <Suspense fallback={<p>Loading brochure editor…</p>}><MarketingContentEditor village="Ngatea" /></Suspense>
       </main>
     </>
   )

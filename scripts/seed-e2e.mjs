@@ -6,7 +6,13 @@ const connection = database()
 await connection.connect()
 try {
   // This command is deliberately destructive ONLY inside a validated disposable local _e2e database.
-  await connection.query('TRUNCATE TABLE "MfaChallenges", "AuthSessions", "MaintenanceRequests", "DocumentNotices", "PurchaseOrders", "VillageProperties", "ContactMessages", "Users" RESTART IDENTITY CASCADE')
+  await connection.query('TRUNCATE TABLE "MarketingContents", "MfaChallenges", "AuthSessions", "MaintenanceRequests", "DocumentNotices", "PurchaseOrders", "VillageProperties", "ContactMessages", "Users" RESTART IDENTITY CASCADE')
+  // Reset the real brochure seed too, so a failed publication test cannot affect the next run.
+  const brochure = JSON.parse(await readFile('server/data/ngatea-september-2026.json', 'utf8'))
+  for (const entry of brochure) {
+    await connection.query('INSERT INTO "MarketingContents" ("Id","Slug","Village","Kind","Title","Description","Address","Images","PriceNzd","Availability","SourceLabel","IsPublished","DisplayOrder") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)',
+      [entry.Id, entry.Slug, entry.Village, entry.Kind, entry.Title, entry.Description, entry.Address, entry.Images, entry.PriceNzd, entry.Availability, entry.SourceLabel, entry.IsPublished, entry.DisplayOrder])
+  }
   const password = 'Test-' + randomBytes(20).toString('hex')
   const passwordHash = await bcrypt.hash(password, 12)
   const definitions = [

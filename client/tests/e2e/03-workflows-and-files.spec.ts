@@ -7,7 +7,7 @@ test('public marketing returns only approved fields and visible listings', async
   expect(response.status()).toBe(200)
   const listings = await response.json()
   expect(listings).toHaveLength(1)
-  expect(Object.keys(listings[0]).sort()).toEqual(['id','village','unitNumber','address','marketingTitle','marketingDescription','marketingImageUrl1','marketingImageUrl2','marketingImageUrl3','marketingImageUrl4','marketingImageUrl5'].sort())
+  expect(Object.keys(listings[0]).sort()).toEqual(['id','village','unitNumber','address','marketingTitle','marketingDescription','marketingImageUrl1','marketingImageUrl2','marketingImageUrl3','marketingImageUrl4','marketingImageUrl5','marketingImageUrl6','marketingImageUrl7','marketingImageUrl8','marketingImageUrl9','marketingImageUrl10'].sort())
   expect(JSON.stringify(listings)).not.toMatch(/private@example|Private resident|Private notes|documentUrl/i)
   expect((await request.get('/uploads/marketing/visible.png')).status()).toBe(200)
   expect((await request.get('/uploads/marketing/hidden.png')).status()).toBe(401)

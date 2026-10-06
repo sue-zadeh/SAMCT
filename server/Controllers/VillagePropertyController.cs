@@ -59,7 +59,8 @@ namespace server.Controllers
                     property.Id, property.Village, property.UnitNumber, property.Address,
                     property.MarketingTitle, property.MarketingDescription,
                     property.MarketingImageUrl1, property.MarketingImageUrl2, property.MarketingImageUrl3,
-                    property.MarketingImageUrl4, property.MarketingImageUrl5
+                    property.MarketingImageUrl4, property.MarketingImageUrl5,
+                    property.MarketingImageUrl6, property.MarketingImageUrl7, property.MarketingImageUrl8, property.MarketingImageUrl9, property.MarketingImageUrl10
                 }).ToListAsync());
         }
 
@@ -95,6 +96,11 @@ namespace server.Controllers
             property.MarketingImageUrl3 = await _uploads.Save(request.MarketingImage3, "marketing", imagesOnly: true);
             property.MarketingImageUrl4 = await _uploads.Save(request.MarketingImage4, "marketing", imagesOnly: true);
             property.MarketingImageUrl5 = await _uploads.Save(request.MarketingImage5, "marketing", imagesOnly: true);
+            property.MarketingImageUrl6 = await _uploads.Save(request.MarketingImage6, "marketing", imagesOnly: true);
+            property.MarketingImageUrl7 = await _uploads.Save(request.MarketingImage7, "marketing", imagesOnly: true);
+            property.MarketingImageUrl8 = await _uploads.Save(request.MarketingImage8, "marketing", imagesOnly: true);
+            property.MarketingImageUrl9 = await _uploads.Save(request.MarketingImage9, "marketing", imagesOnly: true);
+            property.MarketingImageUrl10 = await _uploads.Save(request.MarketingImage10, "marketing", imagesOnly: true);
 
             _context.VillageProperties.Add(property);
             await _context.SaveChangesAsync();
@@ -138,6 +144,11 @@ namespace server.Controllers
             var marketingImage3 = await _uploads.Save(request.MarketingImage3, "marketing", imagesOnly: true);
             var marketingImage4 = await _uploads.Save(request.MarketingImage4, "marketing", imagesOnly: true);
             var marketingImage5 = await _uploads.Save(request.MarketingImage5, "marketing", imagesOnly: true);
+            var marketingImage6 = await _uploads.Save(request.MarketingImage6, "marketing", imagesOnly: true);
+            var marketingImage7 = await _uploads.Save(request.MarketingImage7, "marketing", imagesOnly: true);
+            var marketingImage8 = await _uploads.Save(request.MarketingImage8, "marketing", imagesOnly: true);
+            var marketingImage9 = await _uploads.Save(request.MarketingImage9, "marketing", imagesOnly: true);
+            var marketingImage10 = await _uploads.Save(request.MarketingImage10, "marketing", imagesOnly: true);
 
             if (!string.IsNullOrWhiteSpace(document1)) property.DocumentUrl1 = document1;
             if (!string.IsNullOrWhiteSpace(document2)) property.DocumentUrl2 = document2;
@@ -147,6 +158,11 @@ namespace server.Controllers
             if (!string.IsNullOrWhiteSpace(marketingImage3)) property.MarketingImageUrl3 = marketingImage3;
             if (!string.IsNullOrWhiteSpace(marketingImage4)) property.MarketingImageUrl4 = marketingImage4;
             if (!string.IsNullOrWhiteSpace(marketingImage5)) property.MarketingImageUrl5 = marketingImage5;
+            if (!string.IsNullOrWhiteSpace(marketingImage6)) property.MarketingImageUrl6 = marketingImage6;
+            if (!string.IsNullOrWhiteSpace(marketingImage7)) property.MarketingImageUrl7 = marketingImage7;
+            if (!string.IsNullOrWhiteSpace(marketingImage8)) property.MarketingImageUrl8 = marketingImage8;
+            if (!string.IsNullOrWhiteSpace(marketingImage9)) property.MarketingImageUrl9 = marketingImage9;
+            if (!string.IsNullOrWhiteSpace(marketingImage10)) property.MarketingImageUrl10 = marketingImage10;
 
             await _context.SaveChangesAsync();
 

@@ -42,7 +42,7 @@ public class UploadStorage(IWebHostEnvironment environment, IConfiguration confi
     {
         if (relativePath.Contains('\\') || relativePath.Split('/').Any(part => part is ".." or ".")) return null;
         // Legacy files remain accessible only through the same authorization checks.
-        foreach (var root in new[] { Root, Path.Combine(environment.ContentRootPath, "wwwroot", "uploads") }) {
+        foreach (var root in new[] { Root, Path.Combine(environment.ContentRootPath, "wwwroot", "uploads"), Path.Combine(environment.ContentRootPath, "Content", "Marketing") }) {
             var fullRoot = Path.GetFullPath(root) + Path.DirectorySeparatorChar;
             var candidate = Path.GetFullPath(Path.Combine(fullRoot, relativePath));
             if (candidate.StartsWith(fullRoot, StringComparison.Ordinal) && File.Exists(candidate)) return candidate;

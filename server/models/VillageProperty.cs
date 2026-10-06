@@ -27,6 +27,11 @@ namespace server.Models
         public string MarketingImageUrl3 { get; set; } = "";
         public string MarketingImageUrl4 { get; set; } = "";
         public string MarketingImageUrl5 { get; set; } = "";
+        public string MarketingImageUrl6 { get; set; } = "";
+        public string MarketingImageUrl7 { get; set; } = "";
+        public string MarketingImageUrl8 { get; set; } = "";
+        public string MarketingImageUrl9 { get; set; } = "";
+        public string MarketingImageUrl10 { get; set; } = "";
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
