@@ -1,6 +1,7 @@
 import { API_BASE_URL, apiFetch } from '../security/api'
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import Navbar from './navbar'
+const MarketingContentEditor = lazy(() => import('./marketing-content-editor'))
 import { useNavigate } from 'react-router-dom'
 
 type VillageProperty = {
@@ -24,6 +25,11 @@ type VillageProperty = {
   marketingImageUrl3: string
   marketingImageUrl4: string
   marketingImageUrl5: string
+  marketingImageUrl6: string
+  marketingImageUrl7: string
+  marketingImageUrl8: string
+  marketingImageUrl9: string
+  marketingImageUrl10: string
 }
 
 type UserOption = {
@@ -64,12 +70,18 @@ function MyVillage() {
   const [marketingImage3, setMarketingImage3] = useState<File | null>(null)
   const [marketingImage4, setMarketingImage4] = useState<File | null>(null)
   const [marketingImage5, setMarketingImage5] = useState<File | null>(null)
+  const [marketingImage6, setMarketingImage6] = useState<File | null>(null)
+  const [marketingImage7, setMarketingImage7] = useState<File | null>(null)
+  const [marketingImage8, setMarketingImage8] = useState<File | null>(null)
+  const [marketingImage9, setMarketingImage9] = useState<File | null>(null)
+  const [marketingImage10, setMarketingImage10] = useState<File | null>(null)
 
   const [isVisibleOnMarketing, setIsVisibleOnMarketing] = useState(false)
   const [marketingTitle, setMarketingTitle] = useState('')
   const [marketingDescription, setMarketingDescription] = useState('')
 
   const [editingId, setEditingId] = useState<number | null>(null)
+  const [formVersion, setFormVersion] = useState(0)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
 
@@ -135,6 +147,7 @@ function MyVillage() {
   }, [message, error])
 
   const clearForm = () => {
+    setFormVersion(version => version + 1)
     setUnitNumber('')
     setAddress('')
     setResidentCount(1)
@@ -150,6 +163,11 @@ function MyVillage() {
     setMarketingImage3(null)
     setMarketingImage4(null)
     setMarketingImage5(null)
+    setMarketingImage6(null)
+    setMarketingImage7(null)
+    setMarketingImage8(null)
+    setMarketingImage9(null)
+    setMarketingImage10(null)
     setIsVisibleOnMarketing(false)
     setMarketingTitle('')
     setMarketingDescription('')
@@ -199,6 +217,11 @@ function MyVillage() {
     if (marketingImage3) formData.append('marketingImage3', marketingImage3)
     if (marketingImage4) formData.append('marketingImage4', marketingImage4)
     if (marketingImage5) formData.append('marketingImage5', marketingImage5)
+    if (marketingImage6) formData.append('marketingImage6', marketingImage6)
+    if (marketingImage7) formData.append('marketingImage7', marketingImage7)
+    if (marketingImage8) formData.append('marketingImage8', marketingImage8)
+    if (marketingImage9) formData.append('marketingImage9', marketingImage9)
+    if (marketingImage10) formData.append('marketingImage10', marketingImage10)
 
     try {
       const url =
@@ -231,6 +254,7 @@ function MyVillage() {
   }
 
   const handleEdit = (property: VillageProperty) => {
+    clearForm()
     setEditingId(property.id)
     setUnitNumber(property.unitNumber)
     setAddress(property.address)
@@ -384,7 +408,7 @@ function MyVillage() {
               {editingId ? 'Edit Village Property' : 'Add Village Property'}
             </h2>
 
-            <form onSubmit={handleSubmit}>
+            <form key={formVersion} onSubmit={handleSubmit}>
               <div className="row g-3">
                 <div className="col-md-2">
                   <label className="form-label fw-semibold">Unit Number</label>
@@ -581,11 +605,11 @@ function MyVillage() {
                 <div className="col-12">
                   <h5 className="fw-bold mt-3">Marketing Gallery Images</h5>
                   <p className="text-secondary small">
-                    Upload up to 5 images. Image 1 is the main public image.
+                    Upload up to 10 JPEG or PNG images, at most 2 MB each. Image 1 is the main public image. Existing photos are kept unless you replace them.
                   </p>
                 </div>
 
-                {[1, 2, 3, 4, 5].map((num) => (
+                {Array.from({ length: 10 }, (_, index) => index + 1).map((num) => (
                   <div className="col-md-4" key={num}>
                     <label className="form-label fw-semibold">
                       {num === 1
@@ -603,6 +627,11 @@ function MyVillage() {
                         if (num === 3) setMarketingImage3(file)
                         if (num === 4) setMarketingImage4(file)
                         if (num === 5) setMarketingImage5(file)
+                        if (num === 6) setMarketingImage6(file)
+                        if (num === 7) setMarketingImage7(file)
+                        if (num === 8) setMarketingImage8(file)
+                        if (num === 9) setMarketingImage9(file)
+                        if (num === 10) setMarketingImage10(file)
                       }}
                     />
                   </div>
@@ -784,6 +813,7 @@ function MyVillage() {
             )}
           </div>
         </section>
+        <Suspense fallback={<p>Loading brochure editor…</p>}><MarketingContentEditor village={village} /></Suspense>
       </main>
     </>
   )

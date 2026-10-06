@@ -16,12 +16,16 @@ namespace server.Data
         public DbSet<MaintenanceRequest> MaintenanceRequests { get; set; }
         public DbSet<DocumentNotice> DocumentNotices { get; set; }
         public DbSet<VillageProperty> VillageProperties { get; set; }
+        public DbSet<MarketingContent> MarketingContents { get; set; }
         public DbSet<PurchaseOrder> PurchaseOrders { get; set; }
         public DbSet<AuthSession> AuthSessions { get; set; }
         public DbSet<MfaChallenge> MfaChallenges { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<MarketingContent>().HasIndex(content => content.Slug).IsUnique();
+            modelBuilder.Entity<MarketingContent>().Property(content => content.PriceNzd).HasPrecision(12, 2);
+            modelBuilder.Entity<MarketingContent>().ToTable(table => table.HasCheckConstraint("CK_MarketingContents_Images", "cardinality(\"Images\") <= 10"));
             modelBuilder.Entity<AuthSession>().Property(session => session.Id).HasMaxLength(64);
             modelBuilder.Entity<AuthSession>().HasIndex(session => session.ExpiresAt);
             modelBuilder.Entity<MfaChallenge>().Property(challenge => challenge.Id).HasMaxLength(64);
