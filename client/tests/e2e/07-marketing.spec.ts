@@ -6,7 +6,7 @@ const propertyFields = { village: 'Ngatea', unitNumber: 'Gallery-E2E', address: 
 const brochureFields = { title: 'Hale Place', description: 'Test description', address: 'Hale Place, Ngatea', availability: 'Enquire', sourceLabel: 'E2E review', isPublished: 'true' }
 async function brochure(request: APIRequestContext) { return (await request.get('/api/marketing-content')).json() }
 
-test('brochure migration exposes the five areas and preserves dated unit prices and under-offer labels', async ({ request, page }) => {
+test('brochure migration exposes the five areas and preserves dated unit prices and under-offer labels', async ({ request, page }, testInfo) => {
   const entries = await brochure(request)
   expect(entries.filter((entry: any) => entry.kind === 'area').map((entry: any) => entry.title)).toEqual(['Hale Place', 'Weddell Place', 'Masonic Place', 'Lodge Drive', 'Masons Way'])
   const adverts = entries.filter((entry: any) => entry.kind === 'unit')
@@ -18,6 +18,8 @@ test('brochure migration exposes the five areas and preserves dated unit prices 
   expect(JSON.stringify(entries)).not.toMatch(/residentEmail|residentName|documentUrl|Private notes/)
   await page.goto('/marketing')
   await expect(page.getByRole('heading', { name: 'Ngatea Independent Lifestyle Village', exact: true })).toBeVisible()
+  await expect.poll(() => page.locator('main img').first().evaluate(image => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0)
+  await testInfo.attach('marketing-desktop', { body: await page.screenshot(), contentType: 'image/png' })
   await expect(page.getByRole('heading', { name: 'Hale Place', exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'View Hale Place', exact: true }).click()
   const dialog = page.getByRole('dialog')
@@ -25,9 +27,14 @@ test('brochure migration exposes the five areas and preserves dated unit prices 
   await dialog.getByRole('button', { name: 'Show photo 4', exact: true }).click()
   await expect(dialog.getByText('Photo 4 of 4')).toBeVisible()
   await expect.poll(() => dialog.locator('img').first().evaluate(image => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0)
+  await testInfo.attach('hale-place-map', { body: await page.screenshot(), contentType: 'image/png' })
   await page.keyboard.press('Escape')
   await expect(dialog).toBeHidden()
   await expect(page.getByRole('button', { name: 'View Hale Place', exact: true })).toBeFocused()
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.getByRole('heading', { level: 1 }).scrollIntoViewIfNeeded()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+  await testInfo.attach('marketing-mobile', { body: await page.screenshot(), contentType: 'image/png' })
   await page.getByRole('button', { name: 'Whitianga', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Hale Place', exact: true })).toHaveCount(0)
   await expect(page.getByText('No homes are currently listed for this village. Contact SAMCT to ask about availability.')).toBeVisible()
