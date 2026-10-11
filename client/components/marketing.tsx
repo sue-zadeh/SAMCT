@@ -80,16 +80,33 @@ function Marketing() {
   function card(entry: GalleryEntry, isArea = false) {
     return <div className="col-md-6 col-xl-4" key={entry.key}>
       <article className="samct-card h-100 overflow-hidden border rounded-4 shadow-sm bg-white d-flex flex-column">
-        {entry.images[0] && <img src={`${API_BASE_URL}${entry.images[0]}`} alt={entry.title} loading="lazy" decoding="async" width={640} height={360} className="w-100" style={{ height: 220, objectFit: 'cover' }} />}
+        {entry.images[0] && 
+        <img src={`${API_BASE_URL}${entry.images[0]}`} alt={entry.title} loading="lazy" 
+          decoding="async" width={640} height={360} className="w-100" style={{ height: 220, objectFit: 'cover' }} />}
         <div className="p-4 d-flex flex-column flex-grow-1">
-          <div className="d-flex gap-2 flex-wrap mb-2"><span className="badge bg-primary">{entry.village}</span>
-            {entry.availability && !isArea && <span className={`badge ${entry.availability === 'Under offer' ? 'bg-warning text-dark' : 'bg-light text-dark border'}`}>{entry.availability}</span>}</div>
+          <div className="d-flex gap-2 flex-wrap mb-2">
+            <span className="badge bg-primary">{entry.village}
+
+            </span>
+            {entry.availability && !isArea && 
+            <span className={`badge ${entry.availability === 'Under offer' ? 'bg-warning text-dark' : 'bg-light text-dark border'}`}>{entry.availability}
+            </span>}
+            </div>
           <h3 className="h5 fw-bold">{entry.title}</h3>
-          {entry.priceNzd != null && <p className="h5 text-primary">{priceFormat.format(entry.priceNzd)} <span className="small text-secondary">NZD · ORA</span></p>}
-          {entry.address && entry.address !== entry.title && <p className="text-secondary small">{entry.address}</p>}
-          <p className="text-secondary" style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{entry.description}</p>
-          {entry.sourceLabel && <p className="small text-secondary">{entry.sourceLabel}{!isArea && ' · Confirm current price and availability.'}</p>}
-          <button className="btn btn-outline-primary mt-auto w-100" onClick={() => showDetails(entry)} aria-label={`View ${entry.title}`}>View details{entry.images.length > 0 && ` · ${entry.images.length} photos`}</button>
+          {entry.priceNzd != null && <p className="h5 text-primary">{priceFormat.format(entry.priceNzd)} 
+            <span className="small text-secondary">NZD · ORA</span>
+            </p>}
+          {entry.address && entry.address !== entry.title && 
+          <p className="text-secondary small">{entry.address}</p>}
+          <p className="text-secondary" 
+            style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+            {entry.description}
+          </p>
+          {entry.sourceLabel && <p className="small text-secondary">{entry.sourceLabel}{!isArea && ' · Confirm current price and availability.'}
+            </p>}
+          <button className="btn btn-outline-primary mt-auto w-100" onClick={() => showDetails(entry)} 
+          aria-label={`View ${entry.title}`}>View details{entry.images.length > 0 && ` · ${entry.images.length} photos`}
+          </button>
         </div>
       </article>
     </div>
