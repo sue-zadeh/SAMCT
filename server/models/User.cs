@@ -25,3 +25,4 @@ namespace server.Models
         public string? MfaRecoveryCodeHashes { get; set; }
     }
 }
+
