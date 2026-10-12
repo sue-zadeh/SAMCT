@@ -6,7 +6,22 @@ const propertyFields = { village: 'Ngatea', unitNumber: 'Gallery-E2E', address: 
 const brochureFields = { title: 'Hale Place', description: 'Test description', address: 'Hale Place, Ngatea', availability: 'Enquire', sourceLabel: 'E2E review', isPublished: 'true', contactName: 'Avalon or Hayley', contactPhone: '07 867 7800' }
 async function brochure(request: APIRequestContext) { return (await request.get('/api/marketing-content')).json() }
 
+test('all brochure photos can be downloaded in concurrent batches with malware scanning enabled', async ({ request }) => {
+  const entries = await brochure(request)
+  const urls = [...new Set<string>(entries.flatMap((entry: { images: string[] }) => entry.images))]
+  expect(urls.length).toBe(26)
+  for (let index = 0; index < urls.length; index += 8) {
+    await Promise.all(urls.slice(index, index + 8).map(async url => {
+      const response = await request.get(url)
+      expect(response.status(), `Photo download failed: ${url}`).toBe(200)
+      expect(response.headers()['content-type']).toMatch(/^image\/(jpeg|png)/)
+      expect((await response.body()).length).toBeGreaterThan(0)
+    }))
+  }
+})
+
 test('brochure migration exposes the five areas and preserves dated unit prices and under-offer labels', async ({ request, page }, testInfo) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.setViewportSize({ width: 1440, height: 1080 })
   async function expectCardColumns(columns: number) {
     for (const section of ['#marketing-listings', '#marketing-areas']) {
@@ -32,8 +47,10 @@ test('brochure migration exposes the five areas and preserves dated unit prices 
   await testInfo.attach('marketing-desktop', { body: await page.screenshot({ animations: 'disabled' }), contentType: 'image/png' })
   await expectCardColumns(4)
   await page.getByRole('link', { name: 'Individual homes', exact: true }).click()
+  await expect.poll(() => page.locator('#marketing-listings img').evaluateAll(images => images.every(image => (image as HTMLImageElement).complete && (image as HTMLImageElement).naturalWidth > 0))).toBe(true)
   await testInfo.attach('marketing-four-homes', { body: await page.screenshot({ animations: 'disabled' }), contentType: 'image/png' })
-  await page.locator('#marketing-areas').evaluate(element => element.scrollIntoView())
+  await page.locator('#marketing-areas').evaluate(element => element.scrollIntoView({ behavior: 'instant' }))
+  await expect.poll(() => page.locator('#marketing-areas img').evaluateAll(images => images.every(image => (image as HTMLImageElement).complete && (image as HTMLImageElement).naturalWidth > 0))).toBe(true)
   await testInfo.attach('marketing-four-areas', { body: await page.screenshot({ animations: 'disabled' }), contentType: 'image/png' })
   await expect(page.getByRole('heading', { name: 'Hale Place', exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'View Hale Place', exact: true }).click()
@@ -59,6 +76,7 @@ test('brochure migration exposes the five areas and preserves dated unit prices 
 })
 
 test('photo covers open the correct gallery by mouse and keyboard, with contact links and distinct FAQ answers', async ({ page }, testInfo) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/marketing')
   await expect(page.getByText(/The homes and street areas below are all in/)).toContainText('Ngatea')
   await expect(page.getByRole('heading', { name: 'Individual homes', exact: true })).toBeVisible()
