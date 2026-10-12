@@ -94,10 +94,10 @@ function Marketing() {
 
   function card(entry: GalleryEntry) {
     const isArea = entry.kind === 'area'
-    return <div className="col-md-6 col-xl-4" key={entry.key}>
+    return <div className="col-12 col-md-6 col-xl-3" key={entry.key}>
       <article className="samct-card marketing-card h-100 overflow-hidden border rounded-4 shadow-sm bg-white d-flex flex-column">
         {entry.images[0] && imageButton(entry)}
-        <div className="p-4 d-flex flex-column flex-grow-1">
+        <div className="p-3 p-xxl-4 d-flex flex-column flex-grow-1">
           <div className="d-flex gap-2 flex-wrap mb-2">
             <span className="badge bg-primary">{entry.village}</span>
             <span className="badge marketing-kind-badge">{isArea ? 'Street area' : 'Individual home'}</span>

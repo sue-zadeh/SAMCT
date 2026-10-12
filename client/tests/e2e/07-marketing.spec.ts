@@ -7,6 +7,15 @@ const brochureFields = { title: 'Hale Place', description: 'Test description', a
 async function brochure(request: APIRequestContext) { return (await request.get('/api/marketing-content')).json() }
 
 test('brochure migration exposes the five areas and preserves dated unit prices and under-offer labels', async ({ request, page }, testInfo) => {
+  await page.setViewportSize({ width: 1440, height: 1080 })
+  async function expectCardColumns(columns: number) {
+    for (const section of ['#marketing-listings', '#marketing-areas']) {
+      await expect.poll(() => page.locator(`${section} article`).evaluateAll(cards => {
+        const firstRowTop = cards[0]?.getBoundingClientRect().top
+        return cards.filter(card => Math.abs(card.getBoundingClientRect().top - firstRowTop) < 2).length
+      })).toBe(columns)
+    }
+  }
   const entries = await brochure(request)
   expect(entries.filter((entry: any) => entry.kind === 'area').map((entry: any) => entry.title)).toEqual(['Hale Place', 'Weddell Place', 'Masonic Place', 'Lodge Drive', 'Masons Way'])
   const adverts = entries.filter((entry: any) => entry.kind === 'unit')
@@ -20,7 +29,12 @@ test('brochure migration exposes the five areas and preserves dated unit prices 
   await page.goto('/marketing')
   await expect(page.getByRole('heading', { name: 'Ngatea Independent Lifestyle Village', exact: true })).toBeVisible()
   await expect.poll(() => page.locator('main img').first().evaluate(image => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0)
-  await testInfo.attach('marketing-desktop', { body: await page.screenshot(), contentType: 'image/png' })
+  await testInfo.attach('marketing-desktop', { body: await page.screenshot({ animations: 'disabled' }), contentType: 'image/png' })
+  await expectCardColumns(4)
+  await page.getByRole('link', { name: 'Individual homes', exact: true }).click()
+  await testInfo.attach('marketing-four-homes', { body: await page.screenshot({ animations: 'disabled' }), contentType: 'image/png' })
+  await page.locator('#marketing-areas').evaluate(element => element.scrollIntoView())
+  await testInfo.attach('marketing-four-areas', { body: await page.screenshot({ animations: 'disabled' }), contentType: 'image/png' })
   await expect(page.getByRole('heading', { name: 'Hale Place', exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'View Hale Place', exact: true }).click()
   const dialog = page.getByRole('dialog')
@@ -28,14 +42,17 @@ test('brochure migration exposes the five areas and preserves dated unit prices 
   await dialog.getByRole('button', { name: 'Show image 4', exact: true }).click()
   await expect(dialog.getByText('Image 4 of 4')).toBeVisible()
   await expect.poll(() => dialog.locator('img').first().evaluate(image => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0)
-  await testInfo.attach('hale-place-map', { body: await page.screenshot(), contentType: 'image/png' })
+  await testInfo.attach('hale-place-map', { body: await page.screenshot({ animations: 'disabled' }), contentType: 'image/png' })
   await page.keyboard.press('Escape')
   await expect(dialog).toBeHidden()
   await expect(page.getByRole('button', { name: 'View Hale Place', exact: true })).toBeFocused()
+  await page.setViewportSize({ width: 900, height: 1000 })
+  await expectCardColumns(2)
   await page.setViewportSize({ width: 390, height: 844 })
+  await expectCardColumns(1)
   await page.getByRole('heading', { level: 1 }).scrollIntoViewIfNeeded()
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
-  await testInfo.attach('marketing-mobile', { body: await page.screenshot(), contentType: 'image/png' })
+  await testInfo.attach('marketing-mobile', { body: await page.screenshot({ animations: 'disabled' }), contentType: 'image/png' })
   await page.getByRole('button', { name: 'Whitianga', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Hale Place', exact: true })).toHaveCount(0)
   await expect(page.getByText('No homes are currently listed for this village. Contact SAMCT to ask about availability.')).toBeVisible()
@@ -48,6 +65,7 @@ test('photo covers open the correct gallery by mouse and keyboard, with contact 
   await expect(page.getByRole('heading', { name: 'Street areas within the village', exact: true })).toBeVisible()
   const home = page.locator('article').filter({ has: page.getByRole('heading', { name: '11 Masons Way, Ngatea', exact: true }) })
   await expect(home.getByText('Individual home', { exact: true })).toBeVisible()
+  await expect(home.getByText('Individual home', { exact: true })).toHaveCSS('color', 'rgb(23, 32, 51)')
   await expect(home.getByRole('link', { name: '07 867 7800' })).toHaveAttribute('href', 'tel:078677800')
   await expect(home.getByRole('button', { name: 'View 11 Masons Way, Ngatea', exact: true })).toContainText('1 image')
   const homeCover = home.getByRole('button', { name: 'Open photos for 11 Masons Way, Ngatea', exact: true })
@@ -73,13 +91,15 @@ test('photo covers open the correct gallery by mouse and keyboard, with contact 
   await expect(question.locator('.marketing-faq-answer')).toBeVisible()
   const colours = await question.evaluate(element => [getComputedStyle(element.querySelector('summary')!).backgroundColor, getComputedStyle(element.querySelector('.marketing-faq-answer')!).backgroundColor])
   expect(colours[0]).not.toBe(colours[1])
-  await testInfo.attach('faq-expanded', { body: await page.screenshot(), contentType: 'image/png' })
+  await question.evaluate(element => window.scrollTo(0, element.getBoundingClientRect().top + window.scrollY - 120))
+  await testInfo.attach('faq-expanded', { body: await page.screenshot({ animations: 'disabled' }), contentType: 'image/png' })
   await page.setViewportSize({ width: 390, height: 844 })
   await areaCover.click()
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
   await expect(dialog.getByRole('button', { name: 'Next', exact: true })).toBeVisible()
   await expect(dialog.getByRole('link', { name: '07 867 7800' })).toBeVisible()
-  await testInfo.attach('gallery-mobile', { body: await page.screenshot(), contentType: 'image/png' })
+  await dialog.getByRole('button', { name: 'Next', exact: true }).scrollIntoViewIfNeeded()
+  await testInfo.attach('gallery-mobile', { body: await page.screenshot({ animations: 'disabled' }), contentType: 'image/png' })
 })
 
 test('marketing reports an API outage and retries instead of showing a false empty listing', async ({ page }) => {

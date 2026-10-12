@@ -133,7 +133,7 @@ header {
   font-size: 0.875rem;
 }
 
-.marketing-kind-badge,
+.marketing-kind-badge.badge,
 .marketing-village-note,
 .marketing-faq-answer {
   background: #edf4fb;
