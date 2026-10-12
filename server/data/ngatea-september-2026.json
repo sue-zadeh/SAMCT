@@ -14,7 +14,9 @@
     "Availability": "Enquire",
     "SourceLabel": "September 2026 brochure",
     "IsPublished": true,
-    "DisplayOrder": 1
+    "DisplayOrder": 1,
+    "ContactName": "",
+    "ContactPhone": ""
   },
   {
     "Id": 10,
@@ -34,7 +36,9 @@
     "Availability": "Enquire",
     "SourceLabel": "September 2026 brochure",
     "IsPublished": true,
-    "DisplayOrder": 10
+    "DisplayOrder": 10,
+    "ContactName": "Avalon or Hayley",
+    "ContactPhone": "07 867 7800"
   },
   {
     "Id": 11,
@@ -54,7 +58,9 @@
     "Availability": "Enquire",
     "SourceLabel": "September 2026 brochure",
     "IsPublished": true,
-    "DisplayOrder": 11
+    "DisplayOrder": 11,
+    "ContactName": "Avalon or Hayley",
+    "ContactPhone": "07 867 7800"
   },
   {
     "Id": 12,
@@ -74,7 +80,9 @@
     "Availability": "Enquire",
     "SourceLabel": "September 2026 brochure",
     "IsPublished": true,
-    "DisplayOrder": 12
+    "DisplayOrder": 12,
+    "ContactName": "Avalon or Hayley",
+    "ContactPhone": "07 867 7800"
   },
   {
     "Id": 13,
@@ -94,7 +102,9 @@
     "Availability": "Enquire",
     "SourceLabel": "September 2026 brochure",
     "IsPublished": true,
-    "DisplayOrder": 13
+    "DisplayOrder": 13,
+    "ContactName": "Avalon or Hayley",
+    "ContactPhone": "07 867 7800"
   },
   {
     "Id": 14,
@@ -114,7 +124,9 @@
     "Availability": "Enquire",
     "SourceLabel": "September 2026 brochure",
     "IsPublished": true,
-    "DisplayOrder": 14
+    "DisplayOrder": 14,
+    "ContactName": "Avalon or Hayley",
+    "ContactPhone": "07 867 7800"
   },
   {
     "Id": 20,
@@ -131,7 +143,9 @@
     "Availability": "Under offer",
     "SourceLabel": "September 2026 brochure",
     "IsPublished": true,
-    "DisplayOrder": 20
+    "DisplayOrder": 20,
+    "ContactName": "Avalon or Hayley",
+    "ContactPhone": "07 867 7800"
   },
   {
     "Id": 21,
@@ -148,7 +162,9 @@
     "Availability": "Applications invited",
     "SourceLabel": "September 2026 brochure",
     "IsPublished": true,
-    "DisplayOrder": 21
+    "DisplayOrder": 21,
+    "ContactName": "Avalon or Hayley",
+    "ContactPhone": "07 867 7800"
   },
   {
     "Id": 22,
@@ -165,7 +181,9 @@
     "Availability": "Under offer",
     "SourceLabel": "September 2026 brochure",
     "IsPublished": true,
-    "DisplayOrder": 22
+    "DisplayOrder": 22,
+    "ContactName": "Avalon or Hayley",
+    "ContactPhone": "07 867 7800"
   },
   {
     "Id": 23,
@@ -182,7 +200,9 @@
     "Availability": "Under offer",
     "SourceLabel": "September 2026 brochure",
     "IsPublished": true,
-    "DisplayOrder": 23
+    "DisplayOrder": 23,
+    "ContactName": "Avalon or Hayley",
+    "ContactPhone": "07 867 7800"
   },
   {
     "Id": 30,
@@ -197,7 +217,9 @@
     "Availability": "Enquire",
     "SourceLabel": "September 2026 brochure",
     "IsPublished": true,
-    "DisplayOrder": 30
+    "DisplayOrder": 30,
+    "ContactName": "",
+    "ContactPhone": ""
   },
   {
     "Id": 31,
@@ -212,7 +234,9 @@
     "Availability": "Enquire",
     "SourceLabel": "September 2026 brochure",
     "IsPublished": true,
-    "DisplayOrder": 31
+    "DisplayOrder": 31,
+    "ContactName": "",
+    "ContactPhone": ""
   },
   {
     "Id": 32,
@@ -227,7 +251,9 @@
     "Availability": "Enquire",
     "SourceLabel": "September 2026 brochure",
     "IsPublished": true,
-    "DisplayOrder": 32
+    "DisplayOrder": 32,
+    "ContactName": "",
+    "ContactPhone": ""
   },
   {
     "Id": 33,
@@ -242,7 +268,9 @@
     "Availability": "Enquire",
     "SourceLabel": "September 2026 brochure",
     "IsPublished": true,
-    "DisplayOrder": 33
+    "DisplayOrder": 33,
+    "ContactName": "",
+    "ContactPhone": ""
   },
   {
     "Id": 34,
@@ -257,7 +285,9 @@
     "Availability": "Enquire",
     "SourceLabel": "September 2026 brochure",
     "IsPublished": true,
-    "DisplayOrder": 34
+    "DisplayOrder": 34,
+    "ContactName": "",
+    "ContactPhone": ""
   },
   {
     "Id": 35,
@@ -272,7 +302,9 @@
     "Availability": "Enquire",
     "SourceLabel": "September 2026 brochure",
     "IsPublished": true,
-    "DisplayOrder": 35
+    "DisplayOrder": 35,
+    "ContactName": "",
+    "ContactPhone": ""
   },
   {
     "Id": 36,
@@ -287,7 +319,9 @@
     "Availability": "Enquire",
     "SourceLabel": "September 2026 brochure",
     "IsPublished": true,
-    "DisplayOrder": 36
+    "DisplayOrder": 36,
+    "ContactName": "",
+    "ContactPhone": ""
   },
   {
     "Id": 37,
@@ -302,7 +336,9 @@
     "Availability": "Enquire",
     "SourceLabel": "September 2026 brochure",
     "IsPublished": true,
-    "DisplayOrder": 37
+    "DisplayOrder": 37,
+    "ContactName": "",
+    "ContactPhone": ""
   },
   {
     "Id": 38,
@@ -317,7 +353,9 @@
     "Availability": "Enquire",
     "SourceLabel": "September 2026 brochure",
     "IsPublished": true,
-    "DisplayOrder": 38
+    "DisplayOrder": 38,
+    "ContactName": "",
+    "ContactPhone": ""
   },
   {
     "Id": 40,
@@ -332,7 +370,9 @@
     "Availability": "Enquire",
     "SourceLabel": "September 2026 brochure",
     "IsPublished": true,
-    "DisplayOrder": 40
+    "DisplayOrder": 40,
+    "ContactName": "",
+    "ContactPhone": ""
   },
   {
     "Id": 41,
@@ -347,7 +387,9 @@
     "Availability": "Enquire",
     "SourceLabel": "September 2026 brochure",
     "IsPublished": true,
-    "DisplayOrder": 41
+    "DisplayOrder": 41,
+    "ContactName": "Avalon or Hayley",
+    "ContactPhone": "07 867 7800"
   },
   {
     "Id": 42,
@@ -364,6 +406,8 @@
     "Availability": "Enquire",
     "SourceLabel": "September 2026 brochure",
     "IsPublished": true,
-    "DisplayOrder": 42
+    "DisplayOrder": 42,
+    "ContactName": "",
+    "ContactPhone": ""
   }
 ]
