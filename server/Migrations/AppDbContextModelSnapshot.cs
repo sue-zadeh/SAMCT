@@ -221,6 +221,16 @@ namespace server.Migrations
                         .HasMaxLength(40)
                         .HasColumnType("character varying(40)");
 
+                    b.Property<string>("ContactName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("ContactPhone")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(5000)
@@ -275,7 +285,7 @@ namespace server.Migrations
 
                     b.ToTable("MarketingContents", t =>
                         {
-                            t.HasCheckConstraint("CK_MarketingContents_Images", "cardinality(\"Images\") <= 10");
+                            t.HasCheckConstraint("CK_MarketingContents_Images", "cardinality(\"Images\") <= 30");
                         });
                 });
 

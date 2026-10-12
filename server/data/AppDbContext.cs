@@ -25,7 +25,7 @@ namespace server.Data
         {
             modelBuilder.Entity<MarketingContent>().HasIndex(content => content.Slug).IsUnique();
             modelBuilder.Entity<MarketingContent>().Property(content => content.PriceNzd).HasPrecision(12, 2);
-            modelBuilder.Entity<MarketingContent>().ToTable(table => table.HasCheckConstraint("CK_MarketingContents_Images", "cardinality(\"Images\") <= 10"));
+            modelBuilder.Entity<MarketingContent>().ToTable(table => table.HasCheckConstraint("CK_MarketingContents_Images", "cardinality(\"Images\") <= 30"));
             modelBuilder.Entity<AuthSession>().Property(session => session.Id).HasMaxLength(64);
             modelBuilder.Entity<AuthSession>().HasIndex(session => session.ExpiresAt);
             modelBuilder.Entity<MfaChallenge>().Property(challenge => challenge.Id).HasMaxLength(64);

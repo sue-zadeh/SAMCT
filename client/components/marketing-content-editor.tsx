@@ -12,6 +12,8 @@ export type MarketingContent = {
   priceNzd: number | null
   availability: string
   sourceLabel: string
+  contactName: string
+  contactPhone: string
   isPublished?: boolean
 }
 
@@ -38,7 +40,11 @@ export default function MarketingContentEditor({ village }: { village: string })
     event.preventDefault()
     if (!selected) return
     setError(''); setMessage('')
-    if (selected.images.length + photos.length > 10) { setError('Keep or upload at most 10 photos.'); return }
+    if (selected.images.length + photos.length > 30) { setError('Keep at most 30 images per entry.'); return }
+    if (photos.length > 10) { setError('Upload at most 10 new photos at a time, then save before adding more.'); return }
+    if (!!selected.contactName.trim() !== !!selected.contactPhone.trim()) {
+      setError('Enter both the contact name and phone number, or leave both empty.'); return
+    }
     if (photos.some(photo => photo.size > 2 * 1024 * 1024 || !/\.(png|jpe?g)$/i.test(photo.name))) {
       setError('Use JPEG or PNG photos, at most 2 MB each.'); return
     }
@@ -47,6 +53,7 @@ export default function MarketingContentEditor({ village }: { village: string })
       const body = new FormData()
       for (const [key, value] of Object.entries({ title: selected.title, description: selected.description,
         address: selected.address, availability: selected.availability, sourceLabel: selected.sourceLabel,
+        contactName: selected.contactName, contactPhone: selected.contactPhone,
         isPublished: String(!!selected.isPublished) })) body.append(key, value)
       if (selected.priceNzd !== null) body.append('priceNzd', String(selected.priceNzd))
       selected.images.forEach(image => body.append('retainedImages', image))
@@ -78,6 +85,12 @@ export default function MarketingContentEditor({ village }: { village: string })
       <input id="brochure-title" className="form-control mb-3" required maxLength={160} value={selected.title} onChange={event => setSelected({ ...selected, title: event.target.value })} />
       <label htmlFor="brochure-description" className="form-label">Description</label>
       <textarea id="brochure-description" className="form-control mb-3" required maxLength={5000} rows={6} value={selected.description} onChange={event => setSelected({ ...selected, description: event.target.value })} />
+      <div className="row g-3 mb-3">
+        <div className="col-md-6"><label htmlFor="brochure-contact-name" className="form-label">Contact name</label>
+          <input id="brochure-contact-name" className="form-control" maxLength={100} value={selected.contactName} onChange={event => setSelected({ ...selected, contactName: event.target.value })} /></div>
+        <div className="col-md-6"><label htmlFor="brochure-contact-phone" className="form-label">Contact phone</label>
+          <input id="brochure-contact-phone" className="form-control" type="tel" maxLength={32} value={selected.contactPhone} onChange={event => setSelected({ ...selected, contactPhone: event.target.value })} /></div>
+      </div>
       {selected.kind === 'unit' && <div className="row g-3 mb-3">
         <div className="col-md-6"><label htmlFor="brochure-price" className="form-label">Advertised price (NZD)</label>
           <input id="brochure-price" type="number" min={0} max={9999999999} step="0.01" className="form-control" value={selected.priceNzd ?? ''} onChange={event => setSelected({ ...selected, priceNzd: event.target.value === '' ? null : Number(event.target.value) })} /></div>
@@ -90,13 +103,13 @@ export default function MarketingContentEditor({ village }: { village: string })
       <input id="brochure-source" className="form-control mb-3" required maxLength={160} value={selected.sourceLabel} onChange={event => setSelected({ ...selected, sourceLabel: event.target.value })} />
       <div className="form-check mb-3"><input id="brochure-published" type="checkbox" className="form-check-input" checked={!!selected.isPublished} onChange={event => setSelected({ ...selected, isPublished: event.target.checked })} />
         <label htmlFor="brochure-published" className="form-check-label">Publish on the marketing page</label></div>
-      <p className="small">{selected.images.length + photos.length}/10 photos. The first photo is the cover. Remove a photo to make room for its replacement. JPEG or PNG, up to 2 MB each.</p>
+      <p className="small" id="brochure-photo-help">{selected.images.length + photos.length}/30 images. The first image is the cover. Add up to 10 new photos per save. JPEG or PNG, up to 2 MB each. Use photos of this home or area and keep any labels identifying example interiors.</p>
       <div className="row g-3 mb-3">{selected.images.map((image, index) => <div key={image} className="col-6 col-md-3">
         <img src={`${API_BASE_URL}${image}`} alt={`${selected.title}, photo ${index + 1}`} className="w-100 rounded" style={{ height: 120, objectFit: 'contain' }} />
         <button type="button" className="btn btn-sm btn-outline-danger mt-2" onClick={() => setSelected({ ...selected, images: selected.images.filter(existing => existing !== image) })}>Remove photo {index + 1}</button>
       </div>)}</div>
       <label htmlFor="brochure-photos" className="form-label">Add photos</label>
-      <input id="brochure-photos" className="form-control mb-3" type="file" accept=".jpg,.jpeg,.png" multiple onChange={event => setPhotos(Array.from(event.target.files ?? []))} />
+      <input id="brochure-photos" className="form-control mb-3" type="file" accept=".jpg,.jpeg,.png" multiple aria-describedby="brochure-photo-help" onChange={event => setPhotos(Array.from(event.target.files ?? []))} />
       <button className="btn btn-primary" disabled={busy}>{busy ? 'Saving…' : 'Save brochure entry'}</button>
     </form>}
   </details>

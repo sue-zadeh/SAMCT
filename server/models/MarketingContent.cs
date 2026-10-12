@@ -12,6 +12,8 @@ public class MarketingContent
     [MaxLength(160)] public string Title { get; set; } = "";
     [MaxLength(5000)] public string Description { get; set; } = "";
     [MaxLength(250)] public string Address { get; set; } = "";
+    [MaxLength(100)] public string ContactName { get; set; } = "";
+    [MaxLength(32)] public string ContactPhone { get; set; } = "";
     public string[] Images { get; set; } = [];
     public decimal? PriceNzd { get; set; }
     [MaxLength(40)] public string Availability { get; set; } = "Enquire";
