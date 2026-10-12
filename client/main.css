@@ -87,3 +87,79 @@ header {
     transform: translateY(0);
   }
 }
+
+/* Marketing images and buttons are interactive; descriptive card text is not. */
+.marketing-page .samct-card {
+  cursor: auto;
+}
+
+.marketing-page .samct-card:hover {
+  transform: none;
+}
+
+.marketing-photo-button {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  background: var(--soft-blue);
+  cursor: pointer;
+}
+
+.marketing-photo-button img {
+  display: block;
+  transition: transform 0.2s ease;
+}
+
+.marketing-photo-button:hover img {
+  transform: scale(1.025);
+}
+
+.marketing-photo-button:focus-visible {
+  outline: 3px solid var(--primary-dark);
+  outline-offset: -4px;
+}
+
+.marketing-photo-label {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 0.5rem;
+  color: #fff;
+  background: #172033e8;
+  font-size: 0.875rem;
+}
+
+.marketing-kind-badge,
+.marketing-village-note,
+.marketing-faq-answer {
+  background: #edf4fb;
+  color: var(--text-main);
+}
+
+.marketing-faq summary {
+  background: #fff;
+  cursor: pointer;
+}
+
+.marketing-faq summary:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: -3px;
+}
+
+#marketing-listings,
+#marketing-areas {
+  scroll-margin-top: 7rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marketing-photo-button img {
+    transition: none;
+  }
+  .marketing-photo-button:hover img {
+    transform: none;
+  }
+}

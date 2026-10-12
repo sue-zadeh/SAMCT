@@ -17,7 +17,8 @@ public class MarketingContentController(AppDbContext database, UploadStorage upl
         .Where(content => content.IsPublished).OrderBy(content => content.DisplayOrder)
         .Select(content => new {
             content.Id, content.Village, content.Kind, content.Title, content.Description,
-            content.Address, content.Images, content.PriceNzd, content.Availability, content.SourceLabel
+            content.Address, content.Images, content.PriceNzd, content.Availability, content.SourceLabel,
+            content.ContactName, content.ContactPhone
         }).ToListAsync());
 
     [HttpGet("manage/{village}")]
@@ -35,16 +36,18 @@ public class MarketingContentController(AppDbContext database, UploadStorage upl
         if (content is null) return NotFound();
         if (!User.CanManageVillage(content.Village)) return Forbid();
         // Only keep images already owned by this entry; URLs cannot be used to publish another entry's files.
-        if (request.RetainedImages.Count + request.Photos.Count > 10 ||
+        if (request.RetainedImages.Count + request.Photos.Count > 30 ||
             request.RetainedImages.Distinct().Count() != request.RetainedImages.Count ||
             request.RetainedImages.Any(image => !content.Images.Contains(image)))
-            return BadRequest(new { message = "Keep or upload at most 10 photos belonging to this entry." });
+            return BadRequest(new { message = "Keep at most 30 images belonging to this entry and upload at most 10 new photos at a time." });
         var images = new List<string>(request.RetainedImages);
         foreach (var photo in request.Photos)
             images.Add(await uploads.Save(photo, "marketing", imagesOnly: true));
         content.Title = request.Title.Trim();
         content.Description = request.Description.Trim();
         content.Address = request.Address.Trim();
+        content.ContactName = request.ContactName.Trim();
+        content.ContactPhone = request.ContactPhone.Trim();
         content.PriceNzd = content.Kind == "unit" ? request.PriceNzd : null;
         content.Availability = content.Kind == "unit" ? request.Availability : "Enquire";
         content.SourceLabel = request.SourceLabel.Trim();
