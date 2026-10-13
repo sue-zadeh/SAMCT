@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from 'react-router-dom'
 
 function Footer() {
   return (
@@ -8,8 +8,9 @@ function Footer() {
           <div className="col-md-4">
             <h5 className="fw-bold mb-3">SAMCT Villages</h5>
             <p className="text-secondary mb-0">
-              South Auckland Masonic Charitable Trust providing community-focused
-              retirement living and secure portal access for residents and administration.
+              South Auckland Masonic Charitable Trust providing
+              community-focused retirement living and secure portal access for
+              residents and administration.
             </p>
           </div>
 
@@ -32,7 +33,10 @@ function Footer() {
                 </Link>
               </li> */}
               <li>
-                <Link to="/contactUs" className="text-decoration-none text-dark">
+                <Link
+                  to="/contactUs"
+                  className="text-decoration-none text-dark"
+                >
                   Contact
                 </Link>
               </li>
@@ -42,7 +46,6 @@ function Footer() {
           <div className="col-md-4">
             <h6 className="fw-bold mb-3">Locations</h6>
             <ul className="list-unstyled text-secondary mb-0">
-           
               <li>Ngatea</li>
               <li>Whitianga</li>
             </ul>
@@ -55,14 +58,10 @@ function Footer() {
           <p className="mb-2 mb-md-0 text-secondary">
             © {new Date().getFullYear()} SAMCT Villages. All rights reserved.
           </p>
-          <p className="mb-0 text-secondary">
-            Developed by Sue Raisianzadeh — Freelance Web Developer,{' '}
-            <a href="https://suewebstudio.com/" className="text-secondary">suewebstudio</a>
-          </p>
         </div>
       </div>
     </footer>
-  );
+  )
 }
 
-export default Footer;
+export default Footer
