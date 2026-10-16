@@ -26,6 +26,8 @@ function PurchaseOrders() {
   const [status, setStatus] = useState('Pending')
   const [notes, setNotes] = useState('')
   const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     loadOrders()
@@ -74,7 +76,7 @@ function PurchaseOrders() {
     setUnitNumber(order.unitNumber || '')
     setCategory(order.category || '')
     setSupplier(order.supplier || '')
-    setEstimatedCost(String(order.estimatedCost || ''))
+    setEstimatedCost(String(order.estimatedCost ?? ''))
     setPriority(order.priority || 'Normal')
     setStatus(order.status || 'Pending')
     setNotes(order.notes || '')
@@ -102,6 +104,8 @@ function PurchaseOrders() {
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault()
+    setError(''); setMessage(''); setSaving(true)
+    try {
 
     const order = {
       village: isAdmin ? village : userVillage,
@@ -130,11 +134,18 @@ function PurchaseOrders() {
       body: JSON.stringify(order),
     })
 
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}))
+      throw new Error(data.message || 'Could not save this order. Check the fields and try again.')
+    }
+
     if (response.ok) {
       setMessage(editingId ? 'Purchase order updated.' : 'Purchase order created.')
       resetForm()
-      loadOrders()
+      await loadOrders()
     }
+    } catch (error) { setError(error instanceof Error ? error.message : 'Could not save this order. Please try again.') }
+    finally { setSaving(false) }
   }
 
   return (
@@ -151,7 +162,8 @@ function PurchaseOrders() {
           </p>
         </section>
 
-        {message && <div className="alert alert-success">{message}</div>}
+        {message && <div role="status" className="alert alert-success">{message}</div>}
+        {error && <div role="alert" className="alert alert-danger">{error}</div>}
 
         <section className="samct-card p-4 mb-4 border rounded-4 shadow-sm bg-white">
           <h4 className="mb-4">
@@ -165,7 +177,7 @@ function PurchaseOrders() {
 
                 <select
                   className="form-select"
-                  value={village}
+                  aria-label="Village" value={village}
                   disabled={!isAdmin}
                   onChange={(e) => setVillage(e.target.value)}
                 >
@@ -193,7 +205,7 @@ function PurchaseOrders() {
 
                 <input
                   className="form-control"
-                  id="purchase-orders-unitNumber" maxLength={30} value={unitNumber}
+                  id="purchase-orders-unitNumber" required maxLength={30} value={unitNumber}
                   onChange={(e) => setUnitNumber(e.target.value)}
                 />
               </div>
@@ -203,7 +215,7 @@ function PurchaseOrders() {
 
                 <select
                   className="form-select"
-                  value={priority}
+                  aria-label="Priority" value={priority}
                   onChange={(e) => setPriority(e.target.value)}
                 >
                   <option>Low</option>
@@ -218,7 +230,7 @@ function PurchaseOrders() {
 
                 <select
                   className="form-select"
-                  value={status}
+                  aria-label="Status" value={status}
                   onChange={(e) => setStatus(e.target.value)}
                 >
                   <option>Pending</option>
@@ -233,7 +245,7 @@ function PurchaseOrders() {
 
                 <select
                   className="form-select"
-                  value={category}
+                  aria-label="Category" required value={category}
                   onChange={(e) => setCategory(e.target.value)}
                 >
                   <option value="">Select category</option>
@@ -254,7 +266,7 @@ function PurchaseOrders() {
 
                 <input
                   className="form-control"
-                  id="purchase-orders-supplier" maxLength={160} value={supplier}
+                  id="purchase-orders-supplier" required maxLength={160} value={supplier}
                   onChange={(e) => setSupplier(e.target.value)}
                 />
               </div>
@@ -265,7 +277,7 @@ function PurchaseOrders() {
                 <input
                   type="number"
                   className="form-control"
-                  id="purchase-orders-estimatedCost" value={estimatedCost}
+                  id="purchase-orders-estimatedCost" required min={0} max={10000000} step="0.01" value={estimatedCost}
                   onChange={(e) => setEstimatedCost(e.target.value)}
                 />
               </div>
@@ -282,7 +294,7 @@ function PurchaseOrders() {
               </div>
 
               <div className="col-12 d-flex gap-2">
-                <button className="btn btn-primary" type="submit">
+                <button className="btn btn-primary" type="submit" disabled={saving}>
                   {editingId ? 'Update Purchase Order' : 'Save Purchase Order'}
                 </button>
 

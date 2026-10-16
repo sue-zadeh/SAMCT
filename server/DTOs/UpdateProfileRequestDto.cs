@@ -8,7 +8,7 @@ namespace server.DTOs
         public string? CurrentPassword { get; set; }
         [Required, StringLength(50)]
         public string CurrentUsername { get; set; } = "";
-        [Required, StringLength(50, MinimumLength = 3), RegularExpression(@"[A-Za-z0-9_.-]+")]
+        [Required, StringLength(50)]
         public string UserName { get; set; } = "";
         [Required, StringLength(80)]
         public string FirstName { get; set; } = "";

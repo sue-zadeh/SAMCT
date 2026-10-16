@@ -4,7 +4,7 @@ SAMCT is the South Auckland Masonic Charitable Trust village portal. It has publ
 
 **Developer:** Sue Raisianzadeh — Freelance Web Developer, **suewebstudio**.
 
-**Delivery status:** the follow-up release work is in [PR #2](https://github.com/sue-zadeh/SAMCT/pull/2). See [the current release report](docs/release-readiness.md) and [the earlier review](docs/security-review.md). Deployment, credential rotation, client content approval and the live hosting checks still need completing before handover. A passing test suite is evidence for the tested behaviour, not a guarantee against every attack.
+**Delivery status:** the latest login, photo and form fixes are in [PR #5](https://github.com/sue-zadeh/SAMCT/pull/5). See [the form review and test coverage](docs/login-and-form-review.md), [the deployment requirements](docs/release-readiness.md) and [the earlier security review](docs/security-review.md). Deployment, credential rotation, client content approval and live hosting checks still need completing before handover. A passing test suite is evidence for the tested behaviour, not a guarantee against every attack.
 
 ## What stakeholders need to know
 

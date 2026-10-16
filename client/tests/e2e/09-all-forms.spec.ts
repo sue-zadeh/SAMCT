@@ -1,0 +1,233 @@
+import { test, expect, type Page, type Locator } from '@playwright/test'
+import { readFile, readdir } from 'node:fs/promises'
+import { loginApi, loginPage, state, totp, users, write } from './helpers'
+
+test.setTimeout(240000)
+const image = { name: 'avatar.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aP2cAAAAASUVORK5CYII=', 'base64') }
+async function submit(page: Page, path: string, button: Locator, expected = 200, prepare?: () => Promise<void>) {
+  const click = async () => {
+    await prepare?.()
+    const result = page.waitForResponse(response => new URL(response.url()).pathname === path && response.request().method() !== 'GET')
+    await button.click()
+    return result
+  }
+  let response = await click()
+  // Keep real throttling enabled; wait for its window, never retry failed assertions.
+  if (response.status() === 429) { await page.waitForTimeout(61000); response = await click() }
+  expect(response.status(), await response.text()).toBe(expected)
+  return response
+}
+
+test('new usernames require five characters and case variants cannot create duplicate accounts', async ({ page, request }) => {
+  await page.goto('/register')
+  await expect(page.getByLabel('Username', { exact: true })).toHaveAttribute('minlength', '5')
+  const fields = { userName: 'four', firstName: 'Test', lastName: 'Person', email: 'short-new@example.test', village: 'Ngatea', role: 'Resident', password: users().resident.password }
+  expect((await write(request, 'POST', '/api/register', { multipart: fields })).status()).toBe(400)
+  expect((await write(request, 'POST', '/api/register', { multipart: { ...fields, userName: 'five5' } })).status()).toBe(200)
+  expect((await write(request, 'POST', '/api/register', { multipart: { ...fields, userName: 'FIVE5', email: 'different-case@example.test' } })).status()).toBe(409)
+  const account = users().resident
+  expect((await write(request, 'POST', '/api/login', { data: { userName: account.userName.toUpperCase(), password: account.password.toUpperCase() } })).status()).toBe(401)
+  await loginPage(page, { ...account, userName: account.userName.toUpperCase() })
+  await expect(page).toHaveURL(/\/resident$/)
+})
+
+test('an existing short username can still log in, save a profile, request maintenance and change password', async ({ page }) => {
+  const account = users().shortLegacy
+  await loginPage(page, { ...account, userName: 'OLD' })
+  await expect(page).toHaveURL(/\/resident$/)
+  await page.goto('/resident/profile/edit')
+  await page.getByLabel('First Name', { exact: true }).fill('Legacy')
+  await submit(page, '/api/users/profile', page.getByRole('button', { name: 'Save Changes', exact: true }))
+  await expect(page).toHaveURL(/\/resident\/profile$/)
+  await page.goto('/resident/maintenance')
+  await page.getByLabel('Issue Title').fill('Legacy account repair')
+  await page.getByLabel('Unit / Address').fill('Unit 2')
+  await page.getByLabel('Description', { exact: true }).fill('Please fix the tap.')
+  await submit(page, '/api/maintenance/resident', page.getByRole('button', { name: /submit.*request/i }))
+  await page.goto('/resident/profile/password')
+  await page.getByLabel('Current Password', { exact: true }).fill(account.password)
+  await page.getByLabel('New Password', { exact: true }).fill('Legacy-updated-password-123')
+  await page.getByLabel('Confirm New Password', { exact: true }).fill('Legacy-updated-password-123')
+  await submit(page, '/api/users/password', page.getByRole('button', { name: 'Save Password' }))
+  await expect(page).toHaveURL(/\/login$/)
+})
+
+for (const [key, area] of [['uiResident', 'resident'], ['uiManager', 'village-manager'], ['uiAdmin', 'admin']]) {
+  test(`${area} profile, photo and password forms save real data and revoke old sessions`, async ({ page, request }) => {
+    const account = users()[key]
+    await loginApi(page.request, account)
+    await page.goto(`/${area}/profile/edit`)
+    await page.getByLabel('First Name', { exact: true }).fill(`Edited ${area}`)
+    await submit(page, '/api/users/profile', page.getByRole('button', { name: 'Save Changes', exact: true }))
+    await expect(page).toHaveURL(new RegExp(`/${area}/profile$`))
+    expect((await (await page.request.get('/api/session')).json()).firstName).toBe(`Edited ${area}`)
+    const upload = page.waitForResponse(response => response.url().includes('/api/users/profile-image') && response.request().method() === 'POST')
+    await page.locator('input[type=file]').setInputFiles(image)
+    const uploaded = await upload
+    expect(uploaded.status(), await uploaded.text()).toBe(200)
+    const profile = await uploaded.json()
+    expect((await page.request.get(profile.profileImageUrl)).status()).toBe(200)
+    expect((await request.get(profile.profileImageUrl)).status()).toBe(401)
+    await page.reload()
+    await expect(page.locator(`img[src="${profile.profileImageUrl}"]`).first()).toBeVisible()
+    await page.goto(`/${area}/profile/password`)
+    await page.getByRole('button', { name: 'Save Password' }).click()
+    await expect(page.getByRole('alert')).toContainText('fill all password fields')
+    const password = `New-${key}-password-123`
+    await page.getByLabel('Current Password', { exact: true }).fill('wrong-current-password')
+    await page.getByLabel('New Password', { exact: true }).fill(password)
+    await page.getByLabel('Confirm New Password', { exact: true }).fill(password)
+    await submit(page, '/api/users/password', page.getByRole('button', { name: 'Save Password' }), 400)
+    await expect(page.getByRole('alert')).toContainText('Current password is incorrect')
+    await page.getByLabel('Current Password', { exact: true }).fill(account.password)
+    await submit(page, '/api/users/password', page.getByRole('button', { name: 'Save Password' }))
+    await expect(page).toHaveURL(/\/login$/)
+    expect((await page.request.get('/api/session')).status()).toBe(401)
+    await loginPage(page, { ...account, password })
+    await expect(page).toHaveURL(new RegExp(`/${area}$`))
+  })
+}
+
+test('forgot and reset password forms deliver a single-use link and accept the new password', async ({ page }) => {
+  const account = users().uiReset
+  await page.goto('/forgot-password')
+  await page.getByRole('button', { name: 'Send Reset Link' }).click()
+  await expect(page.getByRole('alert')).toContainText('enter your email')
+  await page.getByLabel('Email', { exact: true }).fill(account.email)
+  await submit(page, '/api/forgot-password', page.getByRole('button', { name: 'Send Reset Link' }))
+  await expect(page.getByRole('status')).toContainText('If this email exists')
+  const messages = await Promise.all((await readdir('.playwright/outbox')).map(async file => JSON.parse(await readFile(`.playwright/outbox/${file}`, 'utf8'))))
+  const token = messages.find(message => message.recipient === account.email).body.match(/reset-password\/([A-F0-9]{64})/)[1]
+  await page.goto(`/reset-password/${token}`)
+  const password = 'Browser-reset-password-123'
+  await page.getByLabel('New Password', { exact: true }).fill(password)
+  await page.getByLabel('Confirm Password', { exact: true }).fill('Mismatch-password-123')
+  await page.getByRole('button', { name: 'Reset Password', exact: true }).click()
+  await expect(page.getByRole('alert')).toContainText('Passwords do not match')
+  await page.getByLabel('Confirm Password', { exact: true }).fill(password)
+  await submit(page, '/api/reset-password', page.getByRole('button', { name: 'Reset Password', exact: true }))
+  await expect(page).toHaveURL(/\/login$/)
+  expect((await write(page.request, 'PUT', '/api/reset-password', { data: { token, newPassword: password } })).status()).toBe(400)
+  await loginPage(page, { ...account, password })
+  await expect(page).toHaveURL(/\/resident$/)
+})
+
+test('changing recovery email in the profile form requires the password and signs the account out', async ({ page }) => {
+  const account = users().uiEmail
+  await loginApi(page.request, account)
+  await page.goto('/resident/profile/edit')
+  await page.getByLabel('Email', { exact: true }).fill('updated-browser-email@example.test')
+  await submit(page, '/api/users/profile', page.getByRole('button', { name: 'Save Changes', exact: true }), 400)
+  await expect(page.getByRole('alert')).toContainText('current password')
+  expect((await (await page.request.get('/api/session')).json()).email).toBe(account.email)
+  await page.getByLabel('Current password (required when changing your email)').fill(account.password)
+  await submit(page, '/api/users/profile', page.getByRole('button', { name: 'Save Changes', exact: true }))
+  await expect(page).toHaveURL(/\/login\?emailUpdated=true$/)
+  expect((await page.request.get('/api/session')).status()).toBe(401)
+})
+
+for (const [key, path, target] of [['manager', '/village-manager/residents', 'managedByManager'], ['admin', '/admin/people', 'managedByAdmin']]) {
+  test(`${key} user management saves only edited accounts and activates the selected resident`, async ({ browser }) => {
+    const context = await browser.newContext({ baseURL: 'http://127.0.0.1:5173', storageState: state(key) })
+    const page = await context.newPage()
+    try {
+      const account = users()[target]
+      await page.goto(path)
+      await expect(page.getByRole('button', { name: 'Save All Changes' })).toBeDisabled()
+      const row = page.getByRole('row').filter({ has: page.getByLabel(`Username for ${account.userName}`, { exact: true }) })
+      await row.getByLabel(`First Name for ${account.userName}`, { exact: true }).fill('Approved')
+      await row.getByRole('button', { name: 'Activate', exact: true }).click()
+      const writes: string[] = []
+      page.on('request', request => { if (request.method() === 'PUT') writes.push(new URL(request.url()).pathname) })
+      await submit(page, `/api/users/${account.id}`, page.getByRole('button', { name: 'Save All Changes' }))
+      await expect(page.getByRole('status')).toContainText('saved successfully')
+      expect(writes).toEqual([`/api/users/${account.id}`])
+      await page.reload()
+      await expect(row.getByLabel(`First Name for ${account.userName}`, { exact: true })).toHaveValue('Approved')
+      await expect(row.getByRole('button', { name: 'Deactivate', exact: true })).toBeVisible()
+      if (key === 'manager') {
+        await expect(row.getByLabel(`Role for ${account.userName}`, { exact: true })).toBeDisabled()
+        await expect(page.getByLabel(`Username for ${users().otherVillageResident.userName}`, { exact: true })).toHaveCount(0)
+      }
+      const rejected = await write(page.request, 'PUT', `/api/users/${account.id}`, { data: { ...account, firstName: 'Approved', lastName: target, isActive: true, userName: 'four' } })
+      expect(rejected.status()).toBe(400)
+    } finally { await context.close() }
+  })
+}
+
+for (const [key, area] of [['manager', 'village-manager'], ['admin', 'admin']]) {
+  test(`${area} purchase-order form creates, edits and deletes an order with decimal cost`, async ({ browser }) => {
+    const context = await browser.newContext({ baseURL: 'http://127.0.0.1:5173', storageState: state(key) })
+    const page = await context.newPage()
+    try {
+      await page.goto(`/${area}/purchase-orders`)
+      const title = `Browser ${area} purchase`
+      await page.getByLabel('Title', { exact: true }).fill(title)
+      await page.getByLabel('Unit Number').fill('7')
+      await page.getByLabel('Category', { exact: true }).selectOption('Plumbing')
+      await page.getByLabel('Supplier', { exact: true }).fill('Test plumber')
+      await page.getByLabel('Estimated Cost').fill('125.50')
+      await page.getByLabel('Notes', { exact: true }).fill('Please repair the tap.')
+      await submit(page, '/api/purchase-orders', page.getByRole('button', { name: 'Save Purchase Order' }))
+      const row = page.getByRole('row').filter({ hasText: title })
+      await expect(row).toContainText('125.5')
+      await row.getByRole('button', { name: 'Edit', exact: true }).click()
+      await page.getByLabel('Estimated Cost').fill('0')
+      await page.getByRole('button', { name: 'Update Purchase Order' }).click()
+      await expect(page.getByRole('status')).toContainText('updated')
+      await page.reload()
+      await expect(row).toContainText('$0')
+      page.once('dialog', dialog => dialog.accept())
+      await row.getByRole('button', { name: 'Delete', exact: true }).click()
+      await expect(row).toHaveCount(0)
+    } finally { await context.close() }
+  })
+}
+
+test('manager response form saves the displayed status and the resident sees the reply', async ({ browser }) => {
+  const context = await browser.newContext({ baseURL: 'http://127.0.0.1:5173', storageState: state('manager') })
+  const resident = await browser.newContext({ baseURL: 'http://127.0.0.1:5173', storageState: state('otherResident') })
+  try {
+    const page = await context.newPage()
+    await page.goto('/village-manager/maintenance')
+    const row = page.getByRole('row').filter({ hasText: 'otherResident tap repair' })
+    await expect(row.getByRole('combobox')).toHaveValue('Pending')
+    await row.getByPlaceholder('Write update or resolution...').fill('Browser response; visit booked.')
+    await submit(page, '/api/maintenance/2/manager-response', row.getByRole('button', { name: 'Save Response' }))
+    await expect(row.getByRole('combobox')).toHaveValue('Pending')
+    const residentPage = await resident.newPage()
+    await residentPage.goto('/resident/maintenance')
+    await expect(residentPage.getByText('Browser response; visit booked.', { exact: true })).toBeVisible()
+  } finally { await context.close(); await resident.close() }
+})
+
+test('account security form enrolls resident MFA, regenerates recovery codes and disables with both factors', async ({ page }) => {
+  const account = users().uiMfa
+  await loginApi(page.request, account)
+  await page.goto('/account/security')
+  await page.getByLabel('Current password', { exact: true }).fill(account.password)
+  await submit(page, '/api/mfa/enroll', page.getByRole('button', { name: 'Set up authenticator' }), 202)
+  await expect(page.getByLabel('Setup key')).toBeVisible()
+  const secret = await page.getByLabel('Setup key').inputValue()
+  const verified = await submit(page, '/api/mfa/complete', page.getByRole('button', { name: 'Verify and sign in' }), 200,
+    () => page.getByLabel('Authenticator code', { exact: true }).fill(totp(secret)))
+  const codes = (await verified.json()).recoveryCodes
+  await page.getByRole('button', { name: 'I have saved my recovery codes' }).click()
+  await page.goto('/account/security')
+  await page.getByRole('button', { name: 'Use a recovery code' }).click()
+  await page.getByLabel('Current password', { exact: true }).fill('incorrect-password')
+  await page.getByLabel('Recovery code', { exact: true }).fill(codes[0])
+  await submit(page, '/api/mfa/recovery-codes', page.getByRole('button', { name: 'Generate new recovery codes' }), 400)
+  await expect(page.getByRole('alert')).toBeVisible()
+  await page.getByLabel('Current password', { exact: true }).fill(account.password)
+  const regenerated = await submit(page, '/api/mfa/recovery-codes', page.getByRole('button', { name: 'Generate new recovery codes' }))
+  const fresh = (await regenerated.json()).recoveryCodes
+  await expect(page.getByTestId('recovery-codes')).toContainText(fresh[0])
+  await page.reload()
+  await page.getByRole('button', { name: 'Use a recovery code' }).click()
+  await page.getByLabel('Current password', { exact: true }).fill(account.password)
+  await page.getByLabel('Recovery code', { exact: true }).fill(fresh[0])
+  await submit(page, '/api/mfa/disable', page.getByRole('button', { name: 'Disable two-factor authentication' }))
+  await expect(page.getByRole('heading', { name: 'Security settings updated' })).toBeVisible()
+  expect((await (await page.request.get('/api/mfa/status')).json()).enabled).toBe(false)
+})

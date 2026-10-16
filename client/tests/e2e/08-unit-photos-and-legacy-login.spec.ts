@@ -9,7 +9,7 @@ test('existing usernames with spaces log in without collapsing their identity', 
   const wrongName = await write(request, 'POST', '/api/login', { data: { userName: account.userName.replace(/ /g, ''), password: account.password } })
   expect(wrongName.status()).toBe(401)
   expect((await wrongName.json()).message).toBe('Invalid username or password.')
-  await loginPage(page, { ...account, userName: `  ${account.userName}  ` })
+  await loginPage(page, { ...account, userName: `  ${account.userName.toUpperCase()}  ` })
   await expect(page).toHaveURL(/\/resident/)
   const session = await page.request.get('/api/session')
   expect(session.status()).toBe(200)

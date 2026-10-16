@@ -76,8 +76,8 @@ function ProfilePassword({ userType, backPath, title }: ProfilePasswordProps) {
         <div className="p-4 border rounded-4 shadow-sm bg-white">
           <h1 className="fw-bold mb-4">{title}</h1>
 
-          {message && <div className="alert alert-success">{message}</div>}
-          {error && <div className="alert alert-danger">{error}</div>}
+          {message && <div role="status" className="alert alert-success">{message}</div>}
+          {error && <div role="alert" className="alert alert-danger">{error}</div>}
 
           <div className="mb-3">
             <label className="form-label fw-semibold">
@@ -88,7 +88,7 @@ function ProfilePassword({ userType, backPath, title }: ProfilePasswordProps) {
               <input
                 type={showCurrentPassword ? "text" : "password"}
                 className="form-control"
-                value={currentPassword}
+                aria-label="Current Password" value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
               />
               <button
@@ -110,7 +110,7 @@ function ProfilePassword({ userType, backPath, title }: ProfilePasswordProps) {
               <input
                 type={showNewPassword ? "text" : "password"}
                 className="form-control"
-                value={newPassword}
+                aria-label="New Password" value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
               />
               <button
@@ -132,7 +132,7 @@ function ProfilePassword({ userType, backPath, title }: ProfilePasswordProps) {
               <input
                 type={showConfirmPassword ? "text" : "password"}
                 className="form-control"
-                value={confirmPassword}
+                aria-label="Confirm New Password" value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
               <button

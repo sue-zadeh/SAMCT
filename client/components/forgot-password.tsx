@@ -40,15 +40,15 @@ function ForgotPassword() {
         >
           <h1 className="text-center fw-bold mb-4">Forgot Password</h1>
 
-          {message && <div className="alert alert-success">{message}</div>}
-          {error && <div className="alert alert-danger">{error}</div>}
+          {message && <div role="status" className="alert alert-success">{message}</div>}
+          {error && <div role="alert" className="alert alert-danger">{error}</div>}
 
           <div className="mb-3">
             <label className="form-label fw-semibold">Email</label>
             <input
               type="email"
               className="form-control"
-              value={email}
+              aria-label="Email" value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email"
             />
