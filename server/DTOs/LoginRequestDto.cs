@@ -1,12 +1,13 @@
 using System.ComponentModel.DataAnnotations;
-using server.Security;
 namespace server.DTOs
 {
     public class LoginRequestDto
     {
-        [Required, StringLength(50, MinimumLength = 3), RegularExpression(@"[A-Za-z0-9_.-]+")]
+        // Existing accounts can predate the current registration naming rules.
+        // Authenticate their stored username; do not silently remove internal spaces.
+        [Required(ErrorMessage = "Enter your username."), StringLength(50, ErrorMessage = "Username must be at most 50 characters.")]
         public string UserName { get; set; } = "";
-        [Required, StringLength(72)]
+        [Required(ErrorMessage = "Enter your password."), StringLength(72, ErrorMessage = "Password must be at most 72 characters.")]
         public string Password { get; set; } = "";
     }
 }

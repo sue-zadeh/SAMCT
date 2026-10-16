@@ -41,7 +41,8 @@ try {
     assert.equal(await page.locator('h1').isVisible(), true, 'Content must be visible without JavaScript')
     assert.equal(await page.locator('meta[name=robots]').getAttribute('content'), 'index, follow')
     assert.equal(await page.locator('link[rel=canonical]').getAttribute('href'), `https://samct.example${path}`)
-    assert.match(await page.locator('footer').innerText(), /Sue Raisianzadeh.*suewebstudio/)
+    // Developer attribution lives in metadata/schema; the owner removed the visible footer credit.
+    assert.equal(await page.locator('meta[name=author]').getAttribute('content'), 'Sue Raisianzadeh | Freelance Web Developer | suewebstudio')
   }
   for (const [path, target] of [['/about/', '/about'], ['/marketing/', '/marketing'], ['/contactus', '/contactUs'], ['/contactUs/', '/contactUs']]) {
     const response = await get(port, path)

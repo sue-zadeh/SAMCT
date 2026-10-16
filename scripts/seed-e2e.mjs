@@ -21,12 +21,13 @@ try {
     ['admin', 'CompanySecretary', 'Ngatea'], ['financial', 'FinancialAdvisor', 'Ngatea'], ['chairman', 'Chairman', 'Ngatea'], ['genericAdmin', 'Admin', 'Ngatea'],
     ['lockout', 'Resident', 'Ngatea'], ['reset', 'Resident', 'Ngatea'], ['changePassword', 'Resident', 'Ngatea'],
     ['revoke', 'Resident', 'Ngatea'], ['emailChange', 'Resident', 'Ngatea'],
+    ['legacyResident', 'Resident', 'Ngatea'], ['legacyManager', 'VillageManager', 'Ngatea'],
     ['mfaEnroll', 'VillageManager', 'Ngatea'], ['mfaLock', 'Admin', 'Ngatea'],
     ['mfaManage', 'Admin', 'Ngatea'], ['mfaReset', 'Admin', 'Ngatea'], ['mfaResident', 'Resident', 'Ngatea'], ['inactive', 'Resident', 'Ngatea'],
   ]
   const users = {}
   for (const [key, role, village] of definitions) {
-    const userName = `e2e.${key.toLowerCase()}`
+    const userName = key.startsWith('legacy') ? `e2e.legacy ${key.slice(6).toLowerCase()}` : `e2e.${key.toLowerCase()}`
     const email = `${key.toLowerCase()}@example.test`
     const result = await connection.query('INSERT INTO "Users" ("UserName","FirstName","LastName","FullName","Email","PasswordHash","Role","Village","ProfileImageUrl","IsActive","FailedLoginAttempts") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,0) RETURNING "Id"',
       [userName, 'Test', key, `Test ${key}`, email, passwordHash, role, village, '', key !== 'inactive'])

@@ -6,8 +6,8 @@ import type { GalleryEntry } from './marketing'
 import MarketingContact from './marketing-contact'
 
 const priceFormat = new Intl.NumberFormat('en-NZ', { style: 'currency', currency: 'NZD', maximumFractionDigits: 0 })
-export default function MarketingGallery({ entry: selectedEntry, onClose }: { entry: GalleryEntry; onClose: () => void }) {
-  const [photoIndex, setPhotoIndex] = useState(0)
+export default function MarketingGallery({ entry: selectedEntry, initialPhotoIndex = 0, onClose }: { entry: GalleryEntry; initialPhotoIndex?: number; onClose: () => void }) {
+  const [photoIndex, setPhotoIndex] = useState(initialPhotoIndex)
   return (
     <Modal show onHide={onClose} size="xl" centered scrollable aria-labelledby="marketing-detail-title">
       <>
@@ -27,7 +27,8 @@ export default function MarketingGallery({ entry: selectedEntry, onClose }: { en
           {selectedEntry.sourceLabel &&
           <p className="small text-secondary">{selectedEntry.sourceLabel}. Contact the team to confirm current details.
           </p>}
-          {selectedEntry.kind === 'area' && <p className="rounded-3 bg-light p-3 small">This gallery introduces the street area. Photos may show different homes or example interiors, alongside an aerial or development image. Ask the team which home is currently available.</p>}
+          {selectedEntry.kind === 'area' && <p className="rounded-3 bg-light p-3 small">This gallery introduces the street area. Photos may show different homes or example interiors, alongside an aerial or development image. Reference interiors do not confirm the layout or finish of an available home. Ask the team to confirm the photos for the specific unit you are considering.</p>}
+          {selectedEntry.kind === 'area' && selectedEntry.images.some(image => /^\/uploads\/ngatea-sep-2026\/masons(?:[5-9]|10)\.jpg$/.test(image)) && <p className="small text-secondary">Additional interiors were supplied as staged examples in the Masons Way folder. Their source filenames identify 71 Darlington St; they are not verified photos of 11 or 1A Masons Way.</p>}
           <MarketingContact contactName={selectedEntry.contactName} contactPhone={selectedEntry.contactPhone} />
           {selectedEntry.images.length > 0 &&
 
