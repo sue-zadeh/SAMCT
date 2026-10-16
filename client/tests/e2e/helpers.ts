@@ -29,12 +29,16 @@ export async function waitForRateLimitWindow() {
   console.log('Waiting for the real rate limit window before continuing.')
   await new Promise(resolve => setTimeout(resolve, 61000))
 }
-export async function csrf(request: APIRequestContext) {
-  let response = await request.get('/api/csrf')
+export async function read(request: APIRequestContext, path: string) {
+  let response = await request.get(path)
   if (response.status() === 429) {
     await waitForRateLimitWindow()
-    response = await request.get('/api/csrf')
+    response = await request.get(path)
   }
+  return response
+}
+export async function csrf(request: APIRequestContext) {
+  const response = await read(request, '/api/csrf')
   expect(response.status()).toBe(200)
   return (await response.json()).token as string
 }

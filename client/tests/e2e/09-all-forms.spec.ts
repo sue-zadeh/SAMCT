@@ -1,8 +1,11 @@
 import { test, expect, type Page, type Locator } from '@playwright/test'
 import { readFile, readdir } from 'node:fs/promises'
-import { csrf, loginApi, loginPage, state, totp, users, write } from './helpers'
+import { csrf, loginApi, loginPage, read, state, totp, users, waitForRateLimitWindow, write } from './helpers'
 
 test.setTimeout(240000)
+// This file follows the bulk photo workflows on the same IP. Start its browser
+// sessions in a fresh real limiter window; API reads below also honor 429.
+test.beforeAll(async () => { await waitForRateLimitWindow() })
 const image = { name: 'avatar.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aP2cAAAAASUVORK5CYII=', 'base64') }
 async function submit(page: Page, path: string, button: Locator, expected = 200, prepare?: () => Promise<void>) {
   const click = async () => {
@@ -63,14 +66,14 @@ for (const [key, area] of [['uiResident', 'resident'], ['uiManager', 'village-ma
     await page.getByLabel('First Name', { exact: true }).fill(`Edited ${area}`)
     await submit(page, '/api/users/profile', page.getByRole('button', { name: 'Save Changes', exact: true }))
     await expect(page).toHaveURL(new RegExp(`/${area}/profile$`))
-    expect((await (await page.request.get('/api/session')).json()).firstName).toBe(`Edited ${area}`)
+    expect((await (await read(page.request, '/api/session')).json()).firstName).toBe(`Edited ${area}`)
     const upload = page.waitForResponse(response => response.url().includes('/api/users/profile-image') && response.request().method() === 'POST')
     await page.locator('input[type=file]').setInputFiles(image)
     const uploaded = await upload
     expect(uploaded.status(), await uploaded.text()).toBe(200)
     const profile = await uploaded.json()
-    expect((await page.request.get(profile.profileImageUrl)).status()).toBe(200)
-    expect((await request.get(profile.profileImageUrl)).status()).toBe(401)
+    expect((await read(page.request, profile.profileImageUrl)).status()).toBe(200)
+    expect((await read(request, profile.profileImageUrl)).status()).toBe(401)
     await page.reload()
     await expect(page.locator(`img[src="${profile.profileImageUrl}"]`).first()).toBeVisible()
     await page.goto(`/${area}/profile/password`)
@@ -85,7 +88,7 @@ for (const [key, area] of [['uiResident', 'resident'], ['uiManager', 'village-ma
     await page.getByLabel('Current Password', { exact: true }).fill(account.password)
     await submit(page, '/api/users/password', page.getByRole('button', { name: 'Save Password' }))
     await expect(page).toHaveURL(/\/login$/)
-    expect((await page.request.get('/api/session')).status()).toBe(401)
+    expect((await read(page.request, '/api/session')).status()).toBe(401)
     await loginPage(page, { ...account, password })
     await expect(page).toHaveURL(new RegExp(`/${area}$`))
   })
@@ -122,12 +125,12 @@ test('changing recovery email in the profile form requires the password and sign
   await page.getByLabel('Email', { exact: true }).fill('updated-browser-email@example.test')
   await submit(page, '/api/users/profile', page.getByRole('button', { name: 'Save Changes', exact: true }), 400)
   await expect(page.getByRole('alert')).toContainText('current password')
-  expect((await (await page.request.get('/api/session')).json()).email).toBe(account.email)
+  expect((await (await read(page.request, '/api/session')).json()).email).toBe(account.email)
   await page.getByLabel('Current password (required when changing your email)').fill(account.password)
   await submit(page, '/api/users/profile', page.getByRole('button', { name: 'Save Changes', exact: true }))
   await expect(page).toHaveURL(/\/login\?emailUpdated=true$/)
   await expect(page.getByRole('status')).toContainText('Email updated. Please sign in again.')
-  expect((await page.request.get('/api/session')).status()).toBe(401)
+  expect((await read(page.request, '/api/session')).status()).toBe(401)
 })
 
 for (const [key, path, target] of [['manager', '/village-manager/residents', 'managedByManager'], ['admin', '/admin/people', 'managedByAdmin']]) {
@@ -201,7 +204,7 @@ test('manager response form saves the displayed status and the resident sees the
       userName: account.userName, village: account.village, title,
       description: 'A leaking tap', unitOrAddress: 'Unit 1', priority: 'Normal',
     } })).status()).toBe(200)
-    const records = await (await resident.request.get(`/api/maintenance/resident/${account.userName}`)).json()
+    const records = await (await read(resident.request, `/api/maintenance/resident/${account.userName}`)).json()
     const created = records.find((record: { title: string }) => record.title === title)
     expect(created).toBeTruthy()
     const page = await context.newPage()
@@ -245,5 +248,5 @@ test('account security form enrolls resident MFA, regenerates recovery codes and
   await page.getByLabel('Recovery code', { exact: true }).fill(fresh[0])
   await submit(page, '/api/mfa/disable', page.getByRole('button', { name: 'Disable two-factor authentication' }))
   await expect(page.getByRole('heading', { name: 'Security settings updated' })).toBeVisible()
-  expect((await (await page.request.get('/api/mfa/status')).json()).enabled).toBe(false)
+  expect((await (await read(page.request, '/api/mfa/status')).json()).enabled).toBe(false)
 })
