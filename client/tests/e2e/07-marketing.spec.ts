@@ -1,5 +1,5 @@
 import { test, expect, type APIRequestContext } from '@playwright/test'
-import { state, write } from './helpers'
+import { state, waitForRateLimitWindow, write } from './helpers'
 
 const image = { name: 'home.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aP2cAAAAASUVORK5CYII=', 'base64') }
 const propertyFields = { village: 'Ngatea', unitNumber: 'Gallery-E2E', address: 'Gallery test address', residentCount: '0', isVisibleOnMarketing: 'true', marketingTitle: 'Ten-photo test home', marketingDescription: 'Gallery verification' }
@@ -195,6 +195,10 @@ test.describe('marketing access and uploads', () => {
   })
 
   test('manager saves thirty brochure images in batches, edits the contact, and can unpublish them', async ({ page, playwright }) => {
+    test.setTimeout(240000)
+    // Earlier download/gallery tests share this IP. Give this image-heavy workflow
+    // a fresh window without disabling or increasing the production rate limit.
+    await waitForRateLimitWindow()
     const entries = await (await page.request.get('/api/marketing-content/manage/Ngatea')).json()
     const entry = entries.find((item: any) => item.kind === 'area')
     // Explicitly clear the manager storageState inherited from test.use.

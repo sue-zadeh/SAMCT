@@ -25,8 +25,16 @@ export function totp(secret: string, timestamp = Date.now()) {
   return ((digest.readUInt32BE(offset) & 0x7fffffff) % 1000000).toString().padStart(6, '0')
 }
 export const state = (role: string) => `.playwright/${role}.json`
+export async function waitForRateLimitWindow() {
+  console.log('Waiting for the real rate limit window before continuing.')
+  await new Promise(resolve => setTimeout(resolve, 61000))
+}
 export async function csrf(request: APIRequestContext) {
-  const response = await request.get('/api/csrf')
+  let response = await request.get('/api/csrf')
+  if (response.status() === 429) {
+    await waitForRateLimitWindow()
+    response = await request.get('/api/csrf')
+  }
   expect(response.status()).toBe(200)
   return (await response.json()).token as string
 }
@@ -37,8 +45,7 @@ export async function write(request: APIRequestContext, method: string, path: st
   }
   let response = await send()
   if (response.status() === 429) {
-    console.log('Waiting for the real rate limit window before continuing.')
-    await new Promise(resolve => setTimeout(resolve, 61000))
+    await waitForRateLimitWindow()
     response = await send()
   }
   return response
@@ -58,6 +65,7 @@ export async function loginApi(request: APIRequestContext, account: Account) {
   expect(response.status(), await response.text()).toBe(200)
 }
 export async function loginPage(page: Page, account: Account) {
+  await csrf(page.request)
   await page.goto('/login')
   await page.getByLabel('Username', { exact: true }).fill(account.userName)
   await page.getByLabel('Password', { exact: true }).fill(account.password)

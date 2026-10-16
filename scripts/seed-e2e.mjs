@@ -28,6 +28,7 @@ try {
     ['managedByManager', 'Resident', 'Ngatea'], ['managedByAdmin', 'Resident', 'Whitianga'],
     ['mfaEnroll', 'VillageManager', 'Ngatea'], ['mfaLock', 'Admin', 'Ngatea'],
     ['mfaManage', 'Admin', 'Ngatea'], ['mfaReset', 'Admin', 'Ngatea'], ['mfaResident', 'Resident', 'Ngatea'], ['inactive', 'Resident', 'Ngatea'],
+    ['uiMaintenance', 'Resident', 'Ngatea'],
   ]
   const users = {}
   for (const [key, role, village] of definitions) {

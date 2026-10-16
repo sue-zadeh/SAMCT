@@ -8,6 +8,7 @@ Changes are delivered in PR #5. They are not a production deployment. Use the la
 - New usernames, including renamed accounts, require 5–50 ASCII letters, digits, dots, underscores or hyphens. Existing shorter names are retained. This is an input rule, not a substitute for password strength, MFA or rate limiting. Residents cannot rename themselves through the API.
 - Legacy accounts can still update their profile, change their password and submit maintenance. The server continues checking session ownership, role and village for each operation.
 - Login validation errors identify the field. Staff still need an authenticator or recovery code; accepting a legacy username does not bypass MFA.
+- Changing the recovery email revokes sessions and returns to the login page with an explicit confirmation. Navigation now leaves the protected page before refreshing the revoked session, so the route guard cannot replace that confirmation.
 - User management submits edited accounts only. Unchanged users are no longer rewritten when staff save one resident. Inputs are locked while saving.
 - A manager's maintenance reply retains the status displayed in the form unless the manager changes it.
 - Purchase orders accept decimal costs, preserve zero when editing, require the server-required fields, and show save errors.
@@ -18,6 +19,8 @@ Changes are delivered in PR #5. They are not a production deployment. Use the la
 ## Test coverage
 
 Playwright runs against the real API, disposable PostgreSQL database and ClamAV scanner, with retries disabled. Browser tests submit forms and check persisted results; direct API tests check permission and validation bypass attempts. Test email goes to a local outbox, not real recipients.
+
+The suite keeps production rate limits enabled and waits for their normal window when needed, including CSRF requests and the image-heavy gallery workflow. The maintenance response test uses its own account rather than the account intentionally deactivated by the authorization test. Test data belongs only to the disposable test database.
 
 | Form or behaviour | Coverage |
 | --- | --- |

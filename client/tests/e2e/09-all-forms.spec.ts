@@ -1,11 +1,12 @@
 import { test, expect, type Page, type Locator } from '@playwright/test'
 import { readFile, readdir } from 'node:fs/promises'
-import { loginApi, loginPage, state, totp, users, write } from './helpers'
+import { csrf, loginApi, loginPage, state, totp, users, write } from './helpers'
 
 test.setTimeout(240000)
 const image = { name: 'avatar.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aP2cAAAAASUVORK5CYII=', 'base64') }
 async function submit(page: Page, path: string, button: Locator, expected = 200, prepare?: () => Promise<void>) {
   const click = async () => {
+    await csrf(page.request)
     await prepare?.()
     const result = page.waitForResponse(response => new URL(response.url()).pathname === path && response.request().method() !== 'GET')
     await button.click()
@@ -14,7 +15,9 @@ async function submit(page: Page, path: string, button: Locator, expected = 200,
   let response = await click()
   // Keep real throttling enabled; wait for its window, never retry failed assertions.
   if (response.status() === 429) { await page.waitForTimeout(61000); response = await click() }
-  expect(response.status(), await response.text()).toBe(expected)
+  // Do not wait for a browser response body that the app may discard after save.
+  // Each workflow below checks the actual persisted result as well as the status.
+  expect(response.status()).toBe(expected)
   return response
 }
 
@@ -123,6 +126,7 @@ test('changing recovery email in the profile form requires the password and sign
   await page.getByLabel('Current password (required when changing your email)').fill(account.password)
   await submit(page, '/api/users/profile', page.getByRole('button', { name: 'Save Changes', exact: true }))
   await expect(page).toHaveURL(/\/login\?emailUpdated=true$/)
+  await expect(page.getByRole('status')).toContainText('Email updated. Please sign in again.')
   expect((await page.request.get('/api/session')).status()).toBe(401)
 })
 
@@ -186,14 +190,26 @@ for (const [key, area] of [['manager', 'village-manager'], ['admin', 'admin']]) 
 
 test('manager response form saves the displayed status and the resident sees the reply', async ({ browser }) => {
   const context = await browser.newContext({ baseURL: 'http://127.0.0.1:5173', storageState: state('manager') })
-  const resident = await browser.newContext({ baseURL: 'http://127.0.0.1:5173', storageState: state('otherResident') })
+  const resident = await browser.newContext({ baseURL: 'http://127.0.0.1:5173' })
   try {
+    // The authorization suite deliberately deactivates otherResident. This
+    // workflow owns a separate account and creates its own maintenance request.
+    const account = users().uiMaintenance
+    await loginApi(resident.request, account)
+    const title = 'Browser manager response request'
+    expect((await write(resident.request, 'POST', '/api/maintenance/resident', { multipart: {
+      userName: account.userName, village: account.village, title,
+      description: 'A leaking tap', unitOrAddress: 'Unit 1', priority: 'Normal',
+    } })).status()).toBe(200)
+    const records = await (await resident.request.get(`/api/maintenance/resident/${account.userName}`)).json()
+    const created = records.find((record: { title: string }) => record.title === title)
+    expect(created).toBeTruthy()
     const page = await context.newPage()
     await page.goto('/village-manager/maintenance')
-    const row = page.getByRole('row').filter({ hasText: 'otherResident tap repair' })
+    const row = page.getByRole('row').filter({ hasText: title })
     await expect(row.getByRole('combobox')).toHaveValue('Pending')
     await row.getByPlaceholder('Write update or resolution...').fill('Browser response; visit booked.')
-    await submit(page, '/api/maintenance/2/manager-response', row.getByRole('button', { name: 'Save Response' }))
+    await submit(page, `/api/maintenance/${created.id}/manager-response`, row.getByRole('button', { name: 'Save Response' }))
     await expect(row.getByRole('combobox')).toHaveValue('Pending')
     const residentPage = await resident.newPage()
     await residentPage.goto('/resident/maintenance')

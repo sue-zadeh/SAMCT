@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { loginPage, state, users, write } from './helpers'
+import { csrf, loginPage, state, users, write } from './helpers'
 
 const image = { name: 'unit.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aP2cAAAAASUVORK5CYII=', 'base64') }
 const fields = { village: 'Ngatea', unitNumber: 'Photo-form-E2E', address: 'Photo form test address', residentCount: '0', isVisibleOnMarketing: 'true', marketingTitle: 'Photo form test home', marketingDescription: 'Ten real upload slots' }
@@ -26,6 +26,7 @@ test('legacy staff usernames still require MFA before any portal access', async 
 })
 
 test('a blank username shows the specific field error and keeps the user logged out', async ({ page }, testInfo) => {
+  await csrf(page.request)
   await page.goto('/login')
   await page.getByLabel('Username', { exact: true }).fill('   ')
   await page.getByLabel('Password', { exact: true }).fill('a-test-password')

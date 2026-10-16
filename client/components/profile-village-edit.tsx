@@ -47,8 +47,9 @@ function ProfileVillageEdit() {
 
       const updatedUser = response.data;
       if (emailChanged) {
+        // Leave the protected route before refresh clears the revoked session.
+        navigate("/login?emailUpdated=true", { replace: true });
         await refresh();
-        navigate("/login?emailUpdated=true");
         return;
       }
 
