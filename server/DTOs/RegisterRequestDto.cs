@@ -6,7 +6,7 @@ namespace server.DTOs
 {
     public class RegisterRequestDto
     {
-        [Required, StringLength(50, MinimumLength = 3), RegularExpression(@"[A-Za-z0-9_.-]+")]
+        [Required, StringLength(50, MinimumLength = 5), RegularExpression(UsernameRules.Pattern, ErrorMessage = UsernameRules.Message)]
         public string UserName { get; set; } = "";
         [Required, StringLength(80)]
         public string FirstName { get; set; } = "";

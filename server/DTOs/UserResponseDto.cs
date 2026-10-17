@@ -5,7 +5,7 @@ namespace server.DTOs
     public class UserResponseDto
     {
         public int Id { get; set; }
-        [Required, StringLength(50, MinimumLength = 3), RegularExpression(@"[A-Za-z0-9_.-]+")]
+        [Required, StringLength(50)]
         public string UserName { get; set; } = "";
         [Required, StringLength(80)]
         public string FirstName { get; set; } = "";

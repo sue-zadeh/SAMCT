@@ -56,8 +56,8 @@ function ResetPassword() {
         <div className="mx-auto p-4 border rounded-4 shadow-sm bg-white" style={{ maxWidth: "450px" }}>
           <h1 className="text-center fw-bold mb-4">Reset Password</h1>
 
-          {message && <div className="alert alert-success">{message}</div>}
-          {error && <div className="alert alert-danger">{error}</div>}
+          {message && <div role="status" className="alert alert-success">{message}</div>}
+          {error && <div role="alert" className="alert alert-danger">{error}</div>}
 
           <div className="mb-3">
             <label className="form-label fw-semibold">
@@ -69,7 +69,7 @@ function ResetPassword() {
               <input
                 type={showNewPassword ? "text" : "password"}
                 className="form-control"
-                value={newPassword}
+                aria-label="New Password" value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
               />
 
@@ -93,7 +93,7 @@ function ResetPassword() {
               <input
                 type={showConfirmPassword ? "text" : "password"}
                 className="form-control"
-                value={confirmPassword}
+                aria-label="Confirm Password" value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
 

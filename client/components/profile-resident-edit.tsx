@@ -45,8 +45,9 @@ function ProfileResidentEdit() {
 
       const updatedUser = response.data;
       if (emailChanged) {
+        // Leave the protected route before refresh clears the revoked session.
+        navigate("/login?emailUpdated=true", { replace: true });
         await refresh();
-        navigate("/login?emailUpdated=true");
         return;
       }
 
@@ -78,8 +79,8 @@ function ProfileResidentEdit() {
             <FaIdBadge />Edit Resident Profile
             </h1>
 
-          {message && <div className="alert alert-success">{message}</div>}
-          {error && <div className="alert alert-danger">{error}</div>}
+          {message && <div role="status" className="alert alert-success">{message}</div>}
+          {error && <div role="alert" className="alert alert-danger">{error}</div>}
 
           <div className="row g-3">
             <div className="col-md-6">
@@ -87,7 +88,7 @@ function ProfileResidentEdit() {
              <FaUser /> First Name</label>
               <input
                 className="form-control"
-                value={firstName}
+                aria-label="First Name" value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
               />
             </div>
@@ -97,7 +98,7 @@ function ProfileResidentEdit() {
                <FaUser />Last Name</label>
               <input
                 className="form-control"
-                value={lastName}
+                aria-label="Last Name" value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
               />
             </div>
@@ -105,7 +106,7 @@ function ProfileResidentEdit() {
             <div className="col-md-6">
               <label className="form-label fw-semibold d-flex align-items-center gap-2">
                <FaIdBadge />Username</label>
-              <input className="form-control" value={userName} readOnly />
+              <input className="form-control" aria-label="Username" value={userName} readOnly />
               <div className="form-text">Residents cannot change username.</div>
             </div>
 
@@ -114,7 +115,7 @@ function ProfileResidentEdit() {
                <FaEnvelope />Email</label>
               <input
                 className="form-control"
-                value={email}
+                aria-label="Email" value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
@@ -122,7 +123,7 @@ function ProfileResidentEdit() {
             <div className="col-md-6">
               <label className="form-label fw-semibold d-flex align-items-center gap-2">
                <FaMapMarkerAlt />Village</label>
-              <input className="form-control" value={village} disabled readOnly />
+              <input className="form-control" aria-label="Village" value={village} disabled readOnly />
             </div>
           </div>
 

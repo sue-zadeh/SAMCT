@@ -64,10 +64,45 @@ namespace server.Controllers
                 }).ToListAsync());
         }
 
+        private string? ValidatePhotoFields(VillagePropertyWriteDto request)
+        {
+            var files = Request.Form.Files;
+            var photoFields = Enumerable.Range(1, 10).Select(slot => $"marketingImage{slot}").ToHashSet(StringComparer.OrdinalIgnoreCase);
+            if (files.Any(file => !photoFields.Contains(file.Name) && !file.Name.Equals("document1", StringComparison.OrdinalIgnoreCase) && !file.Name.Equals("document2", StringComparison.OrdinalIgnoreCase)) ||
+                files.GroupBy(file => file.Name, StringComparer.OrdinalIgnoreCase).Any(group => group.Count() > 1))
+                return "Upload one file per photo position (1 to 10) or document position (1 to 2).";
+            if (request.RemoveMarketingImages.Any(slot => files.Any(file => file.Name.Equals($"marketingImage{slot}", StringComparison.OrdinalIgnoreCase))))
+                return "A photo cannot be removed and replaced in the same request.";
+            return null;
+        }
+
+        private static void RemovePhotos(VillageProperty property, int[] slots)
+        {
+            foreach (var slot in slots)
+            {
+                switch (slot)
+                {
+                    case 1: property.MarketingImageUrl1 = ""; break;
+                    case 2: property.MarketingImageUrl2 = ""; break;
+                    case 3: property.MarketingImageUrl3 = ""; break;
+                    case 4: property.MarketingImageUrl4 = ""; break;
+                    case 5: property.MarketingImageUrl5 = ""; break;
+                    case 6: property.MarketingImageUrl6 = ""; break;
+                    case 7: property.MarketingImageUrl7 = ""; break;
+                    case 8: property.MarketingImageUrl8 = ""; break;
+                    case 9: property.MarketingImageUrl9 = ""; break;
+                    case 10: property.MarketingImageUrl10 = ""; break;
+                }
+            }
+        }
+
         [HttpPost]
         public async Task<IActionResult> Create([FromForm] VillagePropertyWriteDto request)
         {
             if (!User.CanManageVillage(request.Village)) return Forbid();
+            var photoError = ValidatePhotoFields(request);
+            if (photoError is not null) return BadRequest(new { message = photoError });
+            if (request.RemoveMarketingImages.Length > 0) return BadRequest(new { message = "New properties have no saved photos to remove." });
 
             var property = new VillageProperty
             {
@@ -121,6 +156,9 @@ namespace server.Controllers
 
             if (request.Village != property.Village) return BadRequest(new { message = "A property cannot be moved to another village." });
 
+            var photoError = ValidatePhotoFields(request);
+            if (photoError is not null) return BadRequest(new { message = photoError });
+
             property.UnitNumber = request.UnitNumber;
             property.Address = request.Address;
             property.ResidentCount = request.ResidentCount;
@@ -163,6 +201,7 @@ namespace server.Controllers
             if (!string.IsNullOrWhiteSpace(marketingImage8)) property.MarketingImageUrl8 = marketingImage8;
             if (!string.IsNullOrWhiteSpace(marketingImage9)) property.MarketingImageUrl9 = marketingImage9;
             if (!string.IsNullOrWhiteSpace(marketingImage10)) property.MarketingImageUrl10 = marketingImage10;
+            RemovePhotos(property, request.RemoveMarketingImages);
 
             await _context.SaveChangesAsync();
 

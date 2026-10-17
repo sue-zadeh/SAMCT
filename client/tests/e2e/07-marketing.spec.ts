@@ -1,5 +1,5 @@
 import { test, expect, type APIRequestContext } from '@playwright/test'
-import { state, write } from './helpers'
+import { state, waitForRateLimitWindow, write } from './helpers'
 
 const image = { name: 'home.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aP2cAAAAASUVORK5CYII=', 'base64') }
 const propertyFields = { village: 'Ngatea', unitNumber: 'Gallery-E2E', address: 'Gallery test address', residentCount: '0', isVisibleOnMarketing: 'true', marketingTitle: 'Ten-photo test home', marketingDescription: 'Gallery verification' }
@@ -9,7 +9,7 @@ async function brochure(request: APIRequestContext) { return (await request.get(
 test('all brochure photos can be downloaded in concurrent batches with malware scanning enabled', async ({ request }) => {
   const entries = await brochure(request)
   const urls = [...new Set<string>(entries.flatMap((entry: { images: string[] }) => entry.images))]
-  expect(urls.length).toBe(26)
+  expect(urls.length).toBe(56)
   for (let index = 0; index < urls.length; index += 8) {
     await Promise.all(urls.slice(index, index + 8).map(async url => {
       const response = await request.get(url)
@@ -55,9 +55,9 @@ test('brochure migration exposes the five areas and preserves dated unit prices 
   await expect(page.getByRole('heading', { name: 'Hale Place', exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'View Hale Place', exact: true }).click()
   const dialog = page.getByRole('dialog')
-  await expect(dialog.getByText('Image 1 of 4')).toBeVisible()
+  await expect(dialog.getByText('Image 1 of 10')).toBeVisible()
   await dialog.getByRole('button', { name: 'Show image 4', exact: true }).click()
-  await expect(dialog.getByText('Image 4 of 4')).toBeVisible()
+  await expect(dialog.getByText('Image 4 of 10')).toBeVisible()
   await expect.poll(() => dialog.locator('img').first().evaluate(image => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0)
   await testInfo.attach('hale-place-map', { body: await page.screenshot({ animations: 'disabled' }), contentType: 'image/png' })
   await page.keyboard.press('Escape')
@@ -101,9 +101,18 @@ test('photo covers open the correct gallery by mouse and keyboard, with contact 
   await expect(dialog.getByRole('heading', { name: 'Hale Place', exact: true })).toBeVisible()
   await expect(dialog.getByText(/This gallery introduces the street area/)).toBeVisible()
   await dialog.getByRole('button', { name: 'Next', exact: true }).click()
-  await expect(dialog.getByText('Image 2 of 4')).toBeVisible()
+  await expect(dialog.getByText('Image 2 of 10')).toBeVisible()
   await page.keyboard.press('Escape')
   await expect(areaCover).toBeFocused()
+  const secondPhoto = page.getByRole('button', { name: 'Open photo 2 of Hale Place', exact: true })
+  await secondPhoto.click()
+  await expect(dialog.getByText('Image 2 of 10')).toBeVisible()
+  await expect(dialog.locator('img').first()).toHaveAttribute('src', '/uploads/ngatea-sep-2026/hale2.jpg')
+  await dialog.getByRole('button', { name: 'Show image 10', exact: true }).click()
+  await expect(dialog.getByText('Image 10 of 10')).toBeVisible()
+  await expect.poll(() => dialog.locator('img').first().evaluate(image => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0)
+  await page.keyboard.press('Escape')
+  await expect(secondPhoto).toBeFocused()
   const question = page.locator('details').filter({ hasText: 'What is an Occupation Right Agreement?' })
   await question.locator('summary').click()
   await expect(question.locator('.marketing-faq-answer')).toBeVisible()
@@ -186,6 +195,10 @@ test.describe('marketing access and uploads', () => {
   })
 
   test('manager saves thirty brochure images in batches, edits the contact, and can unpublish them', async ({ page, playwright }) => {
+    test.setTimeout(240000)
+    // Earlier download/gallery tests share this IP. Give this image-heavy workflow
+    // a fresh window without disabling or increasing the production rate limit.
+    await waitForRateLimitWindow()
     const entries = await (await page.request.get('/api/marketing-content/manage/Ngatea')).json()
     const entry = entries.find((item: any) => item.kind === 'area')
     // Explicitly clear the manager storageState inherited from test.use.
@@ -207,9 +220,9 @@ test.describe('marketing access and uploads', () => {
       await page.getByRole('button', { name: 'Save brochure entry', exact: true }).click()
       await expect(page.getByRole('status')).toContainText('Marketing content saved.')
       let saved = (await brochure(publicClient)).find((item: any) => item.id === entry.id)
-      expect(saved.images).toHaveLength(14)
+      expect(saved.images).toHaveLength(20)
       expect(saved.contactName).toBe('Village enquiries')
-      for (const batchSize of [10, 6]) {
+      for (const batchSize of [10]) {
         await page.getByLabel('Brochure entry').selectOption(String(entry.id))
         await page.getByLabel('Add photos').setInputFiles(Array.from({ length: batchSize }, (_, index) => ({ ...image, name: `batch-${batchSize}-${index}.png` })))
         await page.getByRole('button', { name: 'Save brochure entry', exact: true }).click()
@@ -217,7 +230,7 @@ test.describe('marketing access and uploads', () => {
       }
       saved = (await brochure(publicClient)).find((item: any) => item.id === entry.id)
       expect(saved.images).toHaveLength(30)
-      uploadedImages = saved.images.slice(4)
+      uploadedImages = saved.images.slice(entry.images.length)
       await page.goto('/marketing')
       await page.getByRole('button', { name: 'View Hale Place — reviewed', exact: true }).click()
       const dialog = page.getByRole('dialog')

@@ -1,0 +1,247 @@
+{
+  "source": "Masonics street folders supplied in the forwarded Photos email, 23 September 2026",
+  "format": "Web-sized JPEG renditions downloaded from the supplied OneDrive preview; labels and watermarks retained. No generated property photos.",
+  "use": "Street-area/reference galleries only; no individual-unit mapping is implied. Masons Way source filenames identify 71 Darlington St; interiors are shown only as staged reference examples.",
+  "photos": [
+    {
+      "file": "hale5.jpg",
+      "sourceFolder": "Hale Place",
+      "sourceFile": "IMG_2676-Edit.jpg",
+      "width": 2560,
+      "height": 1707,
+      "sha256": "f4bd2462885ff6a05e56813d1ffbfd28dccd06d70d9e25144e586a1383ef1cad"
+    },
+    {
+      "file": "hale6.jpg",
+      "sourceFolder": "Hale Place",
+      "sourceFile": "IMG_2677-Edit.jpg",
+      "width": 2560,
+      "height": 1707,
+      "sha256": "cf7c0c734ec93fd8d046a04a6162c149ec6d718747c2b54d6c328a2b9795b86f"
+    },
+    {
+      "file": "hale7.jpg",
+      "sourceFolder": "Hale Place",
+      "sourceFile": "IMG_2678-Edit.jpg",
+      "width": 2560,
+      "height": 1706,
+      "sha256": "41885e59ab759f9b445460f83411d2044e220c168d68ffd6f72bb78d257a0360"
+    },
+    {
+      "file": "hale8.jpg",
+      "sourceFolder": "Hale Place",
+      "sourceFile": "IMG_9724 copy.jpg",
+      "width": 2560,
+      "height": 1706,
+      "sha256": "6f01a7f2b0b8d8f80d168ae8f3c6c3387312af53a66a06d9a74749adf7415b7f"
+    },
+    {
+      "file": "hale9.jpg",
+      "sourceFolder": "Hale Place",
+      "sourceFile": "IMG_9736 copy.jpg",
+      "width": 2560,
+      "height": 1706,
+      "sha256": "dcd67b0889882a45b14d7606c2c37b645adc33f44dc25f712686b3975c20f92b"
+    },
+    {
+      "file": "hale10.jpg",
+      "sourceFolder": "Hale Place",
+      "sourceFile": "IMG_9738 copy 2.jpg",
+      "width": 2560,
+      "height": 1707,
+      "sha256": "293ec18659a89d4da1eeafd04e2462ce8fe6085d7b0218c2d3126c29d97d8829"
+    },
+    {
+      "file": "weddell5.jpg",
+      "sourceFolder": "Weddell Place",
+      "sourceFile": "IMG_9955.jpg",
+      "width": 2560,
+      "height": 1706,
+      "sha256": "00022675c289189080e20f8a7384237d6c85d10c64f824b2dd77856bd321633e"
+    },
+    {
+      "file": "weddell6.jpg",
+      "sourceFolder": "Weddell Place",
+      "sourceFile": "IMG_9958.jpg",
+      "width": 2560,
+      "height": 1706,
+      "sha256": "73f262efe1ee8e6e265a907f36bbecc8a3df8ec79dc28f894b3a290ad239cf3d"
+    },
+    {
+      "file": "weddell7.jpg",
+      "sourceFolder": "Weddell Place",
+      "sourceFile": "IMG_9961.jpg",
+      "width": 2560,
+      "height": 1706,
+      "sha256": "93ab86ca39f7294e28b3b93bb995bd37ae9c890e862f1f6a579c5d56a82c09f6"
+    },
+    {
+      "file": "weddell8.jpg",
+      "sourceFolder": "Weddell Place",
+      "sourceFile": "IMG_9966.jpg",
+      "width": 2560,
+      "height": 1706,
+      "sha256": "5bcb6e0659d3684dfd0a011570a1c1f250b0504c79287edf64015dfea6f6a361"
+    },
+    {
+      "file": "weddell9.jpg",
+      "sourceFolder": "Weddell Place",
+      "sourceFile": "IMG_9974.jpg",
+      "width": 2560,
+      "height": 1707,
+      "sha256": "3be5b8fb6ee345b40ec9c6c33323990664589be568a66d7339e950541802cbc0"
+    },
+    {
+      "file": "weddell10.jpg",
+      "sourceFolder": "Weddell Place",
+      "sourceFile": "IMG_9977.jpg",
+      "width": 2560,
+      "height": 1706,
+      "sha256": "03217a0f6879d940fd4ce0e054a3a097460f05d5a25d7c154b40b5d61d0fa767"
+    },
+    {
+      "file": "masonic5.jpg",
+      "sourceFolder": "Masonic Place",
+      "sourceFile": "IMG_0695 copy.jpg",
+      "width": 2560,
+      "height": 1707,
+      "sha256": "76cff807303193a0530443c13a9a202c987320dfc6727a7ae9034605153fb216"
+    },
+    {
+      "file": "masonic6.jpg",
+      "sourceFolder": "Masonic Place",
+      "sourceFile": "IMG_0696 copy.jpg",
+      "width": 2560,
+      "height": 1706,
+      "sha256": "78b38c39b69e9a5a8d7012988a2e8c6ce4b7938bc5465448d7e4f771d9117edb"
+    },
+    {
+      "file": "masonic7.jpg",
+      "sourceFolder": "Masonic Place",
+      "sourceFile": "IMG_0698 copy.jpg",
+      "width": 2560,
+      "height": 1706,
+      "sha256": "0fd9275c01777e989054725c6c85d37da4036042e1a44df54b2c56cea39e1910"
+    },
+    {
+      "file": "masonic8.jpg",
+      "sourceFolder": "Masonic Place",
+      "sourceFile": "IMG_0701 copy.jpg",
+      "width": 2560,
+      "height": 1706,
+      "sha256": "f0cc281271e20a26293f6af3a396b9e9e8f692660e3ba0be6944c6f73b1e22b8"
+    },
+    {
+      "file": "masonic9.jpg",
+      "sourceFolder": "Masonic Place",
+      "sourceFile": "IMG_0704 copy.jpg",
+      "width": 2560,
+      "height": 1707,
+      "sha256": "64b2804b5a4acda1c0068876729f72ce0afb60cf673eaba1f5910a91c21d03a3"
+    },
+    {
+      "file": "masonic10.jpg",
+      "sourceFolder": "Masonic Place",
+      "sourceFile": "IMG_0705 copy.jpg",
+      "width": 2560,
+      "height": 1706,
+      "sha256": "caae7d470e8bcd42d05cef35821485f8055a4b97a322027b7a0f7725b7d2f522"
+    },
+    {
+      "file": "lodge5.jpg",
+      "sourceFolder": "Lodge Drive",
+      "sourceFile": "IMG_0694 copy.jpg",
+      "width": 2560,
+      "height": 1707,
+      "sha256": "087c4e48f3ababa19d7d3d4d59a1c3fd0b2169ad3d7afb7bbabfc18ac95ae3e1"
+    },
+    {
+      "file": "lodge6.jpg",
+      "sourceFolder": "Lodge Drive",
+      "sourceFile": "IMG_0696 copy.jpg",
+      "width": 2560,
+      "height": 1706,
+      "sha256": "054fafa5d12c9eece445957657d1ebd2f7b8a47cd3cbb0bfa07d9645838e3a46"
+    },
+    {
+      "file": "lodge7.jpg",
+      "sourceFolder": "Lodge Drive",
+      "sourceFile": "IMG_0700 copy.jpg",
+      "width": 2560,
+      "height": 1706,
+      "sha256": "19e73154fd97eff5bf8e85cce3e45e6e4fc1c1e4dcf7ac721346659f646dc121"
+    },
+    {
+      "file": "lodge8.jpg",
+      "sourceFolder": "Lodge Drive",
+      "sourceFile": "IMG_0702 copy.jpg",
+      "width": 2560,
+      "height": 1706,
+      "sha256": "934b3dfae8b4790dee6e155594fdd5b6206bed4b5d02095fafb77ba963f8c620"
+    },
+    {
+      "file": "lodge9.jpg",
+      "sourceFolder": "Lodge Drive",
+      "sourceFile": "IMG_0703 copy.jpg",
+      "width": 2560,
+      "height": 1707,
+      "sha256": "a9c69ebbefc32f6ad5a0e1bae290a03cc60f346c53cc9aec3cd56682555f41b2"
+    },
+    {
+      "file": "lodge10.jpg",
+      "sourceFolder": "Lodge Drive",
+      "sourceFile": "IMG_0704 copy.jpg",
+      "width": 2560,
+      "height": 1707,
+      "sha256": "b405497aa7502cc8c683e35777f8f2591909fd95d8bfc46b468f03c5288dcced"
+    },
+    {
+      "file": "masons5.jpg",
+      "sourceFolder": "Masons Way",
+      "sourceFile": "005_Open2view_ID548071-71_Darlington_St.jpg",
+      "width": 2560,
+      "height": 1706,
+      "sha256": "50b2680d870824739e63453c544693603ee8342172525a10d088887d36b66d6c"
+    },
+    {
+      "file": "masons6.jpg",
+      "sourceFolder": "Masons Way",
+      "sourceFile": "014_Open2view_ID548071-71_Darlington_St.jpg",
+      "width": 2560,
+      "height": 1706,
+      "sha256": "d0c9907dedbfd1cd058c53c010c99f1bb2b8b1c2283452fd0eea1103dd68541b"
+    },
+    {
+      "file": "masons7.jpg",
+      "sourceFolder": "Masons Way",
+      "sourceFile": "015_Open2view_ID548071-71_Darlington_St.jpg",
+      "width": 2560,
+      "height": 1706,
+      "sha256": "90f3dcf86fabc4c7e6ff4db1b5f7bdaf9a8238da179011ad334466ec8c99f76f"
+    },
+    {
+      "file": "masons8.jpg",
+      "sourceFolder": "Masons Way",
+      "sourceFile": "019_Open2view_ID548071-71_Darlington_St.jpg",
+      "width": 2560,
+      "height": 1706,
+      "sha256": "06f3a5120224b850579c6f186fb9119d4ccf605193c1757d67d4d7b1548d5276"
+    },
+    {
+      "file": "masons9.jpg",
+      "sourceFolder": "Masons Way",
+      "sourceFile": "006_Open2view_ID548071-71_Darlington_St.jpg",
+      "width": 2560,
+      "height": 1706,
+      "sha256": "58eab5a2d6077ae4df8991b15ca7bde7f0b43972555cf36b3517acc5176efe4b"
+    },
+    {
+      "file": "masons10.jpg",
+      "sourceFolder": "Masons Way",
+      "sourceFile": "010_Open2view_ID548071-71_Darlington_St.jpg",
+      "width": 2560,
+      "height": 1706,
+      "sha256": "fd30e4407af5a98f45e8e82e6e1c0cf9ee6f299cc63992e960d0ededdc51499d"
+    }
+  ]
+}

@@ -18,6 +18,8 @@ type UserItem = {
 
 function ManageUsers() {
   const [users, setUsers] = useState<UserItem[]>([]);
+  const [changedIds, setChangedIds] = useState<Set<number>>(new Set());
+  const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -32,6 +34,7 @@ function ManageUsers() {
       setError("");
       const response = await axios.get(`${API_BASE_URL}/api/users`);
       setUsers(response.data);
+      setChangedIds(new Set());
     } catch (error: any) {
       setError(error?.response?.data?.message || "Failed to load users.");
     }
@@ -46,12 +49,14 @@ function ManageUsers() {
     field: keyof UserItem,
     value: string | boolean
   ) => {
+    setChangedIds(previous => new Set(previous).add(id));
     setUsers((prev) =>
       prev.map((user) => (user.id === id ? { ...user, [field]: value } : user))
     );
   };
 
   const toggleActive = (id: number) => {
+    setChangedIds(previous => new Set(previous).add(id));
     setUsers((prev) =>
       prev.map((user) =>
         user.id === id ? { ...user, isActive: !user.isActive } : user
@@ -60,19 +65,20 @@ function ManageUsers() {
   };
 
   const handleSaveAll = async () => {
+    setSaving(true);
     try {
       setMessage("");
       setError("");
 
-      for (const user of users) {
+      for (const user of users.filter(user => changedIds.has(user.id))) {
         await axios.put(`${API_BASE_URL}/api/users/${user.id}`, user);
       }
 
       setMessage("All user changes saved successfully.");
-      loadUsers();
+      await loadUsers();
     } catch (error: any) {
       setError(error?.response?.data?.message || "Failed to save user changes.");
-    }
+    } finally { setSaving(false); }
   };
 
   return (
@@ -87,8 +93,8 @@ function ManageUsers() {
             Admins can edit profiles, control usernames, and activate or deactivate users.
           </p>
 
-          {message && <div className="alert alert-success">{message}</div>}
-          {error && <div className="alert alert-danger">{error}</div>}
+          {message && <div role="status" className="alert alert-success">{message}</div>}
+          {error && <div role="alert" className="alert alert-danger">{error}</div>}
 
           <div className="table-responsive">
             <table className="table align-middle">
@@ -123,7 +129,7 @@ function ManageUsers() {
                     <td>
                       <input
                         className="form-control"
-                        value={user.userName}
+                        aria-label={`Username for ${user.userName}`} disabled={saving} value={user.userName}
                         onChange={(e) =>
                           handleFieldChange(user.id, "userName", e.target.value)
                         }
@@ -133,7 +139,7 @@ function ManageUsers() {
                     <td>
                       <input
                         className="form-control"
-                        value={user.firstName}
+                        aria-label={`First Name for ${user.userName}`} disabled={saving} value={user.firstName}
                         onChange={(e) =>
                           handleFieldChange(user.id, "firstName", e.target.value)
                         }
@@ -143,7 +149,7 @@ function ManageUsers() {
                     <td>
                       <input
                         className="form-control"
-                        value={user.lastName}
+                        aria-label={`Last Name for ${user.userName}`} disabled={saving} value={user.lastName}
                         onChange={(e) =>
                           handleFieldChange(user.id, "lastName", e.target.value)
                         }
@@ -153,7 +159,7 @@ function ManageUsers() {
                     <td>
                       <input
                         className="form-control"
-                        value={user.email}
+                        aria-label={`Email for ${user.userName}`} disabled={saving} value={user.email}
                         onChange={(e) =>
                           handleFieldChange(user.id, "email", e.target.value)
                         }
@@ -163,12 +169,13 @@ function ManageUsers() {
                     <td>
                       <select
                         className="form-select"
-                        value={user.role}
+                        aria-label={`Role for ${user.userName}`} disabled={saving} value={user.role}
                         onChange={(e) =>
                           handleFieldChange(user.id, "role", e.target.value)
                         }
                       >
                         <option value="Resident">Resident</option>
+                        <option value="Admin">Admin</option>
                         <option value="VillageManager">Village Manager</option>
                         <option value="CompanySecretary">Company Secretary</option>
                         <option value="FinancialAdvisor">Financial Advisor</option>
@@ -179,7 +186,7 @@ function ManageUsers() {
                     <td>
                       <select
                         className="form-select"
-                        value={user.village}
+                        aria-label={`Village for ${user.userName}`} disabled={saving} value={user.village}
                         onChange={(e) =>
                           handleFieldChange(user.id, "village", e.target.value)
                         }
@@ -203,7 +210,7 @@ function ManageUsers() {
                         className={`btn btn-sm w-100 ${
                           user.isActive ? "btn-outline-danger" : "btn-outline-success"
                         }`}
-                        onClick={() => toggleActive(user.id)}
+                        disabled={saving} onClick={() => toggleActive(user.id)}
                       >
                         {user.isActive ? "Deactivate" : "Activate"}
                       </button>
@@ -215,8 +222,8 @@ function ManageUsers() {
           </div>
 
           <div className="mt-4">
-            <button className="btn btn-primary" onClick={handleSaveAll}>
-              Save All Changes
+            <button className="btn btn-primary" disabled={saving || changedIds.size === 0} onClick={handleSaveAll}>
+              {saving ? "Saving…" : "Save All Changes"}
             </button>
           </div>
         </div>

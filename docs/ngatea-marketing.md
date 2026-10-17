@@ -1,6 +1,6 @@
 # Ngatea marketing content — October 2026 update
 
-Source: client-supplied **Masonics A4 Booklet - Sep 26 - Print Version(1).pdf**, 24 pages. SHA-256: `46a9299ae6723b05717496a026927f65f26c05c5e9cad6448bfe620dcf16d773`. The Windows folder visible in the screenshot is `D:\Freelancing\SAMCT\marketing\Masonics\Masonics`; its original files were not accessible.
+Source: client-supplied **Masonics A4 Booklet - Sep 26 - Print Version(1).pdf**, 24 pages. SHA-256: `46a9299ae6723b05717496a026927f65f26c05c5e9cad6448bfe620dcf16d773`. The Windows folder visible in the screenshot is `D:\Freelancing\SAMCT\marketing\Masonics\Masonics`; its original files were not accessible during the initial PDF import. The later email-source import below adds web-sized renditions from the supplied street folders.
 
 ## Content decisions
 
@@ -27,7 +27,7 @@ The migration seeds publication only for the specifically supplied brochure cont
 
 Rolling this migration back removes the new brochure table and photo columns 6–10. Export any staff edits/new photo references before a rollback. Uploaded files are not deleted automatically; use a reviewed retention process for unreferenced files.
 
-Photos are named by area (`hale1.jpg`–`hale4.jpg`, `lodge1.jpg`–`lodge4.jpg`, and the same pattern for Weddell, Masonic and Masons). The fourth area image is its map/development image. Unit advert photos use the unit number in their filename.
+Photos are named by area (`hale1.jpg`–`hale10.jpg`, `lodge1.jpg`–`lodge10.jpg`, and the same pattern for Weddell, Masonic and Masons). The fourth area image is its map/development image. Unit advert photos use the unit number in their filename.
 
 ## Gallery and contact follow-up — 12 October 2026
 
@@ -37,11 +37,23 @@ Photos are named by area (`hale1.jpg`–`hale4.jpg`, `lodge1.jpg`–`lodge4.jpg`
 - Brochure entries now support **30 images**, including any aerial/map image. Upload at most **10 new photos per save**, each JPEG/PNG at most **2 MB**. The browser, API and database enforce the total; server validation also rejects oversized batches, duplicate/foreign retained images and invalid contact numbers. Existing operational `VillageProperties` records continue to use ten photo slots.
 - Concurrent photo downloads keep malware scanning enabled: four scans run at once, with at most sixteen waiting. The same 15-second deadline covers waiting and scanning; saturation, timeout or scanner failure still blocks the transfer. This prevents a normal gallery image burst from immediately failing on its fifth scan. Playwright checks every supplied brochure image in batches of eight concurrent downloads and verifies that all card images actually load.
 - Apply the new migration before starting the updated API. Rolling it back removes the new contact fields and requires every brochure entry to have at most ten images; it does not silently truncate a gallery. Back up before rollback.
-- The newly supplied PDF is the same booklet: page 5 has one photo per home advert; each area profile has three home photos and an aerial/development image. No original photos have been added in this follow-up. Screenshots show folders containing more photos, but the actual JPEGs were not attached or available in the repository. Upload the original **Masonics** folder as a ZIP to finish importing those galleries, preserving any labels that identify example interiors.
+- The newly supplied PDF is the same booklet: page 5 has one photo per home advert; each area profile has three home photos and an aerial/development image. No original photos have been added in this follow-up. Screenshots show folders containing more photos, but the actual JPEGs were not attached or available in the repository. That limitation was resolved by the later email-source import below; labels identifying example interiors remain intact.
 
 To add photos after obtaining the originals, open **My Village → Manage brochure content** (manager) or **Village Property Data → Manage brochure content** (administrator), choose the matching area/home, and add photos in batches. Save between batches. Do not run `seed-e2e.mjs` on a working database.
 
-## Source photo mapping
+## Supplied email photos and unit editor — 14 October 2026
+
+The forwarded **Photos** email dated 23 September links to the Masonics folder supplied by Richardsons. It groups photos **by street**, not by individual unit. Thirty additional web-sized JPEG renditions are now included under `server/Content/Marketing/ngatea-sep-2026`, six per street. They are copies of the supplied photographs, not generated images. [The source manifest](marketing-source-photos.json) records each filename, source folder, dimensions and SHA-256; the private sharing link is not stored in the repository.
+
+Each street gallery now contains **ten images**: the three booklet home photos, its aerial/development image in position four, and six more supplied photos. Reference-finish watermarks are retained. The Weddell originals are unlabelled, so the page's area-gallery notice explicitly explains that photos are representative and the specific available home must be confirmed. The Masons Way folder contains staged interiors with `71_Darlington_St` in their filenames. Those images have a specific notice and are not assigned to 11 or 1A Masons Way. The four individual page-5 adverts still contain one identifiable photo each; an address-to-photo mapping is needed before attaching other street-folder photos to those homes.
+
+`ImportSuppliedStreetPhotos` is a **data-only EF migration**. It appends photos only where the slug, village, kind and original four-image array all match. It does not overwrite staff-edited image arrays, copy, contact details or publication choices. Its rollback restores four images only where the ten-image array still exactly matches this import. Staff-customized galleries are left for manual review in the brochure editor. The schema already has `MarketingImageUrl1` through `MarketingImageUrl10`; do not add duplicate columns manually.
+
+The operational Units form (My Village) now supports selecting multiple photos, previewing existing/new photos, replacing a position, removing/undoing a saved photo, and saving anywhere from zero to ten photos. Vacant homes can be saved with zero residents and no resident email. The API rejects unknown/duplicate file positions, invalid removal positions, and removing and replacing the same photo in one request. Existing role/village authorization, CSRF, image-type/size checks and malware scanning remain active. Removing/replacing/unpublishing a photo withdraws its public database reference; files are retained for the reviewed retention procedure.
+
+Photo thumbnails on marketing cards open their exact image in the accessible gallery. The four-column desktop layout, responsive smaller layouts, contacts and contrasting FAQ answers are retained. Playwright covers legacy usernames with spaces (including required staff MFA), field errors, ten-photo creation/editing/publication, removed-photo access, invalid batches, CSRF and cross-village restrictions.
+
+## Original PDF photo mapping
 
 | JPEG | PDF page | Embedded image object | Export dimensions |
 | --- | ---: | ---: | --- |

@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 namespace server.DTOs;
-public class VillagePropertyWriteDto
+public class VillagePropertyWriteDto : IValidatableObject
 {
     [Required, RegularExpression("Ngatea|Whitianga")] [DisplayFormat(ConvertEmptyStringToNull = false)] public string Village { get; set; } = "";
     [Required, StringLength(30)] [DisplayFormat(ConvertEmptyStringToNull = false)] public string UnitNumber { get; set; } = "";
@@ -26,4 +26,12 @@ public class VillagePropertyWriteDto
     public IFormFile? MarketingImage8 { get; set; }
     public IFormFile? MarketingImage9 { get; set; }
     public IFormFile? MarketingImage10 { get; set; }
+    [MaxLength(10)] public int[] RemoveMarketingImages { get; set; } = [];
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (RemoveMarketingImages is null || RemoveMarketingImages.Any(slot => slot < 1 || slot > 10) ||
+            RemoveMarketingImages.Distinct().Count() != RemoveMarketingImages.Length)
+            yield return new ValidationResult("Choose unique photo positions from 1 to 10.", [nameof(RemoveMarketingImages)]);
+    }
 }

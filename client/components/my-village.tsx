@@ -1,6 +1,9 @@
 import { API_BASE_URL, apiFetch } from '../security/api'
 import { lazy, Suspense, useEffect, useState } from 'react'
 import Navbar from './navbar'
+import type { UnitPhotoSlot } from './unit-photo-editor'
+const UnitPhotoEditor = lazy(() => import('./unit-photo-editor'))
+const emptyUnitPhotos = (): UnitPhotoSlot[] => Array.from({ length: 10 }, () => ({ url: '', file: null, removed: false }))
 const MarketingContentEditor = lazy(() => import('./marketing-content-editor'))
 import { useNavigate } from 'react-router-dom'
 
@@ -55,7 +58,7 @@ function MyVillage() {
 
   const [unitNumber, setUnitNumber] = useState('')
   const [address, setAddress] = useState('')
-  const [residentCount, setResidentCount] = useState(1)
+  const [residentCount, setResidentCount] = useState(0)
   const [residentName, setResidentName] = useState('')
   const [residentEmail, setResidentEmail] = useState('')
   const [residentOccupation, setResidentOccupation] = useState('')
@@ -65,16 +68,8 @@ function MyVillage() {
   const [document1, setDocument1] = useState<File | null>(null)
   const [document2, setDocument2] = useState<File | null>(null)
 
-  const [marketingImage1, setMarketingImage1] = useState<File | null>(null)
-  const [marketingImage2, setMarketingImage2] = useState<File | null>(null)
-  const [marketingImage3, setMarketingImage3] = useState<File | null>(null)
-  const [marketingImage4, setMarketingImage4] = useState<File | null>(null)
-  const [marketingImage5, setMarketingImage5] = useState<File | null>(null)
-  const [marketingImage6, setMarketingImage6] = useState<File | null>(null)
-  const [marketingImage7, setMarketingImage7] = useState<File | null>(null)
-  const [marketingImage8, setMarketingImage8] = useState<File | null>(null)
-  const [marketingImage9, setMarketingImage9] = useState<File | null>(null)
-  const [marketingImage10, setMarketingImage10] = useState<File | null>(null)
+  const [marketingPhotos, setMarketingPhotos] = useState<UnitPhotoSlot[]>(emptyUnitPhotos)
+  const [saving, setSaving] = useState(false)
 
   const [isVisibleOnMarketing, setIsVisibleOnMarketing] = useState(false)
   const [marketingTitle, setMarketingTitle] = useState('')
@@ -150,7 +145,7 @@ function MyVillage() {
     setFormVersion(version => version + 1)
     setUnitNumber('')
     setAddress('')
-    setResidentCount(1)
+    setResidentCount(0)
     setResidentName('')
     setResidentEmail('')
     setResidentOccupation('')
@@ -158,16 +153,7 @@ function MyVillage() {
     setNotes('')
     setDocument1(null)
     setDocument2(null)
-    setMarketingImage1(null)
-    setMarketingImage2(null)
-    setMarketingImage3(null)
-    setMarketingImage4(null)
-    setMarketingImage5(null)
-    setMarketingImage6(null)
-    setMarketingImage7(null)
-    setMarketingImage8(null)
-    setMarketingImage9(null)
-    setMarketingImage10(null)
+    setMarketingPhotos(emptyUnitPhotos())
     setIsVisibleOnMarketing(false)
     setMarketingTitle('')
     setMarketingDescription('')
@@ -184,7 +170,7 @@ function MyVillage() {
       return
     }
 
-    if (!residentName.trim()) {
+    if (residentCount > 0 && !residentName.trim()) {
       setError('Please select a resident.')
       return
     }
@@ -200,9 +186,9 @@ function MyVillage() {
     formData.append('unitNumber', unitNumber)
     formData.append('address', address)
     formData.append('residentCount', String(residentCount))
-    formData.append('residentName', residentName)
-    formData.append('residentEmail', residentEmail)
-    formData.append('residentOccupation', residentOccupation)
+    formData.append('residentName', residentCount > 0 ? residentName : '')
+    if (residentCount > 0 && residentEmail.trim()) formData.append('residentEmail', residentEmail)
+    formData.append('residentOccupation', residentCount > 0 ? residentOccupation : '')
     formData.append('villageManagerName', villageManagerName)
     formData.append('notes', notes)
     formData.append('isVisibleOnMarketing', String(isVisibleOnMarketing))
@@ -212,17 +198,12 @@ function MyVillage() {
     if (document1) formData.append('document1', document1)
     if (document2) formData.append('document2', document2)
 
-    if (marketingImage1) formData.append('marketingImage1', marketingImage1)
-    if (marketingImage2) formData.append('marketingImage2', marketingImage2)
-    if (marketingImage3) formData.append('marketingImage3', marketingImage3)
-    if (marketingImage4) formData.append('marketingImage4', marketingImage4)
-    if (marketingImage5) formData.append('marketingImage5', marketingImage5)
-    if (marketingImage6) formData.append('marketingImage6', marketingImage6)
-    if (marketingImage7) formData.append('marketingImage7', marketingImage7)
-    if (marketingImage8) formData.append('marketingImage8', marketingImage8)
-    if (marketingImage9) formData.append('marketingImage9', marketingImage9)
-    if (marketingImage10) formData.append('marketingImage10', marketingImage10)
+    marketingPhotos.forEach((photo, index) => {
+      if (photo.file) formData.append(`marketingImage${index + 1}`, photo.file)
+      if (photo.removed) formData.append('removeMarketingImages', String(index + 1))
+    })
 
+    setSaving(true)
     try {
       const url =
         editingId === null
@@ -250,7 +231,7 @@ function MyVillage() {
       await loadProperties()
     } catch (err: any) {
       setError(err.message || 'Failed to save property.')
-    }
+    } finally { setSaving(false) }
   }
 
   const handleEdit = (property: VillageProperty) => {
@@ -267,6 +248,9 @@ function MyVillage() {
     setIsVisibleOnMarketing(property.isVisibleOnMarketing || false)
     setMarketingTitle(property.marketingTitle || '')
     setMarketingDescription(property.marketingDescription || '')
+    setMarketingPhotos(emptyUnitPhotos().map((photo, index) => ({
+      ...photo, url: String(property[`marketingImageUrl${index + 1}` as keyof VillageProperty] || ''),
+    })))
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -359,8 +343,8 @@ function MyVillage() {
           </div>
         </section>
 
-        {message && <div className="alert alert-success">{message}</div>}
-        {error && <div className="alert alert-danger">{error}</div>}
+        {message && <div role="status" className="alert alert-success">{message}</div>}
+        {error && <div role="alert" className="alert alert-danger">{error}</div>}
 
         <section className="mb-4">
           <div className="row g-3">
@@ -411,8 +395,8 @@ function MyVillage() {
             <form key={formVersion} onSubmit={handleSubmit}>
               <div className="row g-3">
                 <div className="col-md-2">
-                  <label className="form-label fw-semibold">Unit Number</label>
-                  <input
+                  <label htmlFor="unit-number" className="form-label fw-semibold">Unit Number</label>
+                  <input id="unit-number"
                     className="form-control"
                     value={unitNumber}
                     onChange={(e) => setUnitNumber(e.target.value)}
@@ -420,8 +404,8 @@ function MyVillage() {
                 </div>
 
                 <div className="col-md-5">
-                  <label className="form-label fw-semibold">Address</label>
-                  <input
+                  <label htmlFor="unit-address" className="form-label fw-semibold">Address</label>
+                  <input id="unit-address"
                     className="form-control"
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
@@ -429,12 +413,12 @@ function MyVillage() {
                 </div>
 
                 <div className="col-md-3">
-                  <label className="form-label fw-semibold">
+                  <label htmlFor="unit-resident-count" className="form-label fw-semibold">
                     Number of Residents
                   </label>
-                  <input
+                  <input id="unit-resident-count"
                     type="number"
-                    min="1"
+                    min="0" max="20"
                     className="form-control"
                     value={residentCount}
                     onChange={(e) => setResidentCount(Number(e.target.value))}
@@ -442,10 +426,10 @@ function MyVillage() {
                 </div>
 
                 <div className="col-md-2">
-                  <label className="form-label fw-semibold">
+                  <label htmlFor="unit-resident-name" className="form-label fw-semibold">
                     Resident Name
                   </label>
-                  <select
+                  <select id="unit-resident-name"
                     className="form-select"
                     value={residentName}
                     onChange={(e) => {
@@ -462,7 +446,7 @@ function MyVillage() {
                       setResidentEmail(selectedResident?.email || '')
                     }}
                   >
-                    <option value="">Select resident</option>
+                    <option value="">Select resident (leave empty for a vacant unit)</option>
                     {residents.map((resident) => {
                       const name =
                         resident.fullName ||
@@ -501,10 +485,10 @@ function MyVillage() {
                 </div>
 
                 <div className="col-md-4">
-                  <label className="form-label fw-semibold">
+                  <label htmlFor="unit-manager" className="form-label fw-semibold">
                     Village Manager
                   </label>
-                  <select
+                  <select id="unit-manager"
                     className="form-select"
                     value={villageManagerName}
                     onChange={(e) => setVillageManagerName(e.target.value)}
@@ -541,23 +525,24 @@ function MyVillage() {
                   <div className="form-check mb-3">
                     <input
                       type="checkbox"
+                      id="unit-marketing-visible"
                       className="form-check-input"
                       checked={isVisibleOnMarketing}
                       onChange={(e) =>
                         setIsVisibleOnMarketing(e.target.checked)
                       }
                     />
-                    <label className="form-check-label">
+                    <label htmlFor="unit-marketing-visible" className="form-check-label">
                       Show this property on the public Marketing page
                     </label>
                   </div>
                 </div>
 
                 <div className="col-12">
-                  <label className="form-label fw-semibold">
+                  <label htmlFor="unit-marketing-title" className="form-label fw-semibold">
                     Marketing Title
                   </label>
-                  <input
+                  <input id="unit-marketing-title"
                     className="form-control"
                     value={marketingTitle}
                     onChange={(e) => setMarketingTitle(e.target.value)}
@@ -566,10 +551,10 @@ function MyVillage() {
                 </div>
 
                 <div className="col-12">
-                  <label className="form-label fw-semibold">
+                  <label htmlFor="unit-marketing-description" className="form-label fw-semibold">
                     Marketing Description
                   </label>
-                  <textarea
+                  <textarea id="unit-marketing-description"
                     rows={4}
                     className="form-control"
                     value={marketingDescription}
@@ -602,47 +587,14 @@ function MyVillage() {
                   />
                 </div>
 
-                <div className="col-12">
-                  <h5 className="fw-bold mt-3">Marketing Gallery Images</h5>
-                  <p className="text-secondary small">
-                    Upload up to 10 JPEG or PNG images, at most 2 MB each. Image 1 is the main public image. Existing photos are kept unless you replace them.
-                  </p>
-                </div>
-
-                {Array.from({ length: 10 }, (_, index) => index + 1).map((num) => (
-                  <div className="col-md-4" key={num}>
-                    <label className="form-label fw-semibold">
-                      {num === 1
-                        ? 'Main Marketing Image'
-                        : `Gallery Image ${num}`}
-                    </label>
-                    <input
-                      type="file"
-                      accept=".jpg,.jpeg,.png"
-                      className="form-control"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0] || null
-                        if (num === 1) setMarketingImage1(file)
-                        if (num === 2) setMarketingImage2(file)
-                        if (num === 3) setMarketingImage3(file)
-                        if (num === 4) setMarketingImage4(file)
-                        if (num === 5) setMarketingImage5(file)
-                        if (num === 6) setMarketingImage6(file)
-                        if (num === 7) setMarketingImage7(file)
-                        if (num === 8) setMarketingImage8(file)
-                        if (num === 9) setMarketingImage9(file)
-                        if (num === 10) setMarketingImage10(file)
-                      }}
-                    />
-                  </div>
-                ))}
+                <Suspense fallback={<p>Loading photo editor…</p>}><UnitPhotoEditor photos={marketingPhotos} onChange={setMarketingPhotos} disabled={saving} /></Suspense>
 
                 <div className="col-12 d-flex gap-2">
                   <button
                     className="btn btn-primary samct-button"
-                    type="submit"
+                    type="submit" disabled={saving}
                   >
-                    {editingId ? 'Update Property' : 'Save Property'}
+                    {saving ? 'Saving...' : editingId ? 'Update Property' : 'Save Property'}
                   </button>
 
                   {editingId && (

@@ -1,7 +1,6 @@
 import { useSession, homeForRole } from '../security/session'
 import { API_BASE_URL } from '../security/api'
 import { useEffect, useState } from "react";
-import QRCode from 'qrcode'
 import { useNavigate, Link } from "react-router-dom";
 import axios from "../security/api";
 import { AxiosError } from "axios";
@@ -11,6 +10,9 @@ import Navbar from "./navbar";
 type LoginProps = {
   onLoginSuccess: () => void;
 };
+
+type LoginErrors = { UserName?: string; Password?: string }
+type LoginErrorResponse = { message?: string; errors?: Record<string, string[]> }
 
 function Login({ onLoginSuccess }: LoginProps) {
   const navigate = useNavigate();
@@ -23,6 +25,7 @@ function Login({ onLoginSuccess }: LoginProps) {
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(!!savedUserName);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<LoginErrors>({});
   const [showPassword, setShowPassword] = useState(false);
   const [mfa, setMfa] = useState<'setup' | 'verify' | null>(new URLSearchParams(window.location.search).get('mfa') === 'setup' ? 'setup' : null)
   const [setup, setSetup] = useState<{ secret: string; account: string; uri: string } | null>(null)
@@ -37,6 +40,7 @@ function Login({ onLoginSuccess }: LoginProps) {
     let cancelled = false
     axios.post(`${API_BASE_URL}/api/mfa/setup`).then(async response => {
       const data = response.data
+      const QRCode = (await import('qrcode')).default
       const image = await QRCode.toDataURL(data.uri)
       if (!cancelled) { setSetup(data); setQr(image) }
     }).catch(() => { if (!cancelled) setError('Setup expired. Select Start again and sign in.') })
@@ -44,7 +48,7 @@ function Login({ onLoginSuccess }: LoginProps) {
   }, [mfa])
 
   const finishLogin = async (user: { role: string }) => {
-    if (rememberMe) localStorage.setItem('rememberedUsername', userName)
+    if (rememberMe) localStorage.setItem('rememberedUsername', userName.trim())
     else localStorage.removeItem('rememberedUsername')
     setPassword(''); setCode(''); setSetup(null); setQr('')
     await refresh(); onLoginSuccess()
@@ -65,11 +69,12 @@ function Login({ onLoginSuccess }: LoginProps) {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setFieldErrors({});
     setLoading(true);
 
     try {
       const response = await axios.post(`${API_BASE_URL}/api/login`, {
-        userName,
+        userName: userName.trim(),
         password,
       });
 
@@ -89,7 +94,7 @@ function Login({ onLoginSuccess }: LoginProps) {
         localStorage.setItem("profileImageUrl", response.data.profileImageUrl || "");
 
         if (rememberMe) {
-          localStorage.setItem("rememberedUsername", userName);
+          localStorage.setItem("rememberedUsername", userName.trim());
         } else {
           localStorage.removeItem("rememberedUsername");
         }
@@ -100,9 +105,14 @@ function Login({ onLoginSuccess }: LoginProps) {
         navigate(homeForRole(response.data.role));
       }
     } catch (err) {
-      const axiosError = err as AxiosError<{ message: string }>;
+      const axiosError = err as AxiosError<LoginErrorResponse>;
+      const validation = axiosError.response?.data?.errors;
+      const fields = { UserName: validation?.UserName?.[0], Password: validation?.Password?.[0] };
 
-      if (axiosError.response?.data?.message) {
+      if (fields.UserName || fields.Password) {
+        setFieldErrors(fields);
+        setError('Please correct the highlighted fields.');
+      } else if (axiosError.response?.data?.message) {
         setError(axiosError.response.data.message);
       } else if (axiosError.message) {
         setError(axiosError.message);
@@ -155,11 +165,17 @@ function Login({ onLoginSuccess }: LoginProps) {
                     id="username"
                     name="username" required maxLength={50}
                     type="text"
-                    className="form-control"
+                    className={`form-control${fieldErrors.UserName ? ' is-invalid' : ''}`}
+                    aria-invalid={!!fieldErrors.UserName}
+                    aria-describedby={fieldErrors.UserName ? 'username-error username-help' : 'username-help'}
                     value={userName}
-                    onChange={(e) => setUserName(e.target.value)}
+                    onChange={(e) => { setUserName(e.target.value); setFieldErrors(previous => ({ ...previous, UserName: undefined })) }}
                     autoComplete="username"
+                    autoCapitalize="none"
+                    spellCheck={false}
                   />
+                  <p id="username-help" className="form-text">Use your account username, including any spaces. This is not your email address.</p>
+                  {fieldErrors.UserName && <p id="username-error" className="invalid-feedback">{fieldErrors.UserName}</p>}
                 </div>
 
                 <div className="mb-3">
@@ -173,9 +189,11 @@ function Login({ onLoginSuccess }: LoginProps) {
                     id="password"
                     name="password" required maxLength={72}
                       type={showPassword ? "text" : "password"}
-                      className="form-control"
+                      className={`form-control${fieldErrors.Password ? ' is-invalid' : ''}`}
+                      aria-invalid={!!fieldErrors.Password}
+                      aria-describedby={fieldErrors.Password ? 'password-error' : undefined}
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      onChange={(e) => { setPassword(e.target.value); setFieldErrors(previous => ({ ...previous, Password: undefined })) }}
                       autoComplete="current-password"
                     />
                     <button
@@ -187,6 +205,7 @@ function Login({ onLoginSuccess }: LoginProps) {
                       {showPassword ? <FaEyeSlash /> : <FaEye />}
                     </button>
                   </div>
+                  {fieldErrors.Password && <p id="password-error" className="text-danger small">{fieldErrors.Password}</p>}
                 </div>
 
                 {error && <div role="alert" className="alert alert-danger">{error}</div>}

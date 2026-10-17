@@ -38,6 +38,7 @@ function Marketing() {
   const [content, setContent] = useState<MarketingContent[]>([])
   const [selectedVillage, setSelectedVillage] = useState('All')
   const [selectedEntry, setSelectedEntry] = useState<GalleryEntry | null>(null)
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [attempt, setAttempt] = useState(0)
@@ -82,7 +83,7 @@ function Marketing() {
   const information = visibleContent.filter(entry => ['steps', 'contact', 'town'].includes(entry.kind))
   const galleryVillages = [...new Set([...unitEntries, ...areas].map(entry => entry.village))]
 
-  function showDetails(entry: GalleryEntry) { setSelectedEntry(entry) }
+  function showDetails(entry: GalleryEntry, index = 0) { setSelectedPhotoIndex(index); setSelectedEntry(entry) }
   function imageButton(entry: GalleryEntry, className = '', overview = false) {
     return <button type="button" className={`marketing-photo-button ${className}`} onClick={() => showDetails(entry)}
       aria-label={`Open photos for ${entry.title}`} aria-haspopup="dialog">
@@ -97,6 +98,15 @@ function Marketing() {
     return <div className="col-12 col-md-6 col-xl-3" key={entry.key}>
       <article className="samct-card marketing-card h-100 overflow-hidden border rounded-4 shadow-sm bg-white d-flex flex-column">
         {entry.images[0] && imageButton(entry)}
+        {entry.images.length > 1 && <div className="d-flex gap-1 p-2" aria-label={`More photos of ${entry.title}`}>
+          {entry.images.slice(1, 4).map((image, index) => <button type="button" key={`${image}-${index}`}
+            className="marketing-photo-button rounded-2 flex-fill" style={{ minWidth: 0 }}
+            aria-label={`Open photo ${index + 2} of ${entry.title}`} aria-haspopup="dialog"
+            onClick={() => showDetails(entry, index + 1)}>
+            <img src={`${API_BASE_URL}${image}`} alt="" loading="lazy" decoding="async"
+              className="w-100" style={{ height: 76, objectFit: 'cover' }} />
+          </button>)}
+        </div>}
         <div className="p-3 p-xxl-4 d-flex flex-column flex-grow-1">
           <div className="d-flex gap-2 flex-wrap mb-2">
             <span className="badge bg-primary">{entry.village}</span>
@@ -106,6 +116,7 @@ function Marketing() {
             </span>}
             </div>
           <h3 className="h5 fw-bold">{entry.title}</h3>
+          {isArea && <p className="small text-secondary">Representative homes and example interiors</p>}
           {entry.priceNzd != null && <p className="h5 text-primary">{priceFormat.format(entry.priceNzd)}
             <span className="small text-secondary">NZD · ORA</span>
             </p>}
@@ -179,7 +190,7 @@ function Marketing() {
       </>}
     </main>
     {selectedEntry && <Suspense fallback={<p role="status" className="text-center">Opening photos…</p>}>
-      <MarketingGallery key={selectedEntry.key} entry={selectedEntry} onClose={() => setSelectedEntry(null)} />
+      <MarketingGallery key={`${selectedEntry.key}-${selectedPhotoIndex}`} entry={selectedEntry} initialPhotoIndex={selectedPhotoIndex} onClose={() => setSelectedEntry(null)} />
     </Suspense>}
   </>
 }

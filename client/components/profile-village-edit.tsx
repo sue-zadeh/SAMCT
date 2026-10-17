@@ -47,8 +47,9 @@ function ProfileVillageEdit() {
 
       const updatedUser = response.data;
       if (emailChanged) {
+        // Leave the protected route before refresh clears the revoked session.
+        navigate("/login?emailUpdated=true", { replace: true });
         await refresh();
-        navigate("/login?emailUpdated=true");
         return;
       }
 
@@ -80,8 +81,8 @@ function ProfileVillageEdit() {
           <h1 className="fw-bold mb-4 d-flex align-items-center gap-2">
              <FaIdBadge />Edit Village Manager Profile</h1>
 
-          {message && <div className="alert alert-success">{message}</div>}
-          {error && <div className="alert alert-danger">{error}</div>}
+          {message && <div role="status" className="alert alert-success">{message}</div>}
+          {error && <div role="alert" className="alert alert-danger">{error}</div>}
 
           <div className="row g-3">
             <div className="col-md-6">
@@ -89,7 +90,7 @@ function ProfileVillageEdit() {
                <FaUser />First Name</label>
               <input
                 className="form-control"
-                value={firstName}
+                aria-label="First Name" value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
               />
             </div>
@@ -99,7 +100,7 @@ function ProfileVillageEdit() {
                <FaUser />Last Name</label>
               <input
                 className="form-control"
-                value={lastName}
+                aria-label="Last Name" value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
               />
             </div>
@@ -109,7 +110,7 @@ function ProfileVillageEdit() {
                <FaIdBadge />Username</label>
               <input
                 className="form-control"
-                value={userName}
+                aria-label="Username" value={userName}
                 onChange={(e) => setUserName(e.target.value)}
               />
             </div>
@@ -119,7 +120,7 @@ function ProfileVillageEdit() {
                <FaEnvelope />Email</label>
               <input
                 className="form-control"
-                value={email}
+                aria-label="Email" value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
@@ -129,7 +130,7 @@ function ProfileVillageEdit() {
                <FaMapMarkerAlt />Village</label>
               <select
                 className="form-select"
-                value={village} disabled
+                aria-label="Village" value={village} disabled
                 onChange={(e) => setVillage(e.target.value)}
               >
                 {/* <option value="Papakura">Papakura</option> */}

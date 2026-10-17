@@ -43,9 +43,10 @@ export default function Register() {
         {(['userName', 'firstName', 'lastName', 'email'] as const).map(name => <div className="mb-3" key={name}>
           <label className="form-label" htmlFor={name}>{{ userName: 'Username', firstName: 'First Name', lastName: 'Last Name', email: 'Email' }[name]}</label>
           <input className="form-control" id={name} name={name} type={name === 'email' ? 'email' : 'text'} value={form[name]} onChange={change}
-            required minLength={name === 'userName' ? 3 : undefined} maxLength={name === 'email' ? 254 : name === 'userName' ? 50 : 80}
+            required minLength={name === 'userName' ? 5 : undefined} maxLength={name === 'email' ? 254 : name === 'userName' ? 50 : 80}
             pattern={name === 'userName' ? '[A-Za-z0-9_.\\-]+' : undefined} autoComplete={name === 'userName' ? 'username' : name === 'email' ? 'email' : name === 'firstName' ? 'given-name' : 'family-name'} />
         </div>)}
+        <p className="small">Usernames are not case-sensitive. Use 5 to 50 letters, numbers, dots, underscores or hyphens.</p>
         {administrator && <div className="mb-3"><label htmlFor="role" className="form-label">Role</label>
           <select id="role" name="role" className="form-select" value={form.role} onChange={change}>
             {['Resident', 'VillageManager', ...adminRoles].map(role => <option key={role} value={role}>{role}</option>)}

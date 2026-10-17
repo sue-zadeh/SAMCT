@@ -136,6 +136,10 @@ public class AuthController(AppDbContext database, IEmailService emailService, I
         if (!User.IsSelf(request.CurrentUsername)) return Forbid();
         await using var transaction = await database.Database.BeginTransactionAsync();
         var user = (await mfa.LockUser(User.UserId()))!;
+        var usernameChanged = Normalize(request.UserName) != Normalize(user.UserName);
+        if (usernameChanged && User.IsInRole("Resident")) return Forbid();
+        if (usernameChanged && !UsernameRules.IsValidNewName(Normalize(request.UserName)))
+            return BadRequest(new { message = UsernameRules.Message });
         // A village change is an access change; only the staff management endpoint may do this.
         if (request.Village != user.Village) return Forbid();
         var emailChanged = Normalize(request.Email) != Normalize(user.Email);
@@ -193,6 +197,8 @@ public class AuthController(AppDbContext database, IEmailService emailService, I
             return BadRequest(new { message = "Select a valid role and village." });
         if (user.Id == User.UserId() && (!request.IsActive || request.Role != user.Role))
             return BadRequest(new { message = "Another administrator must change your own access." });
+        if (Normalize(request.UserName) != Normalize(user.UserName) && !UsernameRules.IsValidNewName(Normalize(request.UserName)))
+            return BadRequest(new { message = UsernameRules.Message });
         if (await IdentityExists(request.UserName, request.Email, id)) return Conflict(new { message = "These account details are already in use." });
         var accessChanged = user.IsActive != request.IsActive || user.Role != request.Role || user.Village != request.Village || Normalize(user.Email) != Normalize(request.Email);
         user.UserName = Normalize(request.UserName); user.Email = Normalize(request.Email);

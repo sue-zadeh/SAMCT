@@ -71,7 +71,7 @@ function MaintenanceVillage() {
       setError('')
 
       const managerAnswer = answers[id] || ''
-      const status = statuses[id] || 'Completed'
+      const status = statuses[id] || requests.find(request => request.id === id)?.status || 'Pending'
 
       if (!managerAnswer.trim()) {
         setError('Please write a manager answer before saving.')
