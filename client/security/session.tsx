@@ -40,10 +40,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     clearCsrfToken()
     setUser(null)
     setLoading(false)
-    if (reason && (previous || reason === 'inactivity')) {
-      setMessage(reason === 'inactivity' ? idleMessage : 'Your session has ended. Please sign in again.')
+    if (reason === 'inactivity') {
+      setMessage(idleMessage)
       navigateRef.current('/login', { replace: true })
-    }
+    } else if (previous) setMessage('')
     if (broadcast && previous) localStorage.setItem(sessionEventKey, JSON.stringify({ type: 'logout', userId: previous.id, reason, at: Date.now() }))
   }, [])
 
