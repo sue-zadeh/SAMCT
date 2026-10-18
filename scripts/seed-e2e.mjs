@@ -24,10 +24,10 @@ try {
     ['legacyResident', 'Resident', 'Ngatea'], ['legacyManager', 'VillageManager', 'Ngatea'],
     ['shortLegacy', 'Resident', 'Ngatea'],
     ['uiResident', 'Resident', 'Ngatea'], ['uiManager', 'VillageManager', 'Ngatea'], ['uiAdmin', 'Admin', 'Ngatea'],
-    ['uiReset', 'Resident', 'Ngatea'], ['uiEmail', 'Resident', 'Ngatea'], ['uiMfa', 'Resident', 'Ngatea'],
+    ['uiReset', 'Resident', 'Ngatea'], ['uiEmail', 'Resident', 'Ngatea'], ['uiSecurity', 'Resident', 'Ngatea'],
     ['managedByManager', 'Resident', 'Ngatea'], ['managedByAdmin', 'Resident', 'Whitianga'],
-    ['mfaEnroll', 'VillageManager', 'Ngatea'], ['mfaLock', 'Admin', 'Ngatea'],
-    ['mfaManage', 'Admin', 'Ngatea'], ['mfaReset', 'Admin', 'Ngatea'], ['mfaResident', 'Resident', 'Ngatea'], ['inactive', 'Resident', 'Ngatea'],
+    ['previousMfa', 'VillageManager', 'Ngatea'], ['jwtResident', 'Resident', 'Ngatea'], ['inactive', 'Resident', 'Ngatea'],
+    ['financialAdministrator', 'FinancialAdministrator', 'Ngatea'], ['director', 'Director', 'Ngatea'],
     ['uiMaintenance', 'Resident', 'Ngatea'],
   ]
   const users = {}
@@ -38,6 +38,8 @@ try {
       [userName, 'Test', key, `Test ${key}`, email, passwordHash, role, village, '', key !== 'inactive' && !key.startsWith('managedBy')])
     users[key] = { id: result.rows[0].Id, userName, email, role, village, password }
   }
+  // Old authenticator data must never force a QR/code step in password-only login.
+  await connection.query('UPDATE "Users" SET "MfaSecret" = $1 WHERE "Id" = $2', ['obsolete-test-enrollment', users.previousMfa.id])
   await mkdir('.playwright', { recursive: true })
   await writeFile('.playwright/users.json', JSON.stringify(users), { mode: 0o600 })
   const image = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aP2cAAAAASUVORK5CYII=', 'base64')

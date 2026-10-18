@@ -1,9 +1,11 @@
+import { randomBytes } from 'node:crypto'
 import { spawnSync } from 'node:child_process'
 import { resolve } from 'node:path'
 import { mkdir, rm } from 'node:fs/promises'
 import { dotnetConnection } from './e2e-database.mjs'
 const environment = {
   ...process.env, ASPNETCORE_ENVIRONMENT: 'Testing', ASPNETCORE_URLS: 'http://127.0.0.1:5072',
+  Jwt__SigningKey: randomBytes(32).toString('base64'),
   ConnectionStrings__DefaultConnection: dotnetConnection(), AllowedHosts: 'localhost;127.0.0.1',
   Storage__UploadPath: resolve('.playwright/uploads'), DataProtection__KeyPath: resolve('.playwright/keys'),
   Testing__OutboxPath: resolve('.playwright/outbox'), EmailSettings__ToEmail: 'contact@example.test',

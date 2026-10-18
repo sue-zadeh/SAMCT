@@ -20,10 +20,11 @@ function isApi(url: string) {
   return parsed.origin === apiOrigin && parsed.pathname.startsWith('/api/')
 }
 function needsCsrf(method: string) { return !['GET', 'HEAD', 'OPTIONS'].includes(method.toUpperCase()) }
-function afterResponse(url: string, status: number) {
-  if (/\/api\/(login|logout|reset-password|users\/(password|profile)|mfa\/(complete|disable|recovery-codes))$/.test(url) && status >= 200 && status < 300) clearCsrfToken()
-  if (status === 401 && !url.endsWith('/api/login') && !url.endsWith('/api/session')) {
-    window.dispatchEvent(new Event('samct-session-expired'))
+function afterResponse(url: string, status: number, expiredReason?: string | null) {
+  if (/\/api\/(login|logout|reset-password|users\/(password|profile))$/.test(url) && status >= 200 && status < 300) clearCsrfToken()
+  if (url.endsWith('/api/logout') && status >= 200 && status < 300) window.dispatchEvent(new Event('samct-session-logged-out'))
+  if (status === 401 && !url.endsWith('/api/login')) {
+    window.dispatchEvent(new CustomEvent('samct-session-expired', { detail: expiredReason }))
   }
 }
 export async function apiFetch(url: string, options: RequestInit = {}) {
@@ -31,7 +32,7 @@ export async function apiFetch(url: string, options: RequestInit = {}) {
   const headers = new Headers(options.headers)
   if (needsCsrf(options.method || 'GET')) headers.set('X-CSRF-TOKEN', await getCsrfToken())
   const response = await window.fetch(url, { ...options, headers, credentials: 'include', cache: 'no-store' })
-  afterResponse(url, response.status)
+  afterResponse(url, response.status, response.headers.get('X-Session-Expired'))
   return response
 }
 const api = axios.create({ withCredentials: true })
@@ -43,10 +44,10 @@ api.interceptors.request.use(async configuration => {
   return configuration
 })
 api.interceptors.response.use(response => {
-  afterResponse(response.config.url || '', response.status)
+  afterResponse(response.config.url || '', response.status, response.headers['x-session-expired'])
   return response
 }, error => {
-  if (error.response) afterResponse(error.config.url || '', error.response.status)
+  if (error.response) afterResponse(error.config.url || '', error.response.status, error.response.headers['x-session-expired'])
   return Promise.reject(error)
 })
 export default api

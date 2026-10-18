@@ -20,5 +20,7 @@ namespace server.DTOs
         public string Village { get; set; } = "";
         public string ProfileImageUrl { get; set; } = "";
         public bool IsActive { get; set; }
+        // Present only on login/session responses; never used to grant permissions.
+        public DateTime? SessionExpiresAt { get; set; }
     }
 }

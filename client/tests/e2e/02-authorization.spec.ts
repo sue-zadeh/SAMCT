@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { order, state, users, write } from './helpers'
 
-for (const role of ['admin','financial','chairman','genericAdmin']) {
+for (const role of ['admin','financial','chairman','genericAdmin', 'financialAdministrator', 'director']) {
   test(`${role} can read administration data`, async ({ playwright }) => {
     const client = await playwright.request.newContext({ baseURL: 'http://127.0.0.1:5173', storageState: state(role) })
     for (const path of ['/api/users','/api/documents/admin','/api/purchase-orders/admin/all','/api/village-properties/admin/all','/api/maintenance/summary/admin']) expect((await client.get(path)).status()).toBe(200)

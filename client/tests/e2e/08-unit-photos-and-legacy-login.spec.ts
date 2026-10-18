@@ -16,13 +16,13 @@ test('existing usernames with spaces log in without collapsing their identity', 
   expect((await session.json()).userName).toBe(account.userName)
 })
 
-test('legacy staff usernames still require MFA before any portal access', async ({ request }) => {
+test('legacy staff usernames go directly to their authorized portal', async ({ request }) => {
   const account = users().legacyManager
   const response = await write(request, 'POST', '/api/login', { data: { userName: account.userName, password: account.password } })
-  expect(response.status()).toBe(202)
-  expect((await response.json()).twoFactorRequired).toBe(true)
-  expect((await request.get('/api/session')).status()).toBe(401)
-  expect((await request.get('/api/village-properties/Ngatea')).status()).toBe(401)
+  expect(response.status()).toBe(200)
+  expect((await request.get('/api/session')).status()).toBe(200)
+  expect((await request.get('/api/village-properties/Ngatea')).status()).toBe(200)
+  expect((await request.get('/api/village-properties/Whitianga')).status()).toBe(403)
 })
 
 test('a blank username shows the specific field error and keeps the user logged out', async ({ page }, testInfo) => {
