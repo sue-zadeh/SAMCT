@@ -28,6 +28,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const latestRefresh = useRef(0)
   const dialog = useRef<HTMLDialogElement>(null)
   const navigate = useNavigate()
+  const navigateRef = useRef(navigate)
+  navigateRef.current = navigate
 
   const endSession = useCallback((reason = '', broadcast = true) => {
     const previous = currentUser.current
@@ -40,10 +42,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setLoading(false)
     if (reason && (previous || reason === 'inactivity')) {
       setMessage(reason === 'inactivity' ? idleMessage : 'Your session has ended. Please sign in again.')
-      navigate('/login', { replace: true })
+      navigateRef.current('/login', { replace: true })
     }
     if (broadcast && previous) localStorage.setItem(sessionEventKey, JSON.stringify({ type: 'logout', userId: previous.id, reason, at: Date.now() }))
-  }, [navigate])
+  }, [])
 
   const refresh = useCallback(async () => {
     const version = generation.current
