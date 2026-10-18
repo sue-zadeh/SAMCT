@@ -25,6 +25,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const currentUser = useRef<SessionUser | null>(null)
   const deadline = useRef(0)
   const generation = useRef(0)
+  const latestRefresh = useRef(0)
   const dialog = useRef<HTMLDialogElement>(null)
   const navigate = useNavigate()
 
@@ -45,20 +46,23 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, [navigate])
 
   const refresh = useCallback(async () => {
-    const version = ++generation.current
+    const version = generation.current
+    const requestId = ++latestRefresh.current
     try {
       const response = await apiFetch(`${API_BASE_URL}/api/session`)
       const value = response.ok ? await response.json() as SessionUser : null
-      if (version !== generation.current) return
+      if (version !== generation.current || requestId !== latestRefresh.current) return
       if (value) {
+        const expiry = Date.parse(value.sessionExpiresAt)
+        // A refresh may finish after an activity response which already renewed the deadline.
+        deadline.current = currentUser.current?.id === value.id ? Math.max(deadline.current, expiry) : expiry
         currentUser.current = value
-        deadline.current = Date.parse(value.sessionExpiresAt)
         cacheUser(value)
         setUser(value)
         setMessage('')
       } else endSession(currentUser.current ? 'expired' : '')
-    } catch { if (version === generation.current) endSession(currentUser.current ? 'expired' : '') }
-    finally { setLoading(false) }
+    } catch { if (version === generation.current && requestId === latestRefresh.current) endSession(currentUser.current ? 'expired' : '') }
+    finally { if (version === generation.current && requestId === latestRefresh.current) setLoading(false) }
   }, [endSession])
 
   useEffect(() => {
