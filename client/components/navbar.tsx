@@ -31,12 +31,17 @@ export default function Navbar({ userType }: NavbarProps) {
 
   const handleLogout = async () => {
     try {
-      const response = await apiFetch(`${API_BASE_URL}/api/logout`, { method: 'POST' })
-      if (!response.ok && response.status !== 401) throw new Error('Logout failed')
+      const response = await apiFetch(`${API_BASE_URL}/api/logout`, {
+        method: 'POST',
+      })
+      if (!response.ok && response.status !== 401)
+        throw new Error('Logout failed')
       cacheUser(null)
       // A fresh document also clears private component state and avoids racing the route guard.
       window.location.replace('/')
-    } catch { window.alert('Logout failed. Please try again.') }
+    } catch {
+      window.alert('Logout failed. Please try again.')
+    }
   }
 
   const publicLinks = [
@@ -57,6 +62,7 @@ export default function Navbar({ userType }: NavbarProps) {
   const adminLinks = [
     { label: 'Dashboard', path: '/admin' },
     { label: 'Village Data', path: '/admin/village-properties' },
+    { label: 'Village Data', path: '/village-manager/village-data' },
     { label: 'Maintenance', path: '/admin/maintenance' },
     { label: 'Documents & Notices', path: '/admin/documents' },
     { label: 'Purchase Orders', path: '/admin/purchase-orders' },
@@ -79,6 +85,40 @@ export default function Navbar({ userType }: NavbarProps) {
   if (userType === 'admin') links = adminLinks
   if (userType === 'villageManager') links = villageManagerLinks
 
+  const renderVillageDataMenu = (basePath: string) => (
+    <details key={basePath} style={{ position: 'relative' }}>
+      <summary style={{ ...styles.link, cursor: 'pointer' }}>
+        Village Data
+      </summary>
+
+      <div
+        style={{
+          ...styles.dropdownMenu,
+          display: 'block',
+          top: '100%',
+          right: 0,
+        }}
+      >
+        {[
+          { tab: 'units', label: 'Units & Properties' },
+          { tab: 'brochure', label: 'Marketing & Brochure' },
+          { tab: 'faq', label: 'Manage FAQs' },
+        ].map((item) => (
+          <NavLink
+            key={item.tab}
+            to={`${basePath}?tab=${item.tab}`}
+            style={styles.dropdownItem}
+            onClick={(event) => {
+              setMenuOpen(false)
+              event.currentTarget.closest('details')?.removeAttribute('open')
+            }}
+          >
+            {item.label}
+          </NavLink>
+        ))}
+      </div>
+    </details>
+  )
   const renderProfileMenu = () => {
     let basePath = '/resident'
 
@@ -107,7 +147,10 @@ export default function Navbar({ userType }: NavbarProps) {
             <Link to={`${basePath}/profile/edit`} style={styles.dropdownItem}>
               Edit Profile
             </Link>
-            <Link to={`${basePath}/profile/password`} style={styles.dropdownItem}>
+            <Link
+              to={`${basePath}/profile/password`}
+              style={styles.dropdownItem}
+            >
               Change Password
             </Link>
 
@@ -132,7 +175,11 @@ export default function Navbar({ userType }: NavbarProps) {
     <nav style={styles.navbar}>
       <div style={styles.container}>
         <Link to="/" style={styles.logo}>
-          <img src={logoImage} alt="SAMCT Villages logo" style={styles.logoImage} />
+          <img
+            src={logoImage}
+            alt="SAMCT Villages logo"
+            style={styles.logoImage}
+          />
           <span>SAMCT Villages</span>
         </Link>
 
@@ -179,8 +226,8 @@ export default function Navbar({ userType }: NavbarProps) {
 
           {userType !== 'public' && (
             <button
-            className="btn btn-outline-danger border-danger text-danger btn-sm shadow"
-              data-bs-toggle= "popover"
+              className="btn btn-outline-danger border-danger text-danger btn-sm shadow"
+              data-bs-toggle="popover"
               onClick={handleLogout}
               style={styles.logoutButton}
             >
@@ -238,36 +285,36 @@ const styles: Record<string, React.CSSProperties> = {
   },
 
   mobileLinks: {
-  display: 'none',
-  position: 'absolute',
-  top: '100%',
-  right: '1.5rem',
-  backgroundColor: '#ffffff',
-  border: '1px solid #e5e7eb',
-  borderRadius: '12px',
-  padding: '1rem',
-  flexDirection: 'column',
-  alignItems: 'flex-start',
-  gap: '0.9rem',
-  minWidth: '230px',
-  maxWidth: '280px',
-  boxShadow: '0 8px 20px rgba(0,0,0,0.08)',
-  zIndex: 1200,
-},
+    display: 'none',
+    position: 'absolute',
+    top: '100%',
+    right: '1.5rem',
+    backgroundColor: '#ffffff',
+    border: '1px solid #e5e7eb',
+    borderRadius: '12px',
+    padding: '1rem',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: '0.9rem',
+    minWidth: '230px',
+    maxWidth: '280px',
+    boxShadow: '0 8px 20px rgba(0,0,0,0.08)',
+    zIndex: 1200,
+  },
 
   mobileLinksOpen: {
     display: 'flex',
   },
 
-hamburger: {
-  border: '1px solid #d1d5db',
-  backgroundColor: 'white',
-  borderRadius: '8px',
-  padding: '0.35rem 0.7rem',
-  fontSize: '1.5rem',
-  cursor: 'pointer',
-  marginLeft: 'auto',
-},
+  hamburger: {
+    border: '1px solid #d1d5db',
+    backgroundColor: 'white',
+    borderRadius: '8px',
+    padding: '0.35rem 0.7rem',
+    fontSize: '1.5rem',
+    cursor: 'pointer',
+    marginLeft: 'auto',
+  },
 
   link: {
     textDecoration: 'none',

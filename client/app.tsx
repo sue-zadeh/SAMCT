@@ -55,7 +55,7 @@ function App() {
           {/* <Route path="/availability" element={<HomePublic />} /> */}
           <Route path="/contactUs" element={<ContactUs />} />
           <Route path="/marketing" element={<Marketing />} />
-
+          <Route path="/village-manager/village-data" element={<AdminVillageProperties />} />
           {/* Auth */}
           <Route path="/login" element={<Login onLoginSuccess={() => {}} />} />
           <Route path="/register" element={<Register />} />
@@ -76,9 +76,9 @@ function App() {
             path="/resident/profile/password"
             element={
               <ProfilePassword
-                userType="resident"
-                backPath="/resident/profile"
-                title="Change Resident Password"
+              userType="resident"
+              backPath="/resident/profile"
+              title="Change Resident Password"
               />
             }
           />
@@ -95,6 +95,8 @@ function App() {
           <Route path="/admin/maintenance" element={<MaintenanceAdmin />} />
           <Route path="/admin/documents" element={<DocumentsAdmin />} />
           <Route path="/admin/purchase-orders" element={<PurchaseOrders />} />
+          <Route path="/admin/village-properties" element={<AdminVillageProperties />} />
+          
 
           <Route path="/resident/documents" element={<DocumentsResident />} />
 
