@@ -1,72 +1,79 @@
 import { useSession } from '../security/session'
 import { API_BASE_URL } from '../security/api'
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from "../security/api";
-import { FaEye, FaEyeSlash, FaLock } from "react-icons/fa";
-import Navbar from "./navbar";
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import axios from '../security/api'
+import { FaEye, FaEyeSlash, FaLock } from 'react-icons/fa'
+import { PASSWORD_HELP, passwordError } from '../security/password'
+import Navbar from './navbar'
 
-type UserType = "resident" | "admin" | "villageManager";
+type UserType = 'resident' | 'admin' | 'villageManager'
 
 type ProfilePasswordProps = {
-  userType: UserType;
-  backPath: string;
-  title: string;
-};
+  userType: UserType
+  backPath: string
+  title: string
+}
 
 function ProfilePassword({ userType, backPath, title }: ProfilePasswordProps) {
-  const navigate = useNavigate();
-  const { refresh } = useSession();
+  const navigate = useNavigate()
+  const { refresh } = useSession()
 
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
 
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false)
+  const [showNewPassword, setShowNewPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const handleSave = async () => {
     try {
-      setMessage("");
-      setError("");
+      setMessage('')
+      setError('')
 
       if (!currentPassword || !newPassword || !confirmPassword) {
-        setError("Please fill all password fields.");
-        return;
+        setError('Please fill all password fields.')
+        return
       }
 
       if (newPassword !== confirmPassword) {
-        setError("New password and confirm password do not match.");
-        return;
+        setError('New password and confirm password do not match.')
+        return
       }
 
-      const userName = localStorage.getItem("username") || "";
+      const userName = localStorage.getItem('username') || ''
       if (!userName) {
-        setError("Username not found.");
-        return;
+        setError('Username not found.')
+        return
+      }
+      // Check the new password before submitting
+      const validationError = passwordError(newPassword)
+
+      if (validationError) {
+        setError(validationError)
+        return
       }
 
       const response = await axios.put(`${API_BASE_URL}/api/users/password`, {
         userName,
         currentPassword,
         newPassword,
-      });
+      })
 
-      await refresh();
-      navigate("/login");
-      setMessage(response.data.message || "Password updated successfully.");
+      await refresh()
+      navigate('/login')
+      setMessage(response.data.message || 'Password updated successfully.')
 
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
     } catch (error: any) {
-      setError(error?.response?.data?.message || "Failed to update password.");
+      setError(error?.response?.data?.message || 'Failed to update password.')
     }
-  };
+  }
 
   return (
     <>
@@ -76,8 +83,16 @@ function ProfilePassword({ userType, backPath, title }: ProfilePasswordProps) {
         <div className="p-4 border rounded-4 shadow-sm bg-white">
           <h1 className="fw-bold mb-4">{title}</h1>
 
-          {message && <div role="status" className="alert alert-success">{message}</div>}
-          {error && <div role="alert" className="alert alert-danger">{error}</div>}
+          {message && (
+            <div role="status" className="alert alert-success">
+              {message}
+            </div>
+          )}
+          {error && (
+            <div role="alert" className="alert alert-danger">
+              {error}
+            </div>
+          )}
 
           <div className="mb-3">
             <label className="form-label fw-semibold">
@@ -86,9 +101,10 @@ function ProfilePassword({ userType, backPath, title }: ProfilePasswordProps) {
             </label>
             <div className="input-group">
               <input
-                type={showCurrentPassword ? "text" : "password"}
+                type={showCurrentPassword ? 'text' : 'password'}
                 className="form-control"
-                aria-label="Current Password" value={currentPassword}
+                aria-label="Current Password"
+                value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
               />
               <button
@@ -108,11 +124,13 @@ function ProfilePassword({ userType, backPath, title }: ProfilePasswordProps) {
             </label>
             <div className="input-group">
               <input
-                type={showNewPassword ? "text" : "password"}
+                type={showNewPassword ? 'text' : 'password'}
                 className="form-control"
-                aria-label="New Password" value={newPassword}
+                aria-label="New Password"
+                value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
               />
+              <p className="form-text">{PASSWORD_HELP}</p>
               <button
                 type="button"
                 className="btn btn-outline-secondary"
@@ -130,9 +148,10 @@ function ProfilePassword({ userType, backPath, title }: ProfilePasswordProps) {
             </label>
             <div className="input-group">
               <input
-                type={showConfirmPassword ? "text" : "password"}
+                type={showConfirmPassword ? 'text' : 'password'}
                 className="form-control"
-                aria-label="Confirm New Password" value={confirmPassword}
+                aria-label="Confirm New Password"
+                value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
               <button
@@ -159,7 +178,7 @@ function ProfilePassword({ userType, backPath, title }: ProfilePasswordProps) {
         </div>
       </main>
     </>
-  );
+  )
 }
 
-export default ProfilePassword;
+export default ProfilePassword
