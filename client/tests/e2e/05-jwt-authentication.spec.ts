@@ -1,7 +1,11 @@
 import { test, expect, type APIRequestContext } from '@playwright/test'
 import { createHmac } from 'node:crypto'
 import { database } from '../../../scripts/e2e-database.mjs'
-import { loginApi, loginPage, users, write } from './helpers'
+import { loginApi, loginPage, users, waitForRateLimitWindow, write } from './helpers'
+
+// The preceding workflow/upload tests share this IP. Exercise JWT boundaries in
+// a fresh real limiter window, without disabling throttling or retrying assertions.
+test.beforeAll(async () => { await waitForRateLimitWindow() })
 
 const baseURL = 'http://127.0.0.1:5173'
 async function token(request: APIRequestContext) {
