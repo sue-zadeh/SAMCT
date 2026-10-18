@@ -25,8 +25,6 @@ type VillageProperty = {
 function AdminVillageProperties() {
 
   const [properties, setProperties] = useState<VillageProperty[]>([])
-  const [mainSearch, setMainSearch] = useState('')
-  const [villageSearch, setVillageSearch] = useState('')
   const [error, setError] = useState('')
 
   const loadProperties = async () => {
@@ -62,26 +60,6 @@ function AdminVillageProperties() {
 
     return () => clearTimeout(timer)
   }, [error])
-
-  const filteredProperties = properties.filter((item) => {
-    const allText = `
-      ${item.village}
-      ${item.unitNumber}
-      ${item.address}
-      ${item.residentName}
-      ${item.residentEmail}
-      ${item.residentOccupation}
-      ${item.villageManagerName}
-      ${item.notes}
-      ${item.marketingTitle}
-      ${item.marketingDescription}
-    `.toLowerCase()
-
-    return (
-      allText.includes(mainSearch.toLowerCase()) &&
-      item.village.toLowerCase().includes(villageSearch.toLowerCase())
-    )
-  })
 
   return (
     <>
@@ -159,128 +137,8 @@ function AdminVillageProperties() {
                 managers.
               </p>
 
-              <div className="d-flex justify-content-center gap-3 flex-wrap">
-                <input
-                  className="form-control"
-                  style={{ maxWidth: '360px' }}
-                  placeholder="Search all records..."
-                  value={mainSearch}
-                  onChange={(e) => setMainSearch(e.target.value)}
-                />
-
-                <input
-                  className="form-control"
-                  style={{ maxWidth: '260px' }}
-                  placeholder="Filter by village..."
-                  value={villageSearch}
-                  onChange={(e) => setVillageSearch(e.target.value)}
-                />
-              </div>
-            </div>
-
-            {filteredProperties.length === 0 ? (
-              <div className="alert alert-warning mb-0">
-                No matching village records found.
-              </div>
-            ) : (
-              <div className="table-responsive">
-                <table className="table align-middle">
-                  <thead>
-                    <tr>
-                      <th>Village</th>
-                      <th>Unit</th>
-                      <th>Resident</th>
-                      <th>Email</th>
-                      <th>Occupation</th>
-                      <th>Manager</th>
-                      <th>Marketing</th>
-                      <th>Documents</th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {filteredProperties.map((item) => (
-                      <tr key={item.id}>
-                        <td>
-                          <strong>{item.village}</strong>
-                        </td>
-
-                        <td>
-                          <strong>{item.unitNumber}</strong>
-                          <div className="small text-secondary">
-                            {item.address}
-                          </div>
-                        </td>
-
-                        <td>
-                          {item.residentName || '-'}
-                          <div className="small text-secondary">
-                            {item.residentCount} resident(s)
-                          </div>
-                        </td>
-
-                        <td>{item.residentEmail || '-'}</td>
-                        <td>{item.residentOccupation || '-'}</td>
-                        <td>{item.villageManagerName || '-'}</td>
-
-                        <td>
-                          <span
-                            className={`badge ${
-                              item.isVisibleOnMarketing
-                                ? 'bg-success'
-                                : 'bg-secondary'
-                            }`}
-                          >
-                            {item.isVisibleOnMarketing ? 'Visible' : 'Hidden'}
-                          </span>
-
-                          {item.marketingTitle && (
-                            <div className="small text-secondary mt-1">
-                              {item.marketingTitle}
-                            </div>
-                          )}
-                        </td>
-
-                        <td>
-                          <div className="d-flex flex-column gap-1">
-                            {item.documentUrl1 ? (
-                              <a
-                                href={`${API_BASE_URL}${item.documentUrl1}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="btn btn-outline-primary btn-sm"
-                              >
-                                Open Document 1
-                              </a>
-                            ) : (
-                              <span className="small text-secondary">
-                                No document 1
-                              </span>
-                            )}
-
-                            {item.documentUrl2 ? (
-                              <a
-                                href={`${API_BASE_URL}${item.documentUrl2}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="btn btn-outline-primary btn-sm"
-                              >
-                                Open Document 2
-                              </a>
-                            ) : (
-                              <span className="small text-secondary">
-                                No document 2
-                              </span>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
+        
+           
         </section>
         <Suspense fallback={<p>Loading brochure editor…</p>}><MarketingContentEditor village="Ngatea" /></Suspense>
       </main>

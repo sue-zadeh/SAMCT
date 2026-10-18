@@ -110,7 +110,6 @@ export default function Navbar({ userType }: NavbarProps) {
             <Link to={`${basePath}/profile/password`} style={styles.dropdownItem}>
               Change Password
             </Link>
-            <Link to="/account/security" style={styles.dropdownItem}>Account Security</Link>
 
             {userType === 'admin' && (
               <Link to="/admin/people" style={styles.dropdownItem}>
