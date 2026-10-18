@@ -15,8 +15,6 @@ type DocumentNotice = {
 }
 
 function DocumentsAdmin() {
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5072";
   const [documents, setDocuments] = useState<DocumentNotice[]>([])
   const [error, setError] = useState('')
 
@@ -91,13 +89,17 @@ const API_BASE_URL =
                   <tbody>
                     {documents.map((doc) => (
                       <tr key={doc.id}>
-                        <td>{new Date(doc.createdAt).toLocaleDateString('en-NZ')}</td>
+                        <td>
+                          {new Date(doc.createdAt).toLocaleDateString('en-NZ')}
+                        </td>
 
                         <td>{doc.village}</td>
 
                         <td>
                           <strong>{doc.title}</strong>
-                          <div className="small text-secondary">{doc.description}</div>
+                          <div className="small text-secondary">
+                            {doc.description}
+                          </div>
                         </td>
 
                         <td>{doc.type}</td>
@@ -107,10 +109,14 @@ const API_BASE_URL =
                         <td>
                           <span
                             className={`badge ${
-                              doc.isVisibleToResidents ? 'bg-success' : 'bg-secondary'
+                              doc.isVisibleToResidents
+                                ? 'bg-success'
+                                : 'bg-secondary'
                             }`}
                           >
-                            {doc.isVisibleToResidents ? 'Visible to residents' : 'Internal only'}
+                            {doc.isVisibleToResidents
+                              ? 'Visible to residents'
+                              : 'Internal only'}
                           </span>
                         </td>
 
