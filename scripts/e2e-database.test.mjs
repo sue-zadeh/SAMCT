@@ -9,8 +9,11 @@ test('destructive fixtures permit only an unambiguous local test database', () =
     process.env.SAMCT_E2E_DATABASE_URL = allowed
     assert.equal(testDatabaseUrl(), allowed)
     for (const blocked of [
-      allowed + '?host=remote.example', allowed + '?database=production', allowed + '#fragment',
-      allowed.replace('samct_e2e', 'production'), allowed.replace('127.0.0.1', 'remote.example'),
+      allowed + '?host=remote.example',
+      allowed + '?database=production',
+      allowed + '#fragment',
+      allowed.replace('samct_e2e', 'production'),
+      allowed.replace('127.0.0.1', 'remote.example'),
     ]) {
       process.env.SAMCT_E2E_DATABASE_URL = blocked
       assert.throws(testDatabaseUrl, /only permits a loopback/)

@@ -10,7 +10,9 @@ import 'aos/dist/aos.css'
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <BrowserRouter>
-      <SessionProvider><App /></SessionProvider>
+      <SessionProvider>
+        <App />
+      </SessionProvider>
     </BrowserRouter>
   </React.StrictMode>,
 )

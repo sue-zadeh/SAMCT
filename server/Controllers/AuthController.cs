@@ -70,24 +70,39 @@ public class AuthController(AppDbContext database, IEmailService emailService, I
         if (!AccessRules.Roles.Contains(role) || village is null)
             return BadRequest(new { message = "Select a valid role and village." });
         var staffCreation = User.IsAdmin() || User.IsInRole("VillageManager");
+        
         if (!User.IsAdmin() && role != "Resident") return Forbid();
+        
         if (User.IsInRole("VillageManager") && !User.CanManageVillage(village)) return Forbid();
+        
         if (User.Identity?.IsAuthenticated == true && !staffCreation) return Forbid();
+        
         var username = Normalize(request.UserName);
+        
         var email = Normalize(request.Email);
-        if (await database.Users.AnyAsync(item => item.UserName.Trim().ToLower() == username || item.Email.Trim().ToLower() == email))
+        
+        if (await database.Users.AnyAsync(item => 
+          item.UserName.Trim().ToLower() == username || item.Email.Trim().ToLower() == email))
             return Conflict(new { message = "Registration could not be completed with these details." });
+        
         var user = new User {
-            UserName = username, Email = email, FirstName = request.FirstName.Trim(), LastName = request.LastName.Trim(),
-            FullName = $"{request.FirstName.Trim()} {request.LastName.Trim()}", Role = role, Village = village,
+            UserName = username, Email = email, FirstName = 
+             request.FirstName.Trim(), LastName = 
+             request.LastName.Trim(),
+            FullName = $"{request.FirstName.Trim()} {request.LastName.Trim()}",
+             Role = role, Village = village,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password, 12), IsActive = staffCreation,
-            ProfileImageUrl = await uploads.Save(request.ProfileImage, "profiles", imagesOnly: true)
+            ProfileImageUrl = await uploads.Save(request.ProfileImage,
+              "profiles", imagesOnly: true)
         };
+        
         database.Users.Add(user);
         try { await database.SaveChangesAsync(); }
+        
         catch (DbUpdateException error) when (error.InnerException is PostgresException { SqlState: "23505" }) {
             return Conflict(new { message = "Registration could not be completed with these details." });
         }
+        
         logger.LogInformation("Account {UserId} registered; approved: {Approved}; created by {ActorId}", user.Id, user.IsActive, User.UserId());
         return Ok(new { message = staffCreation ? "User registered successfully." : "Registration received. Your village manager or administrator must approve your account before you can log in." });
     }
@@ -96,15 +111,20 @@ public class AuthController(AppDbContext database, IEmailService emailService, I
     public async Task<IActionResult> Login([FromBody] LoginRequestDto request)
     {
         if (Encoding.UTF8.GetByteCount(request.Password) > 72) return Unauthorized(new { message = "Invalid username or password." });
+       
         var username = Normalize(request.UserName);
         await using var transaction = await database.Database.BeginTransactionAsync();
         // Lock the account row so simultaneous attempts cannot bypass the lockout counter.
+       
         var user = await database.Users.FromSqlInterpolated($"SELECT * FROM \"Users\" WHERE lower(btrim(\"UserName\")) = {username} FOR UPDATE").SingleOrDefaultAsync();
         var correctPassword = Verify(request.Password, user?.PasswordHash ?? DummyHash);
         if (user is null || !user.IsActive || user.LockoutEnd > DateTime.UtcNow || !correctPassword || !AccessRules.Roles.Contains(user.Role)) {
+            
             if (user is not null && user.IsActive && user.LockoutEnd <= DateTime.UtcNow) { user.FailedLoginAttempts = 0; user.LockoutEnd = null; }
+            
             if (user is not null && user.IsActive && user.LockoutEnd is null) {
                 user.FailedLoginAttempts++;
+                
                 if (user.FailedLoginAttempts >= 5) user.LockoutEnd = DateTime.UtcNow.AddMinutes(15);
                 await database.SaveChangesAsync();
             }
@@ -112,11 +132,14 @@ public class AuthController(AppDbContext database, IEmailService emailService, I
             logger.LogWarning("Login rejected");
             return Unauthorized(new { message = "Invalid username or password." });
         }
+        
         if (user.LockoutEnd <= DateTime.UtcNow) { user.FailedLoginAttempts = 0; user.LockoutEnd = null; }
         var session = await sessions.CreateSession(user, HttpContext);
         await transaction.CommitAsync();
+        
         jwt.SignIn(user, session, HttpContext);
         logger.LogInformation("Account {UserId} logged in", user.Id);
+        
         var response = MapUser(user);
         response.SessionExpiresAt = session.ExpiresAt;
         return Ok(response);

@@ -84,7 +84,7 @@ namespace server.Controllers
             return Ok(new { message = "Maintenance request submitted successfully." });
         }
 
-        [Authorize(Roles = "VillageManager")]
+        [Authorize(Roles = AccessRules.StaffRoles)]
         [HttpGet("village/{village}")]
         public async Task<IActionResult> GetVillageRequests(string village)
         {
