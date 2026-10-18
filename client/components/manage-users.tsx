@@ -1,3 +1,4 @@
+import { adminRoles } from '../security/session'
 import { API_BASE_URL } from '../security/api'
 import { useEffect, useState } from "react";
 import axios from "../security/api";
@@ -174,12 +175,9 @@ function ManageUsers() {
                           handleFieldChange(user.id, "role", e.target.value)
                         }
                       >
-                        <option value="Resident">Resident</option>
-                        <option value="Admin">Admin</option>
-                        <option value="VillageManager">Village Manager</option>
-                        <option value="CompanySecretary">Company Secretary</option>
-                        <option value="FinancialAdvisor">Financial Advisor</option>
-                        <option value="Chairman">Chairman</option>
+                        {['Resident', 'VillageManager', ...adminRoles].map(role => (
+                          <option key={role} value={role}>{role.replace(/([a-z])([A-Z])/g, '$1 $2')}</option>
+                        ))}
                       </select>
                     </td>
 

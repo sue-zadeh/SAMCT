@@ -1,7 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Antiforgery;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -19,7 +18,7 @@ namespace server.Controllers;
 [Route("api")]
 [Authorize]
 public class AuthController(AppDbContext database, IEmailService emailService, IConfiguration configuration,
-    UploadStorage uploads, MfaService mfa, ILogger<AuthController> logger) : ControllerBase
+    UploadStorage uploads, SessionService sessions, JwtAuthentication jwt, ILogger<AuthController> logger) : ControllerBase
 {
     private static readonly string DummyHash = BCrypt.Net.BCrypt.HashPassword(Convert.ToHexString(RandomNumberGenerator.GetBytes(24)), 12);
     private static string Normalize(string value) => value.Trim().ToLowerInvariant();
@@ -40,7 +39,28 @@ public class AuthController(AppDbContext database, IEmailService emailService, I
         Ok(new { token = antiforgery.GetAndStoreTokens(HttpContext).RequestToken });
 
     [HttpGet("session")]
-    public async Task<IActionResult> Session() => Ok(MapUser(await database.Users.SingleAsync(item => item.Id == User.UserId())));
+    public async Task<IActionResult> Session() {
+        var response = MapUser(await database.Users.SingleAsync(item => item.Id == User.UserId()));
+        response.SessionExpiresAt = (DateTime)HttpContext.Items["SessionExpiresAt"]!;
+        return Ok(response);
+    }
+
+    // Only an explicit, CSRF-protected activity request extends an unexpired session.
+    // Background reads, polling and page visibility checks do not extend it.
+    [HttpPost("session/activity")]
+    public async Task<IActionResult> Activity() {
+        var now = DateTime.UtcNow;
+        var expiry = now.Add(SessionService.IdleTimeout);
+        var sessionId = User.FindFirst("session")!.Value;
+        var updated = await database.AuthSessions.Where(item => item.Id == sessionId && item.ExpiresAt > now)
+            .ExecuteUpdateAsync(update => update.SetProperty(item => item.ExpiresAt, expiry));
+        if (updated != 1) {
+            jwt.SignOut(HttpContext);
+            Response.Headers["X-Session-Expired"] = "inactivity";
+            return Unauthorized(new { code = "inactivity", message = "You were logged out after 20 minutes of inactivity. Please sign in again." });
+        }
+        return Ok(new { sessionExpiresAt = expiry });
+    }
 
     [AllowAnonymous, HttpPost("register"), EnableRateLimiting("auth")]
     public async Task<IActionResult> Register([FromForm] RegisterRequestDto request)
@@ -93,24 +113,20 @@ public class AuthController(AppDbContext database, IEmailService emailService, I
             return Unauthorized(new { message = "Invalid username or password." });
         }
         if (user.LockoutEnd <= DateTime.UtcNow) { user.FailedLoginAttempts = 0; user.LockoutEnd = null; }
-        if (MfaService.NeedsChallenge(user)) {
-            await mfa.Challenge(user, HttpContext);
-            await database.SaveChangesAsync();
-            await transaction.CommitAsync();
-            return Accepted(new { twoFactorRequired = true, setupRequired = user.MfaSecret is null });
-        }
-        var session = await mfa.CreateSession(user, HttpContext, false);
+        var session = await sessions.CreateSession(user, HttpContext);
         await transaction.CommitAsync();
-        await mfa.SignIn(user, session, HttpContext);
+        jwt.SignIn(user, session, HttpContext);
         logger.LogInformation("Account {UserId} logged in", user.Id);
-        return Ok(MapUser(user));
+        var response = MapUser(user);
+        response.SessionExpiresAt = session.ExpiresAt;
+        return Ok(response);
     }
 
     [HttpPost("logout")]
     public async Task<IActionResult> Logout() {
         var sessionId = User.FindFirst("session")?.Value;
         await database.AuthSessions.Where(item => item.Id == sessionId).ExecuteDeleteAsync();
-        await HttpContext.SignOutAsync();
+        jwt.SignOut(HttpContext);
         return Ok(new { message = "Logged out." });
     }
 
@@ -135,7 +151,7 @@ public class AuthController(AppDbContext database, IEmailService emailService, I
     public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequestDto request) {
         if (!User.IsSelf(request.CurrentUsername)) return Forbid();
         await using var transaction = await database.Database.BeginTransactionAsync();
-        var user = (await mfa.LockUser(User.UserId()))!;
+        var user = (await sessions.LockUser(User.UserId()))!;
         var usernameChanged = Normalize(request.UserName) != Normalize(user.UserName);
         if (usernameChanged && User.IsInRole("Resident")) return Forbid();
         if (usernameChanged && !UsernameRules.IsValidNewName(Normalize(request.UserName)))
@@ -156,7 +172,7 @@ public class AuthController(AppDbContext database, IEmailService emailService, I
         }
         await database.SaveChangesAsync();
         await transaction.CommitAsync();
-        if (emailChanged) await HttpContext.SignOutAsync();
+        if (emailChanged) jwt.SignOut(HttpContext);
         return Ok(MapUser(user));
     }
 
@@ -174,7 +190,7 @@ public class AuthController(AppDbContext database, IEmailService emailService, I
         await database.AuthSessions.Where(item => item.UserId == user.Id).ExecuteDeleteAsync();
         await database.MfaChallenges.Where(item => item.UserId == user.Id).ExecuteDeleteAsync();
         await transaction.CommitAsync();
-        await HttpContext.SignOutAsync();
+        jwt.SignOut(HttpContext);
         return Ok(new { message = "Password updated. Please log in again." });
     }
 
@@ -273,7 +289,7 @@ public class AuthController(AppDbContext database, IEmailService emailService, I
         await database.AuthSessions.Where(item => item.UserId == userId).ExecuteDeleteAsync();
         await database.MfaChallenges.Where(item => item.UserId == userId).ExecuteDeleteAsync();
         await transaction.CommitAsync();
-        await HttpContext.SignOutAsync();
+        jwt.SignOut(HttpContext);
         return Ok(new { message = "Password reset successfully. Please log in again." });
     }
 

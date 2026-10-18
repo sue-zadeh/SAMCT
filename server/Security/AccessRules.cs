@@ -6,9 +6,9 @@ namespace server.Security;
 public static class AccessRules
 {
     // These existing job titles share the Administration portal.
-    public const string AdminRoles = "Admin,CompanySecretary,FinancialAdvisor,Chairman";
+    public const string AdminRoles = "Admin,CompanySecretary,FinancialAdministrator,FinancialAdvisor,Chairman,Director";
     public const string StaffRoles = AdminRoles + ",VillageManager";
-    public static readonly string[] Roles = ["Resident", "VillageManager", "Admin", "CompanySecretary", "FinancialAdvisor", "Chairman"];
+    public static readonly string[] Roles = ["Resident", "VillageManager", .. AdminRoles.Split(',')];
     public static readonly string[] Villages = ["Ngatea", "Whitianga"];
     public static bool IsAdmin(this ClaimsPrincipal principal) => AdminRoles.Split(',').Any(principal.IsInRole);
     public static int UserId(this ClaimsPrincipal principal) => int.TryParse(principal.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : 0;
@@ -19,5 +19,5 @@ public static class AccessRules
     public static ClaimsPrincipal Principal(User user, string sessionId) => new(new ClaimsIdentity([
         new(ClaimTypes.NameIdentifier, user.Id.ToString()), new(ClaimTypes.Name, user.UserName),
         new(ClaimTypes.Role, user.Role), new("village", user.Village), new("session", sessionId)
-    ], "Cookies"));
+    ], "Bearer"));
 }

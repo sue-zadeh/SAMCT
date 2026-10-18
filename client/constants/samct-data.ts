@@ -11,6 +11,7 @@ export const SAMCT_ADMIN_ROLES = [
   'Admin',
   'CompanySecretary',
   'FinancialAdministrator',
+  'FinancialAdvisor',
   'Chairman',
   'Director',
 ]

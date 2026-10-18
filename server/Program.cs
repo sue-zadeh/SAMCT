@@ -1,6 +1,6 @@
 using System.Net;
 using System.Threading.RateLimiting;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http.Features;
@@ -37,7 +37,7 @@ builder.Services.AddControllersWithViews(options => options.Filters.Add(new Auto
 builder.Services.AddProblemDetails();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<SessionValidation>();
-builder.Services.AddScoped<MfaService>();
+builder.Services.AddScoped<SessionService>();
 builder.Services.AddScoped<UploadStorage>();
 builder.Services.AddSingleton<MalwareScanner>();
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(
@@ -49,14 +49,12 @@ if (!localEnvironment && string.IsNullOrWhiteSpace(keyPath))
     throw new InvalidOperationException("Set DataProtection__KeyPath to a persistent, access-restricted directory.");
 var protection = builder.Services.AddDataProtection().SetApplicationName("SAMCT");
 if (!string.IsNullOrWhiteSpace(keyPath)) protection.PersistKeysToFileSystem(new DirectoryInfo(keyPath));
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options => {
-    options.Cookie.Name = localEnvironment ? "Samct.Auth" : "__Host-Samct.Auth";
-    options.Cookie.HttpOnly = true;
-    options.Cookie.SecurePolicy = localEnvironment ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;
-    options.Cookie.SameSite = SameSiteMode.Lax;
-    options.Cookie.Path = "/";
-    options.ExpireTimeSpan = TimeSpan.FromHours(8);
-    options.SlidingExpiration = false;
+var jwt = new JwtAuthentication(builder.Configuration, builder.Environment);
+builder.Services.AddSingleton(jwt);
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options => {
+    options.MapInboundClaims = false;
+    options.IncludeErrorDetails = false;
+    options.TokenValidationParameters = jwt.ValidationParameters;
     options.EventsType = typeof(SessionValidation);
 });
 builder.Services.AddAuthorization(options => options.FallbackPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
@@ -72,7 +70,7 @@ var origins = builder.Configuration.GetSection("Security:AllowedOrigins").Get<st
 if (localEnvironment && origins.Length == 0) origins = ["http://localhost:5173", "http://127.0.0.1:5173"];
 builder.Services.AddCors(options => options.AddDefaultPolicy(policy => {
     if (origins.Length > 0) policy.WithOrigins(origins).WithHeaders("Content-Type", "X-CSRF-TOKEN")
-        .WithMethods("GET", "POST", "PUT", "DELETE").AllowCredentials();
+        .WithMethods("GET", "POST", "PUT", "DELETE").WithExposedHeaders("X-Session-Expired").AllowCredentials();
 }));
 builder.Services.Configure<ForwardedHeadersOptions>(options => {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;

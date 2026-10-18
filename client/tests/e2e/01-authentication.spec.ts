@@ -10,7 +10,7 @@ test('public cannot open any protected page, even with forged browser role data'
   }
   expect((await request.get('/api/users')).status()).toBe(401)
 })
-for (const [key, destination] of [['resident','resident'],['manager','village-manager'],['admin','admin']]) {
+for (const [key, destination] of [['resident','resident'],['manager','village-manager'],['admin','admin'],['financialAdministrator','admin'],['director','admin']]) {
   test(`${key} can log in, reload their portal and log out`, async ({ page, context }) => {
     await loginPage(page, users()[key])
     await expect(page).toHaveURL(new RegExp(`/${destination}$`))

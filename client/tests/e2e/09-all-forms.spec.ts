@@ -1,6 +1,6 @@
 import { test, expect, type Page, type Locator } from '@playwright/test'
 import { readFile, readdir } from 'node:fs/promises'
-import { csrf, loginApi, loginPage, read, state, totp, users, waitForRateLimitWindow, write } from './helpers'
+import { csrf, loginApi, loginPage, read, state, users, waitForRateLimitWindow, write } from './helpers'
 
 test.setTimeout(240000)
 // This file follows the bulk photo workflows on the same IP. Start its browser
@@ -220,33 +220,12 @@ test('manager response form saves the displayed status and the resident sees the
   } finally { await context.close(); await resident.close() }
 })
 
-test('account security form enrolls resident MFA, regenerates recovery codes and disables with both factors', async ({ page }) => {
-  const account = users().uiMfa
-  await loginApi(page.request, account)
+test('account security links directly to password change with no authenticator form', async ({ page }) => {
+  await loginApi(page.request, users().uiSecurity)
   await page.goto('/account/security')
-  await page.getByLabel('Current password', { exact: true }).fill(account.password)
-  await submit(page, '/api/mfa/enroll', page.getByRole('button', { name: 'Set up authenticator' }), 202)
-  await expect(page.getByLabel('Setup key')).toBeVisible()
-  const secret = await page.getByLabel('Setup key').inputValue()
-  const verified = await submit(page, '/api/mfa/complete', page.getByRole('button', { name: 'Verify and sign in' }), 200,
-    () => page.getByLabel('Authenticator code', { exact: true }).fill(totp(secret)))
-  const codes = (await verified.json()).recoveryCodes
-  await page.getByRole('button', { name: 'I have saved my recovery codes' }).click()
-  await page.goto('/account/security')
-  await page.getByRole('button', { name: 'Use a recovery code' }).click()
-  await page.getByLabel('Current password', { exact: true }).fill('incorrect-password')
-  await page.getByLabel('Recovery code', { exact: true }).fill(codes[0])
-  await submit(page, '/api/mfa/recovery-codes', page.getByRole('button', { name: 'Generate new recovery codes' }), 400)
-  await expect(page.getByRole('alert')).toBeVisible()
-  await page.getByLabel('Current password', { exact: true }).fill(account.password)
-  const regenerated = await submit(page, '/api/mfa/recovery-codes', page.getByRole('button', { name: 'Generate new recovery codes' }))
-  const fresh = (await regenerated.json()).recoveryCodes
-  await expect(page.getByTestId('recovery-codes')).toContainText(fresh[0])
-  await page.reload()
-  await page.getByRole('button', { name: 'Use a recovery code' }).click()
-  await page.getByLabel('Current password', { exact: true }).fill(account.password)
-  await page.getByLabel('Recovery code', { exact: true }).fill(fresh[0])
-  await submit(page, '/api/mfa/disable', page.getByRole('button', { name: 'Disable two-factor authentication' }))
-  await expect(page.getByRole('heading', { name: 'Security settings updated' })).toBeVisible()
-  expect((await (await read(page.request, '/api/mfa/status')).json()).enabled).toBe(false)
+  await expect(page.getByRole('heading', { name: 'Account security' })).toBeVisible()
+  await expect(page.getByText(/authenticator|recovery code|QR code/i)).toHaveCount(0)
+  await page.getByRole('link', { name: 'Change password', exact: true }).click()
+  await expect(page).toHaveURL(/\/resident\/profile\/password$/)
+  await expect(page.getByLabel('Current Password', { exact: true })).toBeVisible()
 })

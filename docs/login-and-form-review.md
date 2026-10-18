@@ -1,5 +1,8 @@
 # Login and form review — 16 October 2026
 
+> Historical review: the current password/JWT login replaces the MFA flows described here. QR/authenticator steps are removed, and sessions now expire after 20 minutes of inactivity. Use [README security behaviour](../README.md#security-behaviour) and the checks for the current revision; the test results below describe the earlier implementation.
+
+
 Changes are delivered in PR #5. They are not a production deployment. Use the latest PR check result; an older successful run does not validate a newer commit.
 
 ## Fixes

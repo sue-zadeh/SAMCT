@@ -1,5 +1,8 @@
 # SAMCT security and delivery review
 
+> Historical review: the current password/JWT login replaces the MFA flows described here. QR/authenticator steps are removed, and sessions now expire after 20 minutes of inactivity. Use [README security behaviour](../README.md#security-behaviour) and the checks for the current revision; the test results below describe the earlier implementation.
+
+
 Historical review: 21 September 2026. Baseline: `0529271` on `main`.
 
 **Superseded for current delivery status by [the 4 October release report](release-readiness.md).** PR #1 was subsequently merged; the results below apply to that earlier tested revision, not every later commit. The follow-up adds MFA, malware scanning and public-page HTML rendering.
