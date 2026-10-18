@@ -63,7 +63,7 @@ public class MarketingContentController(AppDbContext database, UploadStorage upl
 
     // A checkbox updates publication only, not the entire brochure entry.
     [HttpPut("{id:int}/publication")]
-    public async Task<IActionResult> SetPublication(int id, [FromBody] publicationDtorequest)
+    public async Task<IActionResult> SetPublication(int id, [FromBody] PublicationDto request)
     {
         var content = await database.MarketingContents.FindAsync(id);
         if (content is null) return NotFound();

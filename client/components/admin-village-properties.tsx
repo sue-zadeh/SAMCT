@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { adminRoles, useSession } from '../security/session'
 import { API_BASE_URL, apiFetch } from '../security/api'
 import Navbar from './navbar'
 import MarketingContentEditor from './marketing-content-editor'
@@ -41,8 +43,16 @@ type UnitRow = {
 }
 
 export default function AdminVillageProperties() {
-  const [activeTab, setActiveTab] = useState<Tab>('units')
-  const [selectedVillage, setSelectedVillage] = useState<Village>('All')
+  const { user } = useSession()
+  const manager = user?.role === 'VillageManager'
+  const administrator = Boolean(user && adminRoles.includes(user.role))
+  const [searchParams, setSearchParams] = useSearchParams()
+  const tabFromUrl = searchParams.get('tab')
+  const activeTab: Tab =
+    tabFromUrl === 'brochure' || tabFromUrl === 'faq' ? tabFromUrl : 'units'
+  const [selectedVillage, setSelectedVillage] = useState<Village>(
+    manager && user?.village ? (user.village as Village) : 'All',
+  )
   const [search, setSearch] = useState('')
   const [properties, setProperties] = useState<VillageProperty[]>([])
   const [brochure, setBrochure] = useState<BrochureEntry[]>([])
@@ -51,16 +61,27 @@ export default function AdminVillageProperties() {
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
 
+  useEffect(() => {
+    if (manager && user?.village) setSelectedVillage(user.village as Village)
+  }, [manager, user?.village])
+
   // Read both database sources: operational property records and brochure adverts.
   async function loadData() {
     setLoading(true)
     setError('')
     try {
-      const urls = [
-        `${API_BASE_URL}/api/village-properties/admin/all`,
-        `${API_BASE_URL}/api/marketing-content/manage/Ngatea`,
-        `${API_BASE_URL}/api/marketing-content/manage/Whitianga`,
-      ]
+      if (!user || (!administrator && !manager))
+        throw new Error('Not authorised.')
+      const urls = manager
+        ? [
+            `${API_BASE_URL}/api/village-properties/${encodeURIComponent(user.village)}`,
+            `${API_BASE_URL}/api/marketing-content/manage/${encodeURIComponent(user.village)}`,
+          ]
+        : [
+            `${API_BASE_URL}/api/village-properties/admin/all`,
+            `${API_BASE_URL}/api/marketing-content/manage/Ngatea`,
+            `${API_BASE_URL}/api/marketing-content/manage/Whitianga`,
+          ]
       const responses = await Promise.all(urls.map((url) => apiFetch(url)))
       for (const response of responses) {
         if (!response.ok)
@@ -68,17 +89,13 @@ export default function AdminVillageProperties() {
             `Could not load village data (HTTP ${response.status}).`,
           )
       }
-      const [propertyData, ngateaData, whitiangaData]: unknown[] =
-        await Promise.all(responses.map((response) => response.json()))
-      if (
-        !Array.isArray(propertyData) ||
-        !Array.isArray(ngateaData) ||
-        !Array.isArray(whitiangaData)
-      ) {
+      const data: unknown[] = await Promise.all(
+        responses.map((response) => response.json()),
+      )
+      if (!data.every(Array.isArray))
         throw new Error('The API returned an unexpected format.')
-      }
-      setProperties(propertyData as VillageProperty[])
-      setBrochure([...ngateaData, ...whitiangaData] as BrochureEntry[])
+      setProperties(data[0] as VillageProperty[])
+      setBrochure(data.slice(1).flat() as BrochureEntry[])
     } catch (error) {
       setError(
         error instanceof Error ? error.message : 'Could not load village data.',
@@ -89,8 +106,8 @@ export default function AdminVillageProperties() {
   }
 
   useEffect(() => {
-    void loadData()
-  }, [])
+    if (user) void loadData()
+  }, [user?.id, user?.village, manager])
 
   const allUnits = useMemo<UnitRow[]>(() => {
     const operational = properties.map((property) => ({
@@ -214,7 +231,7 @@ export default function AdminVillageProperties() {
 
   return (
     <>
-      <Navbar userType="admin" />
+      <Navbar userType={manager ? 'villageManager' : 'admin'} />
       <main className="container py-5">
         <header className="samct-card border rounded-4 p-4 mb-4">
           <h1 className="h2 fw-bold">Village Data</h1>
@@ -242,7 +259,7 @@ export default function AdminVillageProperties() {
               className={`btn ${activeTab === tab ? 'btn-primary' : 'btn-outline-primary'}`}
               aria-pressed={activeTab === tab}
               onClick={() => {
-                setActiveTab(tab)
+                setSearchParams({ tab })
                 setError('')
                 setMessage('')
               }}
