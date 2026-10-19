@@ -1,0 +1,23 @@
+
+# Build the React frontend
+FROM node:24-alpine AS build
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+RUN npm ci
+
+COPY . .
+
+# Use same-origin API requests in production
+ENV VITE_API_BASE_URL=""
+
+RUN npm run build
+
+# Serve the frontend through Caddy
+FROM caddy:2-alpine
+
+COPY Caddyfile.railway /etc/caddy/Caddyfile
+COPY --from=build /app/dist /srv
+
+EXPOSE 8080

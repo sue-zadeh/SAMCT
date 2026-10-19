@@ -1,0 +1,29 @@
+
+:8080 {
+    encode gzip
+
+    # Forward API and protected uploads to ASP.NET Core
+    @backend path /api/* /uploads/*
+    handle @backend {
+        reverse_proxy http://stellar-tenderness.railway.internal:8080 {
+            header_up Host {host}
+            header_up X-Forwarded-Proto https
+        }
+    }
+
+    # Serve the private React portal
+    @portal path /login /register /forgot-password /reset-password/* /account/* /admin/* /admin /resident/* /resident /village-manager/* /village-manager
+
+    handle @portal {
+        root * /srv
+        rewrite * /portal.html
+        file_server
+    }
+
+    # Serve public React pages and assets
+    handle {
+        root * /srv
+        try_files {path} {path}/index.html /index.html
+        file_server
+    }
+}
