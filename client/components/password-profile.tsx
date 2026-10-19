@@ -94,27 +94,38 @@ function ProfilePassword({ userType, backPath, title }: ProfilePasswordProps) {
             </div>
           )}
 
+          {/* New Password */}
           <div className="mb-3">
             <label className="form-label fw-semibold">
               <FaLock className="me-2" />
-              Current Password
+              New Password
             </label>
+
             <div className="input-group">
               <input
-                type={showCurrentPassword ? 'text' : 'password'}
+                type={showNewPassword ? 'text' : 'password'}
                 className="form-control"
-                aria-label="Current Password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
+                aria-label="New Password"
+                aria-describedby="new-password-help"
+                autoComplete="new-password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
               />
+
               <button
                 type="button"
                 className="btn btn-outline-secondary"
-                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                onClick={() => setShowNewPassword(!showNewPassword)}
+                aria-label={showNewPassword ? 'Hide password' : 'Show password'}
               >
-                {showCurrentPassword ? <FaEyeSlash /> : <FaEye />}
+                {showNewPassword ? <FaEyeSlash /> : <FaEye />}
               </button>
             </div>
+
+            {/* This is OUTSIDE the input-group */}
+            <p id="new-password-help" className="form-text mt-1 mb-0">
+              {PASSWORD_HELP}
+            </p>
           </div>
 
           <div className="mb-3">

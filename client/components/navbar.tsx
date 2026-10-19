@@ -1,31 +1,125 @@
 import { API_BASE_URL, apiFetch } from '../security/api'
 import { cacheUser } from '../security/session'
-import { NavLink, Link } from 'react-router-dom'
+import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
+import type { CSSProperties, MouseEvent } from 'react'
 import logoImage from '../assets/icon5.png'
 
 type UserType = 'public' | 'resident' | 'admin' | 'villageManager'
+type NavEntry = { label: string; path: string }
+type NavItem =
+  | (NavEntry & { children?: never })
+  | { label: string; children: NavEntry[]; path?: never }
 
-type NavbarProps = {
-  userType: UserType
+type NavbarProps = { userType: UserType }
+
+// Query-string tabs are sections of ONE Village Data page, not separate pages.
+const adminVillageData: NavEntry[] = [
+  { label: 'Units & Properties', path: '/admin/village-properties?tab=units' },
+  {
+    label: 'Marketing & Brochure',
+    path: '/admin/village-properties?tab=brochure',
+  },
+  { label: 'Manage FAQs', path: '/admin/village-properties?tab=faq' },
+]
+
+const managerVillageData: NavEntry[] = [
+  {
+    label: 'Units & Properties',
+    path: '/village-manager/village-data?tab=units',
+  },
+  {
+    label: 'Marketing & Brochure',
+    path: '/village-manager/village-data?tab=brochure',
+  },
+  { label: 'Manage FAQs', path: '/village-manager/village-data?tab=faq' },
+]
+
+const navForRole: Record<UserType, NavItem[]> = {
+  public: [
+    { label: 'Home', path: '/' },
+    { label: 'About', path: '/about' },
+    { label: 'Marketing', path: '/marketing' },
+    { label: 'Contact', path: '/contactUs' },
+    { label: 'Login', path: '/login' },
+  ],
+  resident: [
+    { label: 'Dashboard', path: '/resident' },
+    { label: 'Maintenance', path: '/resident/maintenance' },
+    { label: 'Documents & Notices', path: '/resident/documents' },
+  ],
+  admin: [
+    { label: 'Dashboard', path: '/admin' },
+    { label: 'Village Data', children: adminVillageData },
+    {
+      label: 'Operations',
+      children: [
+        { label: 'Maintenance', path: '/admin/maintenance' },
+        { label: 'Documents & Notices', path: '/admin/documents' },
+        { label: 'Purchase Orders', path: '/admin/purchase-orders' },
+      ],
+    },
+    {
+      label: 'Users',
+      children: [
+        { label: 'Manage Profiles', path: '/admin/people' },
+        { label: 'Register User', path: '/register' },
+      ],
+    },
+  ],
+  villageManager: [
+    { label: 'Dashboard', path: '/village-manager' },
+    { label: 'My Village', path: '/village-manager/my-village' },
+    { label: 'Village Data', children: managerVillageData },
+    {
+      label: 'Operations',
+      children: [
+        { label: 'Maintenance', path: '/village-manager/maintenance' },
+        { label: 'Documents & Notices', path: '/village-manager/documents' },
+        { label: 'Purchase Orders', path: '/village-manager/purchase-orders' },
+      ],
+    },
+    {
+      label: 'Users',
+      children: [
+        { label: 'Residents', path: '/village-manager/residents' },
+        { label: 'Register Resident', path: '/register' },
+      ],
+    },
+  ],
+}
+
+const profileForRole: Record<Exclude<UserType, 'public'>, NavEntry[]> = {
+  admin: [
+    { label: 'My Profile', path: '/admin/profile' },
+    { label: 'Edit Profile', path: '/admin/profile/edit' },
+    { label: 'Change Password', path: '/admin/profile/password' },
+  ],
+  villageManager: [
+    { label: 'My Profile', path: '/village-manager/profile' },
+    { label: 'Edit Profile', path: '/village-manager/profile/edit' },
+    { label: 'Change Password', path: '/village-manager/profile/password' },
+  ],
+  resident: [
+    { label: 'My Profile', path: '/resident/profile' },
+    { label: 'Edit Profile', path: '/resident/profile/edit' },
+    { label: 'Change Password', path: '/resident/profile/password' },
+  ],
 }
 
 export default function Navbar({ userType }: NavbarProps) {
-  const [showProfileMenu, setShowProfileMenu] = useState(false)
+  const { pathname, search } = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
-
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null)
   useEffect(() => {
     const checkScreen = () => {
-      setIsMobile(window.innerWidth <= 1190)
-      if (window.innerWidth > 1190) {
-        setMenuOpen(false)
-      }
+      const mobile = window.innerWidth <= 1190
+      setIsMobile(mobile)
+      if (!mobile) setMenuOpen(false)
     }
-
     checkScreen()
     window.addEventListener('resize', checkScreen)
-
     return () => window.removeEventListener('resize', checkScreen)
   }, [])
 
@@ -37,142 +131,99 @@ export default function Navbar({ userType }: NavbarProps) {
       if (!response.ok && response.status !== 401)
         throw new Error('Logout failed')
       cacheUser(null)
-      // A fresh document also clears private component state and avoids racing the route guard.
+      // Reload to clear private component state and session data.
       window.location.replace('/')
     } catch {
       window.alert('Logout failed. Please try again.')
     }
   }
 
-  const publicLinks = [
-    { label: 'Home', path: '/' },
-    { label: 'About', path: '/about' },
-    { label: 'Marketing', path: '/marketing' },
-    { label: 'Contact', path: '/contactUs' },
-    { label: 'Login', path: '/login' },
-    // { label: 'Register', path: '/register' },
-  ]
-
-  const residentLinks = [
-    { label: 'Dashboard', path: '/resident' },
-    { label: 'Maintenance', path: '/resident/maintenance' },
-    { label: 'Documents & Notices', path: '/resident/documents' },
-  ]
-
-  const adminLinks = [
-    { label: 'Dashboard', path: '/admin' },
-    { label: 'Village Data', path: '/admin/village-properties' },
-    { label: 'Village Data', path: '/village-manager/village-data' },
-    { label: 'Maintenance', path: '/admin/maintenance' },
-    { label: 'Documents & Notices', path: '/admin/documents' },
-    { label: 'Purchase Orders', path: '/admin/purchase-orders' },
-    { label: 'Manage Profiles', path: '/admin/people' },
-    { label: 'Register', path: '/register' },
-  ]
-
-  const villageManagerLinks = [
-    { label: 'Dashboard', path: '/village-manager' },
-    { label: 'My Village', path: '/village-manager/my-village' },
-    { label: 'Maintenance', path: '/village-manager/maintenance' },
-    { label: 'Residents', path: '/village-manager/residents' },
-    { label: 'Documents & Notices', path: '/village-manager/documents' },
-    { label: 'Purchase Orders', path: '/village-manager/purchase-orders' },
-    { label: 'Register', path: '/register' },
-  ]
-
-  let links = publicLinks
-  if (userType === 'resident') links = residentLinks
-  if (userType === 'admin') links = adminLinks
-  if (userType === 'villageManager') links = villageManagerLinks
-
-  const renderVillageDataMenu = (basePath: string) => (
-    <details key={basePath} style={{ position: 'relative' }}>
-      <summary style={{ ...styles.link, cursor: 'pointer' }}>
-        Village Data
-      </summary>
-
-      <div
-        style={{
-          ...styles.dropdownMenu,
-          display: 'block',
-          top: '100%',
-          right: 0,
-        }}
-      >
-        {[
-          { tab: 'units', label: 'Units & Properties' },
-          { tab: 'brochure', label: 'Marketing & Brochure' },
-          { tab: 'faq', label: 'Manage FAQs' },
-        ].map((item) => (
-          <NavLink
-            key={item.tab}
-            to={`${basePath}?tab=${item.tab}`}
-            style={styles.dropdownItem}
-            onClick={(event) => {
-              setMenuOpen(false)
-              event.currentTarget.closest('details')?.removeAttribute('open')
-            }}
-          >
-            {item.label}
-          </NavLink>
-        ))}
-      </div>
-    </details>
-  )
-  const renderProfileMenu = () => {
-    let basePath = '/resident'
-
-    if (userType === 'admin') basePath = '/admin'
-    if (userType === 'villageManager') basePath = '/village-manager'
-
+  // Close an opened dropdown after selecting a link.
+  const closeMenu = (_event: MouseEvent<HTMLAnchorElement>) => {
+    setOpenDropdown(null)
+    setMenuOpen(false)
+  }
+  const isActiveLink = (path: string) => {
+    const [targetPath, targetQuery] = path.split('?')
     return (
-      <div
-        style={styles.dropdownWrapper}
-        onMouseEnter={() => !isMobile && setShowProfileMenu(true)}
-        onMouseLeave={() => !isMobile && setShowProfileMenu(false)}
-      >
-        <button
-          type="button"
-          style={styles.dropdownButton}
-          onClick={() => setShowProfileMenu(!showProfileMenu)}
-        >
-          Profile
-        </button>
-
-        {showProfileMenu && (
-          <div style={styles.dropdownMenu}>
-            <Link to={`${basePath}/profile`} style={styles.dropdownItem}>
-              My Profile
-            </Link>
-            <Link to={`${basePath}/profile/edit`} style={styles.dropdownItem}>
-              Edit Profile
-            </Link>
-            <Link
-              to={`${basePath}/profile/password`}
-              style={styles.dropdownItem}
-            >
-              Change Password
-            </Link>
-
-            {userType === 'admin' && (
-              <Link to="/admin/people" style={styles.dropdownItem}>
-                Manage Users
-              </Link>
-            )}
-
-            {userType === 'villageManager' && (
-              <Link to="/village-manager/residents" style={styles.dropdownItem}>
-                Manage Users
-              </Link>
-            )}
-          </div>
-        )}
-      </div>
+      pathname === targetPath && (!targetQuery || search === `?${targetQuery}`)
     )
   }
 
+  const renderItem = (item: NavItem) => {
+    if (item.children) {
+      const active = item.children.some((child) => isActiveLink(child.path))
+      return (
+        <details
+          key={item.label}
+          style={styles.dropdownWrapper}
+          open={openDropdown === item.label}
+        >
+          <summary
+            onClick={(event) => {
+              event.preventDefault()
+
+              setOpenDropdown((current) =>
+                current === item.label ? null : item.label,
+              )
+            }}
+            style={{
+              ...styles.dropdownButton,
+              color: active ? '#2563eb' : '#374151',
+              borderBottom: active
+                ? '2px solid #2563eb'
+                : '2px solid transparent',
+            }}
+          >
+            {item.label} <span aria-hidden="true">▾</span>
+          </summary>
+          <div style={styles.dropdownMenu}>
+            {item.children.map((child) => (
+              <NavLink
+                key={child.path}
+                to={child.path}
+                onClick={closeMenu}
+                style={{
+                  ...styles.dropdownItem,
+                  color: isActiveLink(child.path) ? '#2563eb' : '#374151',
+                  fontWeight: isActiveLink(child.path) ? 700 : 500,
+                }}
+              >
+                {child.label}
+              </NavLink>
+            ))}
+          </div>
+        </details>
+      )
+    }
+    return (
+      <NavLink
+        key={item.path}
+        to={item.path}
+        onClick={closeMenu}
+        end={['/', '/admin', '/resident', '/village-manager'].includes(
+          item.path,
+        )}
+        style={({ isActive }) => ({
+          ...styles.link,
+          color: isActive ? '#2563eb' : '#374151',
+          borderBottom: isActive
+            ? '2px solid #2563eb'
+            : '2px solid transparent',
+        })}
+      >
+        {item.label}
+      </NavLink>
+    )
+  }
+
+  const navItems: NavItem[] = [...navForRole[userType]]
+  if (userType !== 'public') {
+    navItems.push({ label: 'Profile', children: profileForRole[userType] })
+  }
+
   return (
-    <nav style={styles.navbar}>
+    <nav style={styles.navbar} aria-label="Main navigation">
       <div style={styles.container}>
         <Link to="/" style={styles.logo}>
           <img
@@ -187,48 +238,29 @@ export default function Navbar({ userType }: NavbarProps) {
           <button
             type="button"
             style={styles.hamburger}
-            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Toggle navigation menu"
+            aria-expanded={menuOpen}
+            aria-controls="nav-items"
+            onClick={() => setMenuOpen((value) => !value)}
           >
             ☰
           </button>
         )}
 
         <div
+          id="nav-items"
           style={{
             ...styles.links,
             ...(isMobile ? styles.mobileLinks : {}),
             ...(isMobile && menuOpen ? styles.mobileLinksOpen : {}),
           }}
         >
-          {links.map((link) => (
-            <NavLink
-              key={link.path}
-              to={link.path}
-              onClick={() => setMenuOpen(false)}
-              end={
-                link.path === '/resident' ||
-                link.path === '/admin' ||
-                link.path === '/village-manager'
-              }
-              style={({ isActive }) => ({
-                ...styles.link,
-                color: isActive ? '#2563eb' : '#374151',
-                borderBottom: isActive
-                  ? '2px solid #2563eb'
-                  : '2px solid transparent',
-              })}
-            >
-              {link.label}
-            </NavLink>
-          ))}
-
-          {userType !== 'public' && renderProfileMenu()}
-
+          {navItems.map(renderItem)}
           {userType !== 'public' && (
             <button
-              className="btn btn-outline-danger border-danger text-danger btn-sm shadow"
-              data-bs-toggle="popover"
-              onClick={handleLogout}
+              type="button"
+              className="btn btn-outline-danger border-danger text-danger btn-sm shadow-sm"
+              onClick={() => void handleLogout()}
               style={styles.logoutButton}
             >
               Logout
@@ -240,133 +272,117 @@ export default function Navbar({ userType }: NavbarProps) {
   )
 }
 
-const styles: Record<string, React.CSSProperties> = {
+const styles: Record<string, CSSProperties> = {
   navbar: {
     width: '100%',
-    backgroundColor: '#ffffff',
+    backgroundColor: '#fff',
     borderBottom: '1px solid #e5e7eb',
     position: 'sticky',
     top: 0,
     zIndex: 1000,
   },
-
   container: {
-    maxWidth: '1200px',
+    maxWidth: '1250px',
     margin: '0 auto',
-    padding: '1rem 1.3rem',
+    padding: '0.8rem 1rem',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    gap: '1rem',
+    gap: '1.25rem',
     position: 'relative',
   },
-
   logo: {
     textDecoration: 'none',
-    fontSize: '1.25rem',
+    fontSize: '1.1rem',
     fontWeight: 700,
     color: '#1f2937',
     display: 'flex',
     alignItems: 'center',
-    gap: '0.5rem',
+    gap: '0.55rem',
+    flexShrink: 0,
+    maxWidth: '230px',
   },
-
   logoImage: {
-    width: '58px',
-    height: '58px',
+    width: '48px',
+    height: '48px',
     objectFit: 'contain',
+    flexShrink: 0,
   },
-
   links: {
     display: 'flex',
     gap: '1rem',
-    flexWrap: 'wrap',
     alignItems: 'center',
+    flexWrap: 'nowrap',
+    minWidth: 0,
   },
-
-  mobileLinks: {
-    display: 'none',
-    position: 'absolute',
-    top: '100%',
-    right: '1.5rem',
-    backgroundColor: '#ffffff',
-    border: '1px solid #e5e7eb',
-    borderRadius: '12px',
-    padding: '1rem',
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    gap: '0.9rem',
-    minWidth: '230px',
-    maxWidth: '280px',
-    boxShadow: '0 8px 20px rgba(0,0,0,0.08)',
-    zIndex: 1200,
-  },
-
-  mobileLinksOpen: {
-    display: 'flex',
-  },
-
-  hamburger: {
-    border: '1px solid #d1d5db',
-    backgroundColor: 'white',
-    borderRadius: '8px',
-    padding: '0.35rem 0.7rem',
-    fontSize: '1.5rem',
-    cursor: 'pointer',
-    marginLeft: 'auto',
-  },
-
   link: {
     textDecoration: 'none',
     color: '#374151',
     fontWeight: 500,
-    fontSize: '0.95rem',
-    paddingBottom: '4px',
+    fontSize: '0.9rem',
+    whiteSpace: 'nowrap',
+    padding: '0.35rem 0',
   },
-
-  logoutButton: {
-    border: '1px solid #d1d5db',
-    backgroundColor: 'white',
-    padding: '0.4rem 0.8rem',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    fontWeight: 500,
-    color: '#374151',
-  },
-
-  dropdownWrapper: {
-    position: 'relative',
-  },
-
+  dropdownWrapper: { position: 'relative' },
   dropdownButton: {
-    border: 'none',
-    background: 'none',
-    color: '#374151',
-    fontWeight: 500,
-    fontSize: '0.95rem',
+    display: 'block',
+    listStyle: 'none',
     cursor: 'pointer',
-    padding: 0,
+    fontWeight: 500,
+    fontSize: '0.9rem',
+    whiteSpace: 'nowrap',
+    padding: '0.35rem 0',
+    userSelect: 'none',
   },
-
   dropdownMenu: {
     position: 'absolute',
     top: '100%',
-    right: 0,
-    backgroundColor: 'white',
+    left: 0,
+    backgroundColor: '#fff',
     border: '1px solid #e5e7eb',
     borderRadius: '8px',
-    minWidth: '190px',
-    boxShadow: '0 8px 20px rgba(0,0,0,0.08)',
-    padding: '0.5rem 0',
+    minWidth: '235px',
+    boxShadow: '0 10px 24px rgba(0,0,0,0.12)',
+    padding: '0.4rem 0',
     zIndex: 1100,
   },
-
   dropdownItem: {
     display: 'block',
-    padding: '0.6rem 1rem',
+    padding: '0.65rem 0.9rem',
     textDecoration: 'none',
     color: '#374151',
-    fontWeight: 500,
+    fontSize: '0.9rem',
     whiteSpace: 'nowrap',
+  },
+  hamburger: {
+    border: '1px solid #d1d5db',
+    backgroundColor: '#fff',
+    borderRadius: '8px',
+    padding: '0.35rem 0.7rem',
+    fontSize: '1.4rem',
+    cursor: 'pointer',
+    marginLeft: 'auto',
+  },
+  mobileLinks: {
+    display: 'none',
+    position: 'absolute',
+    top: '100%',
+    right: '1rem',
+    backgroundColor: '#fff',
+    border: '1px solid #e5e7eb',
+    borderRadius: '12px',
+    padding: '1rem',
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    gap: '0.5rem',
+    minWidth: '245px',
+    maxWidth: '90vw',
+    boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
+    zIndex: 1200,
+  },
+  mobileLinksOpen: { display: 'flex' },
+  logoutButton: {
+    whiteSpace: 'nowrap',
+    cursor: 'pointer',
   },
 }
