@@ -6,7 +6,7 @@ namespace server.Hosting;
 public static class LocalDevelopment
 {
     // The automated test runner deliberately uses the same local-only configuration
-    // as development. Real Azure production is never treated as a test environment.
+    // as development. Production is never treated as a test environment.
     public static bool IsLocalOrTesting(this IWebHostEnvironment environment) =>
         environment.IsDevelopment() || environment.IsEnvironment("Testing");
 
