@@ -38,11 +38,9 @@ jobs:
         run: npm ci
       - name: Validate source
         run: npm run check:source
-      - name: Build React and prerender public pages
+      - name: Build React
         env:
           VITE_API_BASE_URL: ""
-          VITE_ALLOW_INDEXING: "false"
-          VITE_SITE_URL: https://samct-villages-bjgxenc0avdue9hn.newzealandnorth-01.azurewebsites.net
         run: npm run build
       - name: Build ASP.NET Core
         run: dotnet publish server/server.csproj --configuration Release --output ./publish --warnaserror
@@ -51,8 +49,6 @@ jobs:
           mkdir -p publish/wwwroot
           cp -a dist/. publish/wwwroot/
           test -f publish/wwwroot/index.html
-          test -f publish/wwwroot/portal.html
-          test -f publish/wwwroot/about/index.html
           test -f publish/server.dll
       - name: Deploy to Azure App Service
         uses: azure/webapps-deploy@v3
