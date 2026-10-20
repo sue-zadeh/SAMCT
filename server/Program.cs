@@ -8,14 +8,14 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using server.Data;
+using server.Hosting;
 using server.Security;
 using server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
-var localEnvironment = builder.Environment.IsDevelopment() || builder.Environment.IsEnvironment("Testing");
-// An Azure demo can explicitly disable uploads until private malware scanning is available.
-// Other deployments retain their existing fail-closed scanning requirements.
-var uploadsEnabled = builder.Configuration.GetValue<bool?>("Security:Uploads:Enabled") ?? true;
+var localEnvironment = builder.Environment.IsLocalOrTesting();
+// Production without a configured scanner disables uploads; scanned uploads still require storage.
+var uploadsEnabled = UploadStorage.AreUploadsEnabled(builder.Configuration, builder.Environment);
 if (!localEnvironment) {
     var allowedHosts = builder.Configuration["AllowedHosts"];
     if (string.IsNullOrWhiteSpace(allowedHosts) || allowedHosts.Split(';').Any(host => host.Trim() is "*" or ""))
@@ -135,29 +135,8 @@ app.UseAuthorization();
 // Never expose wwwroot/uploads using static-file middleware.
 app.MapControllers();
 app.MapGet("/api/health", () => Results.Ok(new { status = "ok" })).AllowAnonymous();
-// Azure App Service hosts React and the API on the same HTTPS origin.
-// Public URLs return prerendered SEO HTML; account pages return a noindex shell.
-var webRoot = app.Environment.WebRootPath ?? Path.Combine(app.Environment.ContentRootPath, "wwwroot");
-if (File.Exists(Path.Combine(webRoot, "portal.html"))) {
-    foreach (var route in new[] { "/about", "/marketing", "/contactUs" }) {
-        var pagePath = Path.Combine(webRoot, route.TrimStart('/'), "index.html");
-        app.MapGet(route, () => Results.File(pagePath, "text/html; charset=utf-8")).AllowAnonymous();
-    }
-    var portalPath = Path.Combine(webRoot, "portal.html");
-    foreach (var prefix in new[] { "login", "register", "forgot-password", "reset-password",
-                                    "admin", "resident", "village-manager", "account" }) {
-        app.MapGet("/" + prefix, () => Results.File(portalPath, "text/html; charset=utf-8")).AllowAnonymous();
-        app.MapGet("/" + prefix + "/{**rest}", () => Results.File(portalPath, "text/html; charset=utf-8")).AllowAnonymous();
-    }
-}
-if (args.Contains("--migrate")) {
-    using var scope = app.Services.CreateScope();
-    await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.MigrateAsync();
-    return;
-}
-if (localEnvironment && builder.Configuration.GetValue<bool>("Database:AutoMigrate")) {
-    using var scope = app.Services.CreateScope();
-    await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.MigrateAsync();
-}
+app.MapFrontendPages();
+
+if (await app.RunMigrationsIfRequestedAsync(args, localEnvironment)) return;
 app.Run();
 
