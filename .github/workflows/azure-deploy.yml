@@ -1,0 +1,97 @@
+name: Deploy SAMCT to Azure App Service
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "client/**"
+      - "server/**"
+      - "scripts/**"
+      - "index.html"
+      - "package*.json"
+      - "vite.config.ts"
+      - "tsconfig.json"
+      - ".github/workflows/azure-deploy.yml"
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: samct-azure-production
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+      - name: Install client dependencies
+        run: npm ci
+      - name: Validate source
+        run: npm run check:source
+      - name: Build React and prerender public pages
+        env:
+          VITE_API_BASE_URL: ""
+          VITE_ALLOW_INDEXING: "false"
+          VITE_SITE_URL: https://samct-villages.azurewebsites.net
+        run: npm run build
+      - name: Build ASP.NET Core
+        run: dotnet publish server/server.csproj --configuration Release --output ./publish --warnaserror
+      - name: Bundle React with ASP.NET Core for same-origin hosting
+        run: |
+          mkdir -p publish/wwwroot
+          cp -a dist/. publish/wwwroot/
+          test -f publish/wwwroot/index.html
+          test -f publish/wwwroot/portal.html
+          test -f publish/wwwroot/about/index.html
+          test -f publish/server.dll
+      - name: Authenticate with Azure OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Verify required Azure configuration exists
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json,subprocess,sys
+          settings=json.loads(subprocess.check_output([
+              'az','webapp','config','appsettings','list',
+              '--name','samct-villages','--resource-group','rg-samct-prod',
+              '--output','json'],text=True))
+          configured={item['name']:item.get('value','') for item in settings}
+          required=['ASPNETCORE_ENVIRONMENT','AllowedHosts','ConnectionStrings__DefaultConnection',
+                    'Jwt__SigningKey','DataProtection__KeyPath','Security__Uploads__Enabled']
+          missing=[name for name in required if not configured.get(name)]
+          if configured.get('Security__Uploads__Enabled','').lower() != 'false':
+              sys.exit('Deployment blocked: upload scanning is not configured. Set Security__Uploads__Enabled=false for this demo.')
+          if missing:
+              sys.exit('Deployment blocked: missing Azure app settings: '+', '.join(missing))
+          print('Required app settings present; uploads disabled for demo.')
+          PY
+      - name: Deploy to Azure App Service
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: samct-villages
+          package: ./publish
+      - name: Check deployed API health
+        run: |
+          for i in $(seq 1 18); do
+            if curl --fail --silent --show-error --max-time 10 https://samct-villages.azurewebsites.net/api/health; then
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "Deployment health check failed. Inspect Azure App Service logs."
+          exit 1

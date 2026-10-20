@@ -13,13 +13,16 @@ using server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 var localEnvironment = builder.Environment.IsDevelopment() || builder.Environment.IsEnvironment("Testing");
+// An Azure demo can explicitly disable uploads until private malware scanning is available.
+// Other deployments retain their existing fail-closed scanning requirements.
+var uploadsEnabled = builder.Configuration.GetValue<bool?>("Security:Uploads:Enabled") ?? true;
 if (!localEnvironment) {
     var allowedHosts = builder.Configuration["AllowedHosts"];
     if (string.IsNullOrWhiteSpace(allowedHosts) || allowedHosts.Split(';').Any(host => host.Trim() is "*" or ""))
         throw new InvalidOperationException("Set AllowedHosts to the approved production hostname(s).");
-    if (string.IsNullOrWhiteSpace(builder.Configuration["Storage:UploadPath"]))
+    if (uploadsEnabled && string.IsNullOrWhiteSpace(builder.Configuration["Storage:UploadPath"]))
         throw new InvalidOperationException("Set Storage__UploadPath to a persistent private directory.");
-    if (builder.Configuration.GetValue<bool?>("Security:MalwareScan:Enabled") == false || string.IsNullOrWhiteSpace(builder.Configuration["Security:MalwareScan:Host"]))
+    if (uploadsEnabled && (builder.Configuration.GetValue<bool?>("Security:MalwareScan:Enabled") == false || string.IsNullOrWhiteSpace(builder.Configuration["Security:MalwareScan:Host"])))
         throw new InvalidOperationException("Production requires a private ClamAV service configured in Security__MalwareScan__Host.");
 }
 builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = 40 * 1024 * 1024);
@@ -48,7 +51,10 @@ var keyPath = builder.Configuration["DataProtection:KeyPath"];
 if (!localEnvironment && string.IsNullOrWhiteSpace(keyPath))
     throw new InvalidOperationException("Set DataProtection__KeyPath to a persistent, access-restricted directory.");
 var protection = builder.Services.AddDataProtection().SetApplicationName("SAMCT");
-if (!string.IsNullOrWhiteSpace(keyPath)) protection.PersistKeysToFileSystem(new DirectoryInfo(keyPath));
+if (!string.IsNullOrWhiteSpace(keyPath)) {
+    Directory.CreateDirectory(keyPath);
+    protection.PersistKeysToFileSystem(new DirectoryInfo(keyPath));
+}
 var jwt = new JwtAuthentication(builder.Configuration, builder.Environment);
 builder.Services.AddSingleton(jwt);
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options => {
@@ -118,6 +124,9 @@ app.Use(async (context, next) => {
         await context.Response.WriteAsJsonAsync(new { message = error.Message });
     }
 });
+// Only the built React output is placed in wwwroot; API and uploaded files are never static files.
+app.UseDefaultFiles();
+app.UseStaticFiles();
 app.UseRouting();
 app.UseCors();
 app.UseAuthentication();
@@ -126,6 +135,21 @@ app.UseAuthorization();
 // Never expose wwwroot/uploads using static-file middleware.
 app.MapControllers();
 app.MapGet("/api/health", () => Results.Ok(new { status = "ok" })).AllowAnonymous();
+// Azure App Service hosts React and the API on the same HTTPS origin.
+// Public URLs return prerendered SEO HTML; account pages return a noindex shell.
+var webRoot = app.Environment.WebRootPath ?? Path.Combine(app.Environment.ContentRootPath, "wwwroot");
+if (File.Exists(Path.Combine(webRoot, "portal.html"))) {
+    foreach (var route in new[] { "/about", "/marketing", "/contactUs" }) {
+        var pagePath = Path.Combine(webRoot, route.TrimStart('/'), "index.html");
+        app.MapGet(route, () => Results.PhysicalFile(pagePath, "text/html; charset=utf-8")).AllowAnonymous();
+    }
+    var portalPath = Path.Combine(webRoot, "portal.html");
+    foreach (var prefix in new[] { "login", "register", "forgot-password", "reset-password",
+                                    "admin", "resident", "village-manager", "account" }) {
+        app.MapGet("/" + prefix, () => Results.PhysicalFile(portalPath, "text/html; charset=utf-8")).AllowAnonymous();
+        app.MapGet("/" + prefix + "/{**rest}", () => Results.PhysicalFile(portalPath, "text/html; charset=utf-8")).AllowAnonymous();
+    }
+}
 if (args.Contains("--migrate")) {
     using var scope = app.Services.CreateScope();
     await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.MigrateAsync();

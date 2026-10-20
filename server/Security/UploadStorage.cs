@@ -18,6 +18,8 @@ public class UploadStorage(IWebHostEnvironment environment, IConfiguration confi
     public async Task<string> Save(IFormFile? file, string folder, bool imagesOnly = false)
     {
         if (file is null) return "";
+        if (configuration.GetValue<bool?>("Security:Uploads:Enabled") == false)
+            throw new UploadValidationException("File uploads are temporarily unavailable.");
         var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
         var limit = imagesOnly ? 2 * 1024 * 1024 : 5 * 1024 * 1024;
         if (file.Length < 1 || file.Length > limit) throw new UploadValidationException($"Files must be between 1 byte and {limit / 1024 / 1024} MB.");

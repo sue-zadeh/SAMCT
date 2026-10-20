@@ -13,6 +13,8 @@ public class UploadController(AppDbContext database, UploadStorage uploads, Malw
     [AllowAnonymous, HttpGet("{**path}")]
     public async Task<IActionResult> Download(string path)
     {
+        if (HttpContext.RequestServices.GetRequiredService<IConfiguration>().GetValue<bool?>("Security:Uploads:Enabled") == false)
+            return NotFound();
         var url = "/uploads/" + path;
         var property = await database.VillageProperties.AsNoTracking().FirstOrDefaultAsync(item =>
             item.DocumentUrl1 == url || item.DocumentUrl2 == url || item.MarketingImageUrl1 == url ||
