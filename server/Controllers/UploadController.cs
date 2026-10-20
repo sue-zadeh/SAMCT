@@ -8,7 +8,7 @@ namespace server.Controllers;
 
 [ApiController]
 [Route("uploads")]
-public class UploadController(AppDbContext database, UploadStorage uploads, MalwareScanner scanner, IConfiguration configuration, IWebHostEnvironment environment) : ControllerBase
+public class UploadController(AppDbContext database, UploadStorage uploads, MalwareScanner scanner, IWebHostEnvironment environment) : ControllerBase
 {
     [AllowAnonymous, HttpGet("{**path}")]
     public async Task<IActionResult> Download(string path)
