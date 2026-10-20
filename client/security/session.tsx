@@ -10,7 +10,7 @@ import {
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { API_BASE_URL, apiFetch, clearCsrfToken } from './api'
 
-import { SAMCT_ADMIN_ROLES } from '../constants/samct-data'
+import { SAMCT_ADMIN_ROLES } from '../navItems/samct-data'
 
 export const adminRoles = SAMCT_ADMIN_ROLES
 export type SessionUser = {
