@@ -1,4 +1,3 @@
-import Seo from './security/seo'
 import { AccessGate } from './security/session'
 import { Routes, Route } from 'react-router-dom'
 
@@ -39,7 +38,6 @@ import ResetPassword from './components/password-reset'
 function App() {
   return (
     <>
-      <Seo />
       <AccessGate>
         <Routes>
           {/* Public */}

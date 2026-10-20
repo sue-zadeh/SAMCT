@@ -50,7 +50,6 @@ const env = {
   ...process.env,
   SAMCT_E2E_DATABASE_PASSWORD: password,
   SAMCT_E2E_DATABASE_PORT: '55433',
-  SAMCT_E2E_SCANNER_PORT: '3311',
   SAMCT_E2E_DATABASE_URL: `postgresql://samct_e2e:${password}@127.0.0.1:55433/samct_e2e`,
 }
 if (process.argv.includes('--stop')) {
@@ -58,7 +57,7 @@ if (process.argv.includes('--stop')) {
   process.exit(0)
 }
 console.log(
-  'Starting the isolated samct-e2e database and file scanner. First startup can take several minutes.',
+  'Starting the isolated samct-e2e database. First startup can take several minutes.',
 )
 run(
   'docker',

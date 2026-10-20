@@ -8,22 +8,18 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using server.Data;
+using server.Hosting;
 using server.Security;
 using server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
-var localEnvironment = builder.Environment.IsDevelopment() || builder.Environment.IsEnvironment("Testing");
-// An Azure demo can explicitly disable uploads until private malware scanning is available.
-// Other deployments retain their existing fail-closed scanning requirements.
-var uploadsEnabled = builder.Configuration.GetValue<bool?>("Security:Uploads:Enabled") ?? true;
-if (!localEnvironment) {
+var localEnvironment = builder.Environment.IsLocalOrTesting();
+if (!localEnvironment)
+{
     var allowedHosts = builder.Configuration["AllowedHosts"];
-    if (string.IsNullOrWhiteSpace(allowedHosts) || allowedHosts.Split(';').Any(host => host.Trim() is "*" or ""))
+    if (string.IsNullOrWhiteSpace(allowedHosts) ||
+        allowedHosts.Split(';').Any(host => host.Trim() is "*" or ""))
         throw new InvalidOperationException("Set AllowedHosts to the approved production hostname(s).");
-    if (uploadsEnabled && string.IsNullOrWhiteSpace(builder.Configuration["Storage:UploadPath"]))
-        throw new InvalidOperationException("Set Storage__UploadPath to a persistent private directory.");
-    if (uploadsEnabled && (builder.Configuration.GetValue<bool?>("Security:MalwareScan:Enabled") == false || string.IsNullOrWhiteSpace(builder.Configuration["Security:MalwareScan:Host"])))
-        throw new InvalidOperationException("Production requires a private ClamAV service configured in Security__MalwareScan__Host.");
 }
 builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = 40 * 1024 * 1024);
 builder.Services.Configure<FormOptions>(options => {
@@ -42,7 +38,6 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<SessionValidation>();
 builder.Services.AddScoped<SessionService>();
 builder.Services.AddScoped<UploadStorage>();
-builder.Services.AddSingleton<MalwareScanner>();
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(
     builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Set ConnectionStrings__DefaultConnection.")));
@@ -112,15 +107,10 @@ app.Use(async (context, next) => {
     context.Response.Headers.ContentSecurityPolicy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data: blob: https://images.unsplash.com; connect-src 'self'; frame-src https://www.google.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'";
     if (context.Request.Path.StartsWithSegments("/api") || context.Request.Path.StartsWithSegments("/uploads")) {
         context.Response.Headers.CacheControl = "no-store";
-        context.Response.Headers["X-Robots-Tag"] = "noindex, nofollow";
     }
     try { await next(); }
     catch (UploadValidationException error) {
         context.Response.StatusCode = StatusCodes.Status400BadRequest;
-        await context.Response.WriteAsJsonAsync(new { message = error.Message });
-    }
-    catch (MalwareScannerUnavailableException error) {
-        context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
         await context.Response.WriteAsJsonAsync(new { message = error.Message });
     }
 });
@@ -135,29 +125,8 @@ app.UseAuthorization();
 // Never expose wwwroot/uploads using static-file middleware.
 app.MapControllers();
 app.MapGet("/api/health", () => Results.Ok(new { status = "ok" })).AllowAnonymous();
-// Azure App Service hosts React and the API on the same HTTPS origin.
-// Public URLs return prerendered SEO HTML; account pages return a noindex shell.
-var webRoot = app.Environment.WebRootPath ?? Path.Combine(app.Environment.ContentRootPath, "wwwroot");
-if (File.Exists(Path.Combine(webRoot, "portal.html"))) {
-    foreach (var route in new[] { "/about", "/marketing", "/contactUs" }) {
-        var pagePath = Path.Combine(webRoot, route.TrimStart('/'), "index.html");
-        app.MapGet(route, () => Results.File(pagePath, "text/html; charset=utf-8")).AllowAnonymous();
-    }
-    var portalPath = Path.Combine(webRoot, "portal.html");
-    foreach (var prefix in new[] { "login", "register", "forgot-password", "reset-password",
-                                    "admin", "resident", "village-manager", "account" }) {
-        app.MapGet("/" + prefix, () => Results.File(portalPath, "text/html; charset=utf-8")).AllowAnonymous();
-        app.MapGet("/" + prefix + "/{**rest}", () => Results.File(portalPath, "text/html; charset=utf-8")).AllowAnonymous();
-    }
-}
-if (args.Contains("--migrate")) {
-    using var scope = app.Services.CreateScope();
-    await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.MigrateAsync();
-    return;
-}
-if (localEnvironment && builder.Configuration.GetValue<bool>("Database:AutoMigrate")) {
-    using var scope = app.Services.CreateScope();
-    await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.MigrateAsync();
-}
+app.MapFrontendPages();
+
+if (await app.RunMigrationsIfRequestedAsync(args, localEnvironment)) return;
 app.Run();
 

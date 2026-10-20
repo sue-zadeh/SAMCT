@@ -4,8 +4,14 @@ namespace server.Security;
 
 public sealed class UploadValidationException(string message) : Exception(message);
 
-public class UploadStorage(IWebHostEnvironment environment, IConfiguration configuration, MalwareScanner scanner)
+public class UploadStorage(IWebHostEnvironment environment, IConfiguration configuration)
 {
+    // Unscanned file uploads are permitted only for isolated local development/testing.
+    // Production downloads of bundled, published brochure images remain available.
+    public bool Enabled =>
+        (environment.IsDevelopment() || environment.IsEnvironment("Testing")) &&
+        configuration.GetValue<bool?>("Security:Uploads:Enabled") != false;
+
     public string Root => Path.GetFullPath(configuration["Storage:UploadPath"] ?? Path.Combine(environment.ContentRootPath, "storage", "uploads"));
     private static readonly Dictionary<string, string> Types = new(StringComparer.OrdinalIgnoreCase) {
         [".png"] = "image/png", [".jpg"] = "image/jpeg", [".jpeg"] = "image/jpeg", [".pdf"] = "application/pdf",
@@ -18,7 +24,7 @@ public class UploadStorage(IWebHostEnvironment environment, IConfiguration confi
     public async Task<string> Save(IFormFile? file, string folder, bool imagesOnly = false)
     {
         if (file is null) return "";
-        if (configuration.GetValue<bool?>("Security:Uploads:Enabled") == false)
+        if (!Enabled)
             throw new UploadValidationException("File uploads are temporarily unavailable.");
         var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
         var limit = imagesOnly ? 2 * 1024 * 1024 : 5 * 1024 * 1024;
@@ -29,8 +35,6 @@ public class UploadStorage(IWebHostEnvironment environment, IConfiguration confi
             throw new UploadValidationException("The file type does not match its extension.");
         await using var input = file.OpenReadStream();
         await ValidateSignature(input, extension);
-        input.Position = 0;
-        await scanner.Scan(input);
         input.Position = 0;
         var filename = $"{Guid.NewGuid():N}{extension}";
         var directory = Path.Combine(Root, folder);
