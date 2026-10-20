@@ -160,3 +160,4 @@ if (localEnvironment && builder.Configuration.GetValue<bool>("Database:AutoMigra
     await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.MigrateAsync();
 }
 app.Run();
+
