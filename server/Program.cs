@@ -14,16 +14,12 @@ using server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 var localEnvironment = builder.Environment.IsLocalOrTesting();
-// Production without a configured scanner disables uploads; scanned uploads still require storage.
-var uploadsEnabled = UploadStorage.AreUploadsEnabled(builder.Configuration, builder.Environment);
-if (!localEnvironment) {
+if (!localEnvironment)
+{
     var allowedHosts = builder.Configuration["AllowedHosts"];
-    if (string.IsNullOrWhiteSpace(allowedHosts) || allowedHosts.Split(';').Any(host => host.Trim() is "*" or ""))
+    if (string.IsNullOrWhiteSpace(allowedHosts) ||
+        allowedHosts.Split(';').Any(host => host.Trim() is "*" or ""))
         throw new InvalidOperationException("Set AllowedHosts to the approved production hostname(s).");
-    if (uploadsEnabled && string.IsNullOrWhiteSpace(builder.Configuration["Storage:UploadPath"]))
-        throw new InvalidOperationException("Set Storage__UploadPath to a persistent private directory.");
-    if (uploadsEnabled && (builder.Configuration.GetValue<bool?>("Security:MalwareScan:Enabled") == false || string.IsNullOrWhiteSpace(builder.Configuration["Security:MalwareScan:Host"])))
-        throw new InvalidOperationException("Production requires a private ClamAV service configured in Security__MalwareScan__Host.");
 }
 builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = 40 * 1024 * 1024);
 builder.Services.Configure<FormOptions>(options => {
@@ -42,7 +38,6 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<SessionValidation>();
 builder.Services.AddScoped<SessionService>();
 builder.Services.AddScoped<UploadStorage>();
-builder.Services.AddSingleton<MalwareScanner>();
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(
     builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Set ConnectionStrings__DefaultConnection.")));
@@ -117,10 +112,6 @@ app.Use(async (context, next) => {
     try { await next(); }
     catch (UploadValidationException error) {
         context.Response.StatusCode = StatusCodes.Status400BadRequest;
-        await context.Response.WriteAsJsonAsync(new { message = error.Message });
-    }
-    catch (MalwareScannerUnavailableException error) {
-        context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
         await context.Response.WriteAsJsonAsync(new { message = error.Message });
     }
 });
