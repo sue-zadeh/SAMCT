@@ -114,18 +114,14 @@ app.Use(async (context, next) => {
         await context.Response.WriteAsJsonAsync(new { message = error.Message });
     }
 });
-// Only the built React output is placed in wwwroot; API and uploaded files are never static files.
-app.UseDefaultFiles();
-app.UseStaticFiles();
+app.UseReactClient();
 app.UseRouting();
 app.UseCors();
 app.UseAuthentication();
 app.UseRateLimiter();
 app.UseAuthorization();
-// Never expose wwwroot/uploads using static-file middleware.
 app.MapControllers();
 app.MapGet("/api/health", () => Results.Ok(new { status = "ok" })).AllowAnonymous();
-app.MapFrontendPages();
 
 if (await app.RunMigrationsIfRequestedAsync(args, localEnvironment)) return;
 app.Run();
