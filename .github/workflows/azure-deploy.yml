@@ -43,7 +43,7 @@ jobs:
         env:
           VITE_API_BASE_URL: ""
           VITE_ALLOW_INDEXING: "false"
-          VITE_SITE_URL: https://samct-villages.azurewebsites.net
+          VITE_SITE_URL: https://samct-villages-bjgxenc0avdue9hn.newzealandnorth-01.azurewebsites.net
         run: npm run build
       - name: Build ASP.NET Core
         run: dotnet publish server/server.csproj --configuration Release --output ./publish --warnaserror
@@ -78,7 +78,12 @@ jobs:
               sys.exit('Deployment blocked: upload scanning is not configured. Set Security__Uploads__Enabled=false for this demo.')
           if missing:
               sys.exit('Deployment blocked: missing Azure app settings: '+', '.join(missing))
-          print('Required app settings present; uploads disabled for demo.')
+          host=subprocess.check_output(['az','webapp','show','--resource-group','rg-samct-prod',
+                                        '--name','samct-villages','--query','defaultHostName',
+                                        '--output','tsv'],text=True).strip()
+          if host not in [value.strip() for value in configured.get('AllowedHosts','').split(';')]:
+              sys.exit('Deployment blocked: AllowedHosts must include the Azure App Service hostname: '+host)
+          print('Required app settings present, correct AllowedHosts and uploads disabled for demo.')
           PY
       - name: Deploy to Azure App Service
         uses: azure/webapps-deploy@v3
@@ -87,8 +92,10 @@ jobs:
           package: ./publish
       - name: Check deployed API health
         run: |
+          HOST="$(az webapp show --resource-group rg-samct-prod --name samct-villages --query defaultHostName --output tsv)"
+          test -n "$HOST" || { echo "Missing Azure App Service hostname"; exit 1; }
           for i in $(seq 1 18); do
-            if curl --fail --silent --show-error --max-time 10 https://samct-villages.azurewebsites.net/api/health; then
+            if curl --fail --silent --show-error --max-time 10 "https://$HOST/api/health"; then
               exit 0
             fi
             sleep 10
