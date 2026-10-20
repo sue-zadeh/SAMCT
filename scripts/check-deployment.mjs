@@ -16,7 +16,8 @@ for (const route of ['/', '/about', '/marketing', '/contactUs']) {
 }
 const portal = await html('portal.html')
 assert.match(portal, /name="robots" content="noindex, nofollow"/)
-assert.doesNotMatch(portal, /rel="canonical"|application\\/ld\\+json/)
+assert.ok(!portal.includes('rel="canonical"'), 'private portal must not have a canonical URL')
+assert.ok(!portal.includes('application/ld+json'), 'private portal must not contain public structured data')
 const errorPage = await html('404.html')
 assert.match(errorPage, /Page not found/)
 const assets = await readdir('dist/assets')
