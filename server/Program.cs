@@ -126,3 +126,4 @@ app.MapGet("/api/health", () => Results.Ok(new { status = "ok" })).AllowAnonymou
 if (await app.RunMigrationsIfRequestedAsync(args, localEnvironment)) return;
 app.Run();
 
+
