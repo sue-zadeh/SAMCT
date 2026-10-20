@@ -107,7 +107,6 @@ app.Use(async (context, next) => {
     context.Response.Headers.ContentSecurityPolicy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data: blob: https://images.unsplash.com; connect-src 'self'; frame-src https://www.google.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'";
     if (context.Request.Path.StartsWithSegments("/api") || context.Request.Path.StartsWithSegments("/uploads")) {
         context.Response.Headers.CacheControl = "no-store";
-        context.Response.Headers["X-Robots-Tag"] = "noindex, nofollow";
     }
     try { await next(); }
     catch (UploadValidationException error) {
