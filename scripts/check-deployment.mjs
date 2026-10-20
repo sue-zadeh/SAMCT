@@ -10,7 +10,7 @@ async function html(path) {
 for (const route of ['/', '/about', '/marketing', '/contactUs']) {
   const path = route === '/' ? 'index.html' : route.slice(1) + '/index.html'
   const content = await html(path)
-  assert.match(content, /<h1(?:\\s|>)/i, route + ' must contain server-rendered content')
+  assert.match(content, /<h1(?:\s|>)/i, route + ' must contain server-rendered content')
   assert.match(content, /<meta name="robots" content="(?:noindex, nofollow|index, follow)"/i,
     route + ' must have explicit robots metadata')
 }
@@ -20,8 +20,8 @@ assert.doesNotMatch(portal, /rel="canonical"|application\\/ld\\+json/)
 const errorPage = await html('404.html')
 assert.match(errorPage, /Page not found/)
 const assets = await readdir('dist/assets')
-assert.ok(assets.some(file => /\\.js$/.test(file)), 'React JavaScript must be built')
-assert.ok(assets.some(file => /\\.css$/.test(file)), 'React stylesheets must be built')
+assert.ok(assets.some(file => /\.js$/.test(file)), 'React JavaScript must be built')
+assert.ok(assets.some(file => /\.css$/.test(file)), 'React stylesheets must be built')
 await readFile('dist/robots.txt')
 await readFile('dist/sitemap.xml')
 console.log('Azure deploy artifact checks passed: public HTML, private noindex shell, 404 page, React assets and SEO outputs.')
