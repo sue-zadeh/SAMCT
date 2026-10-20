@@ -8,7 +8,7 @@ namespace server.Controllers;
 
 [ApiController]
 [Route("uploads")]
-public class UploadController(AppDbContext database, UploadStorage uploads, MalwareScanner scanner, IWebHostEnvironment environment) : ControllerBase
+public class UploadController(AppDbContext database, UploadStorage uploads, IWebHostEnvironment environment) : ControllerBase
 {
     [AllowAnonymous, HttpGet("{**path}")]
     public async Task<IActionResult> Download(string path)
@@ -61,8 +61,6 @@ public class UploadController(AppDbContext database, UploadStorage uploads, Malw
         }
         var filePath = uploads.Resolve(path);
         if (filePath is null) return NotFound();
-        // Scan downloads too: this includes files uploaded before scanning was introduced.
-        await using (var scanInput = System.IO.File.OpenRead(filePath)) await scanner.Scan(scanInput);
         if (UploadStorage.IsImage(path)) {
             await using var stream = System.IO.File.OpenRead(filePath);
             await UploadStorage.ValidateSignature(stream, Path.GetExtension(path).ToLowerInvariant());
