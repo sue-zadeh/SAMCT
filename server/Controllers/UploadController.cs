@@ -8,14 +8,28 @@ namespace server.Controllers;
 
 [ApiController]
 [Route("uploads")]
-public class UploadController(AppDbContext database, UploadStorage uploads, MalwareScanner scanner) : ControllerBase
+public class UploadController(AppDbContext database, UploadStorage uploads, MalwareScanner scanner, IConfiguration configuration, IWebHostEnvironment environment) : ControllerBase
 {
     [AllowAnonymous, HttpGet("{**path}")]
     public async Task<IActionResult> Download(string path)
     {
-        if (HttpContext.RequestServices.GetRequiredService<IConfiguration>().GetValue<bool?>("Security:Uploads:Enabled") == false)
-            return NotFound();
         var url = "/uploads/" + path;
+        if (configuration.GetValue<bool?>("Security:Uploads:Enabled") == false)
+        {
+            // Demo mode: no user uploads or downloads. Serve only published, bundled
+            // JPEG brochure images shipped in the audited application source.
+            const string prefix = "ngatea-sep-2026/";
+            if (!path.StartsWith(prefix, StringComparison.Ordinal) ||
+                !System.Text.RegularExpressions.Regex.IsMatch(path[prefix.Length..], "^[a-zA-Z0-9-]+[.]jpg$"))
+                return NotFound();
+            var published = await database.MarketingContents.AsNoTracking()
+                .AnyAsync(content => content.IsPublished && content.Images.Contains(url));
+            if (!published) return NotFound();
+            var imagePath = Path.Combine(environment.ContentRootPath, "Content", "Marketing",
+                "ngatea-sep-2026", path[prefix.Length..]);
+            if (!System.IO.File.Exists(imagePath)) return NotFound();
+            return PhysicalFile(imagePath, "image/jpeg");
+        }
         var property = await database.VillageProperties.AsNoTracking().FirstOrDefaultAsync(item =>
             item.DocumentUrl1 == url || item.DocumentUrl2 == url || item.MarketingImageUrl1 == url ||
             item.MarketingImageUrl2 == url || item.MarketingImageUrl3 == url || item.MarketingImageUrl4 == url || item.MarketingImageUrl5 == url ||

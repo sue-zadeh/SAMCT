@@ -141,13 +141,13 @@ var webRoot = app.Environment.WebRootPath ?? Path.Combine(app.Environment.Conten
 if (File.Exists(Path.Combine(webRoot, "portal.html"))) {
     foreach (var route in new[] { "/about", "/marketing", "/contactUs" }) {
         var pagePath = Path.Combine(webRoot, route.TrimStart('/'), "index.html");
-        app.MapGet(route, () => Results.PhysicalFile(pagePath, "text/html; charset=utf-8")).AllowAnonymous();
+        app.MapGet(route, () => Results.File(pagePath, "text/html; charset=utf-8")).AllowAnonymous();
     }
     var portalPath = Path.Combine(webRoot, "portal.html");
     foreach (var prefix in new[] { "login", "register", "forgot-password", "reset-password",
                                     "admin", "resident", "village-manager", "account" }) {
-        app.MapGet("/" + prefix, () => Results.PhysicalFile(portalPath, "text/html; charset=utf-8")).AllowAnonymous();
-        app.MapGet("/" + prefix + "/{**rest}", () => Results.PhysicalFile(portalPath, "text/html; charset=utf-8")).AllowAnonymous();
+        app.MapGet("/" + prefix, () => Results.File(portalPath, "text/html; charset=utf-8")).AllowAnonymous();
+        app.MapGet("/" + prefix + "/{**rest}", () => Results.File(portalPath, "text/html; charset=utf-8")).AllowAnonymous();
     }
 }
 if (args.Contains("--migrate")) {
