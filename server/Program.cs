@@ -114,7 +114,6 @@ app.Use(async (context, next) => {
         await context.Response.WriteAsJsonAsync(new { message = error.Message });
     }
 });
-// Serve the React build without any Azure-specific backend configuration.
 app.UseReactClient();
 app.UseRouting();
 app.UseCors();
