@@ -122,6 +122,7 @@ export default function Navbar({ userType }: NavbarProps) {
     return () => window.removeEventListener('resize', checkScreen)
   }, [])
 
+  
   const handleLogout = async () => {
     try {
       const response = await apiFetch(`${API_BASE_URL}/api/logout`, {
