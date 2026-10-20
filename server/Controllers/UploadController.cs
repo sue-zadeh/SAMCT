@@ -14,7 +14,7 @@ public class UploadController(AppDbContext database, UploadStorage uploads, Malw
     public async Task<IActionResult> Download(string path)
     {
         var url = "/uploads/" + path;
-        if (configuration.GetValue<bool?>("Security:Uploads:Enabled") == false)
+        if (!uploads.Enabled)
         {
             // Demo mode: no user uploads or downloads. Serve only published, bundled
             // JPEG brochure images shipped in the audited application source.
