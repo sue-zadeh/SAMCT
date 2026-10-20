@@ -106,7 +106,6 @@ const profileForRole: Record<Exclude<UserType, 'public'>, NavEntry[]> = {
     { label: 'Change Password', path: '/resident/profile/password' },
   ],
 }
-
 export default function Navbar({ userType }: NavbarProps) {
   const { pathname, search } = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
