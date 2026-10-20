@@ -14,15 +14,10 @@ const environment = {
   DataProtection__KeyPath: resolve('.playwright/keys'),
   Testing__OutboxPath: resolve('.playwright/outbox'),
   EmailSettings__ToEmail: 'contact@example.test',
-  Security__MalwareScan__Enabled: 'true',
-  Security__MalwareScan__Host: '127.0.0.1',
-  Security__MalwareScan__Port: process.env.SAMCT_E2E_SCANNER_PORT || '3310',
   EmailSettings__FrontendUrl: 'http://127.0.0.1:5173',
   Database__AutoMigrate: 'false',
   // Tests use the same-origin proxy and never inherit a developer's remote API URL.
   VITE_API_BASE_URL: '',
-  VITE_ALLOW_INDEXING: 'false',
-  VITE_SITE_URL: '',
   SAMCT_API_PROXY: 'http://127.0.0.1:5072',
 }
 await rm('.playwright/outbox', { recursive: true, force: true })
