@@ -15,13 +15,3 @@ services:
       interval: 3s
       timeout: 3s
       retries: 20
-  scanner:
-    image: clamav/clamav:stable
-    ports:
-      - "127.0.0.1:${SAMCT_E2E_SCANNER_PORT:-3311}:3310"
-    healthcheck:
-      test: ["CMD", "clamdscan", "--ping=1"]
-      interval: 10s
-      timeout: 10s
-      retries: 30
-      start_period: 60s
