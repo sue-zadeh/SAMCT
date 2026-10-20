@@ -4,16 +4,13 @@ namespace server.Security;
 
 public sealed class UploadValidationException(string message) : Exception(message);
 
-public class UploadStorage(IWebHostEnvironment environment, IConfiguration configuration, MalwareScanner scanner)
+public class UploadStorage(IWebHostEnvironment environment, IConfiguration configuration)
 {
-    // Uploads require an explicit opt-in in production without a malware scanner.
-    // Development and CI testing retain their existing behavior.
-    public static bool AreUploadsEnabled(IConfiguration settings, IWebHostEnvironment host) =>
-        settings.GetValue<bool?>("Security:Uploads:Enabled") ??
-        (host.IsDevelopment() || host.IsEnvironment("Testing") ||
-         !string.IsNullOrWhiteSpace(settings["Security:MalwareScan:Host"]));
-
-    public bool Enabled => AreUploadsEnabled(configuration, environment);
+    // Unscanned file uploads are permitted only for isolated local development/testing.
+    // Production downloads of bundled, published brochure images remain available.
+    public bool Enabled =>
+        (environment.IsDevelopment() || environment.IsEnvironment("Testing")) &&
+        configuration.GetValue<bool?>("Security:Uploads:Enabled") != false;
 
     public string Root => Path.GetFullPath(configuration["Storage:UploadPath"] ?? Path.Combine(environment.ContentRootPath, "storage", "uploads"));
     private static readonly Dictionary<string, string> Types = new(StringComparer.OrdinalIgnoreCase) {
@@ -38,8 +35,6 @@ public class UploadStorage(IWebHostEnvironment environment, IConfiguration confi
             throw new UploadValidationException("The file type does not match its extension.");
         await using var input = file.OpenReadStream();
         await ValidateSignature(input, extension);
-        input.Position = 0;
-        await scanner.Scan(input);
         input.Position = 0;
         var filename = $"{Guid.NewGuid():N}{extension}";
         var directory = Path.Combine(Root, folder);
