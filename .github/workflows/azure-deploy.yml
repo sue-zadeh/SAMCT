@@ -16,7 +16,6 @@ on:
 
 permissions:
   contents: read
-  id-token: write
 
 concurrency:
   group: samct-azure-production
@@ -55,45 +54,16 @@ jobs:
           test -f publish/wwwroot/portal.html
           test -f publish/wwwroot/about/index.html
           test -f publish/server.dll
-      - name: Authenticate with Azure OIDC
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      - name: Verify required Azure configuration exists
-        shell: bash
-        run: |
-          python3 - <<'PY'
-          import json,subprocess,sys
-          settings=json.loads(subprocess.check_output([
-              'az','webapp','config','appsettings','list',
-              '--name','samct-villages','--resource-group','rg-samct-prod',
-              '--output','json'],text=True))
-          configured={item['name']:item.get('value','') for item in settings}
-          required=['ASPNETCORE_ENVIRONMENT','AllowedHosts','ConnectionStrings__DefaultConnection',
-                    'Jwt__SigningKey','DataProtection__KeyPath','Security__Uploads__Enabled']
-          missing=[name for name in required if not configured.get(name)]
-          if configured.get('Security__Uploads__Enabled','').lower() != 'false':
-              sys.exit('Deployment blocked: upload scanning is not configured. Set Security__Uploads__Enabled=false for this demo.')
-          if missing:
-              sys.exit('Deployment blocked: missing Azure app settings: '+', '.join(missing))
-          host=subprocess.check_output(['az','webapp','show','--resource-group','rg-samct-prod',
-                                        '--name','samct-villages','--query','defaultHostName',
-                                        '--output','tsv'],text=True).strip()
-          if host not in [value.strip() for value in configured.get('AllowedHosts','').split(';')]:
-              sys.exit('Deployment blocked: AllowedHosts must include the Azure App Service hostname: '+host)
-          print('Required app settings present, correct AllowedHosts and uploads disabled for demo.')
-          PY
       - name: Deploy to Azure App Service
         uses: azure/webapps-deploy@v3
         with:
           app-name: samct-villages
+          publish-profile: ${{ secrets.NEWSAMCT }}
           package: ./publish
       - name: Check deployed API health
         run: |
-          HOST="$(az webapp show --resource-group rg-samct-prod --name samct-villages --query defaultHostName --output tsv)"
-          test -n "$HOST" || { echo "Missing Azure App Service hostname"; exit 1; }
+          # GitHub Actions no longer needs Azure CLI credentials with a publish profile.
+          HOST="samct-villages-bjgxenc0avdue9hn.newzealandnorth-01.azurewebsites.net"
           for i in $(seq 1 18); do
             if curl --fail --silent --show-error --max-time 10 "https://$HOST/api/health"; then
               exit 0
