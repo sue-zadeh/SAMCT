@@ -6,6 +6,15 @@ public sealed class UploadValidationException(string message) : Exception(messag
 
 public class UploadStorage(IWebHostEnvironment environment, IConfiguration configuration, MalwareScanner scanner)
 {
+    // Uploads require an explicit opt-in in production without a malware scanner.
+    // Development and CI testing retain their existing behavior.
+    public static bool AreUploadsEnabled(IConfiguration settings, IWebHostEnvironment host) =>
+        settings.GetValue<bool?>("Security:Uploads:Enabled") ??
+        (host.IsDevelopment() || host.IsEnvironment("Testing") ||
+         !string.IsNullOrWhiteSpace(settings["Security:MalwareScan:Host"]));
+
+    public bool Enabled => AreUploadsEnabled(configuration, environment);
+
     public string Root => Path.GetFullPath(configuration["Storage:UploadPath"] ?? Path.Combine(environment.ContentRootPath, "storage", "uploads"));
     private static readonly Dictionary<string, string> Types = new(StringComparer.OrdinalIgnoreCase) {
         [".png"] = "image/png", [".jpg"] = "image/jpeg", [".jpeg"] = "image/jpeg", [".pdf"] = "application/pdf",
@@ -18,7 +27,7 @@ public class UploadStorage(IWebHostEnvironment environment, IConfiguration confi
     public async Task<string> Save(IFormFile? file, string folder, bool imagesOnly = false)
     {
         if (file is null) return "";
-        if (configuration.GetValue<bool?>("Security:Uploads:Enabled") == false)
+        if (!Enabled)
             throw new UploadValidationException("File uploads are temporarily unavailable.");
         var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
         var limit = imagesOnly ? 2 * 1024 * 1024 : 5 * 1024 * 1024;
