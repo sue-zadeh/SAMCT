@@ -33,7 +33,7 @@ import DocumentsAdmin from './components/documents-admin'
 import MaintenanceAdmin from './components/maintenance-admin'
 import AdminVillageProperties from './components/admin-village-properties'
 import MyVillage from './components/my-village'
-import ForgotPassword from './components/forgot-password'
+import ForgotPassword from './components/password-forgot'
 import ResetPassword from './components/password-reset'
 
 function App() {

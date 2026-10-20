@@ -1,0 +1,76 @@
+;
+; Archive created at 2026-10-20 01:24:52 UTC
+;     dbname: samctdb
+;     TOC Entries: 67
+;     Compression: gzip
+;     Dump Version: 1.15-0
+;     Format: CUSTOM
+;     Integer: 4 bytes
+;     Offset: 8 bytes
+;     Dumped from database version: 16.11 (Debian 16.11-1.pgdg13+1)
+;     Dumped by pg_dump version: 16.11 (Debian 16.11-1.pgdg13+1)
+;
+;
+; Selected TOC Entries:
+;
+2; 3079 16647 EXTENSION - pgcrypto 
+3561; 0 0 COMMENT - EXTENSION pgcrypto 
+229; 1259 16604 TABLE public AuthSessions postgres
+218; 1259 16514 TABLE public ContactMessages postgres
+217; 1259 16513 SEQUENCE public ContactMessages_Id_seq postgres
+224; 1259 16554 TABLE public DocumentNotices postgres
+223; 1259 16553 SEQUENCE public DocumentNotices_Id_seq postgres
+222; 1259 16530 TABLE public MaintenanceRequests postgres
+221; 1259 16529 SEQUENCE public MaintenanceRequests_Id_seq postgres
+232; 1259 16635 TABLE public MarketingContents postgres
+231; 1259 16634 SEQUENCE public MarketingContents_Id_seq postgres
+230; 1259 16617 TABLE public MfaChallenges postgres
+226; 1259 16567 TABLE public PurchaseOrders postgres
+225; 1259 16566 SEQUENCE public PurchaseOrders_Id_seq postgres
+220; 1259 16522 TABLE public Users postgres
+219; 1259 16521 SEQUENCE public Users_Id_seq postgres
+228; 1259 16575 TABLE public VillageProperties postgres
+227; 1259 16574 SEQUENCE public VillageProperties_Id_seq postgres
+216; 1259 16508 TABLE public __EFMigrationsHistory postgres
+3550; 0 16604 TABLE DATA public AuthSessions postgres
+3539; 0 16514 TABLE DATA public ContactMessages postgres
+3545; 0 16554 TABLE DATA public DocumentNotices postgres
+3543; 0 16530 TABLE DATA public MaintenanceRequests postgres
+3553; 0 16635 TABLE DATA public MarketingContents postgres
+3551; 0 16617 TABLE DATA public MfaChallenges postgres
+3547; 0 16567 TABLE DATA public PurchaseOrders postgres
+3541; 0 16522 TABLE DATA public Users postgres
+3549; 0 16575 TABLE DATA public VillageProperties postgres
+3537; 0 16508 TABLE DATA public __EFMigrationsHistory postgres
+3562; 0 0 SEQUENCE SET public ContactMessages_Id_seq postgres
+3563; 0 0 SEQUENCE SET public DocumentNotices_Id_seq postgres
+3564; 0 0 SEQUENCE SET public MaintenanceRequests_Id_seq postgres
+3565; 0 0 SEQUENCE SET public MarketingContents_Id_seq postgres
+3566; 0 0 SEQUENCE SET public PurchaseOrders_Id_seq postgres
+3567; 0 0 SEQUENCE SET public Users_Id_seq postgres
+3568; 0 0 SEQUENCE SET public VillageProperties_Id_seq postgres
+3381; 2606 16608 CONSTRAINT public AuthSessions PK_AuthSessions postgres
+3362; 2606 16520 CONSTRAINT public ContactMessages PK_ContactMessages postgres
+3373; 2606 16560 CONSTRAINT public DocumentNotices PK_DocumentNotices postgres
+3370; 2606 16536 CONSTRAINT public MaintenanceRequests PK_MaintenanceRequests postgres
+3388; 2606 16642 CONSTRAINT public MarketingContents PK_MarketingContents postgres
+3385; 2606 16621 CONSTRAINT public MfaChallenges PK_MfaChallenges postgres
+3375; 2606 16573 CONSTRAINT public PurchaseOrders PK_PurchaseOrders postgres
+3366; 2606 16528 CONSTRAINT public Users PK_Users postgres
+3377; 2606 16581 CONSTRAINT public VillageProperties PK_VillageProperties postgres
+3360; 2606 16512 CONSTRAINT public __EFMigrationsHistory PK___EFMigrationsHistory postgres
+3378; 1259 16614 INDEX public IX_AuthSessions_ExpiresAt postgres
+3379; 1259 16615 INDEX public IX_AuthSessions_UserId postgres
+3371; 1259 16582 INDEX public IX_DocumentNotices_CreatedByUserId postgres
+3367; 1259 16547 INDEX public IX_MaintenanceRequests_HandledById postgres
+3368; 1259 16548 INDEX public IX_MaintenanceRequests_UserId postgres
+3386; 1259 16643 INDEX public IX_MarketingContents_Slug postgres
+3382; 1259 16628 INDEX public IX_MfaChallenges_ExpiresAt postgres
+3383; 1259 16627 INDEX public IX_MfaChallenges_UserId postgres
+3363; 1259 16602 INDEX public IX_Users_NormalizedEmail postgres
+3364; 1259 16601 INDEX public IX_Users_NormalizedUserName postgres
+3392; 2606 16609 FK CONSTRAINT public AuthSessions FK_AuthSessions_Users_UserId postgres
+3391; 2606 16561 FK CONSTRAINT public DocumentNotices FK_DocumentNotices_Users_CreatedByUserId postgres
+3389; 2606 16583 FK CONSTRAINT public MaintenanceRequests FK_MaintenanceRequests_Users_HandledById postgres
+3390; 2606 16588 FK CONSTRAINT public MaintenanceRequests FK_MaintenanceRequests_Users_UserId postgres
+3393; 2606 16622 FK CONSTRAINT public MfaChallenges FK_MfaChallenges_Users_UserId postgres
