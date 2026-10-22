@@ -3,7 +3,8 @@ import { lazy, Suspense, useEffect, useState } from 'react'
 import Navbar from './navbar'
 import type { UnitPhotoSlot } from './unit-photo-editor'
 const UnitPhotoEditor = lazy(() => import('./unit-photo-editor'))
-const emptyUnitPhotos = (): UnitPhotoSlot[] => Array.from({ length: 10 }, () => ({ url: '', file: null, removed: false }))
+const emptyUnitPhotos = (): UnitPhotoSlot[] =>
+  Array.from({ length: 10 }, () => ({ url: '', file: null, removed: false }))
 const MarketingContentEditor = lazy(() => import('./marketing-content-editor'))
 import { useNavigate } from 'react-router-dom'
 
@@ -68,7 +69,8 @@ function MyVillage() {
   const [document1, setDocument1] = useState<File | null>(null)
   const [document2, setDocument2] = useState<File | null>(null)
 
-  const [marketingPhotos, setMarketingPhotos] = useState<UnitPhotoSlot[]>(emptyUnitPhotos)
+  const [marketingPhotos, setMarketingPhotos] =
+    useState<UnitPhotoSlot[]>(emptyUnitPhotos)
   const [saving, setSaving] = useState(false)
 
   const [isVisibleOnMarketing, setIsVisibleOnMarketing] = useState(false)
@@ -142,7 +144,7 @@ function MyVillage() {
   }, [message, error])
 
   const clearForm = () => {
-    setFormVersion(version => version + 1)
+    setFormVersion((version) => version + 1)
     setUnitNumber('')
     setAddress('')
     setResidentCount(0)
@@ -187,8 +189,12 @@ function MyVillage() {
     formData.append('address', address)
     formData.append('residentCount', String(residentCount))
     formData.append('residentName', residentCount > 0 ? residentName : '')
-    if (residentCount > 0 && residentEmail.trim()) formData.append('residentEmail', residentEmail)
-    formData.append('residentOccupation', residentCount > 0 ? residentOccupation : '')
+    if (residentCount > 0 && residentEmail.trim())
+      formData.append('residentEmail', residentEmail)
+    formData.append(
+      'residentOccupation',
+      residentCount > 0 ? residentOccupation : '',
+    )
     formData.append('villageManagerName', villageManagerName)
     formData.append('notes', notes)
     formData.append('isVisibleOnMarketing', String(isVisibleOnMarketing))
@@ -200,7 +206,8 @@ function MyVillage() {
 
     marketingPhotos.forEach((photo, index) => {
       if (photo.file) formData.append(`marketingImage${index + 1}`, photo.file)
-      if (photo.removed) formData.append('removeMarketingImages', String(index + 1))
+      if (photo.removed)
+        formData.append('removeMarketingImages', String(index + 1))
     })
 
     setSaving(true)
@@ -231,7 +238,9 @@ function MyVillage() {
       await loadProperties()
     } catch (err: any) {
       setError(err.message || 'Failed to save property.')
-    } finally { setSaving(false) }
+    } finally {
+      setSaving(false)
+    }
   }
 
   const handleEdit = (property: VillageProperty) => {
@@ -248,9 +257,15 @@ function MyVillage() {
     setIsVisibleOnMarketing(property.isVisibleOnMarketing || false)
     setMarketingTitle(property.marketingTitle || '')
     setMarketingDescription(property.marketingDescription || '')
-    setMarketingPhotos(emptyUnitPhotos().map((photo, index) => ({
-      ...photo, url: String(property[`marketingImageUrl${index + 1}` as keyof VillageProperty] || ''),
-    })))
+    setMarketingPhotos(
+      emptyUnitPhotos().map((photo, index) => ({
+        ...photo,
+        url: String(
+          property[`marketingImageUrl${index + 1}` as keyof VillageProperty] ||
+            '',
+        ),
+      })),
+    )
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -343,8 +358,16 @@ function MyVillage() {
           </div>
         </section>
 
-        {message && <div role="status" className="alert alert-success">{message}</div>}
-        {error && <div role="alert" className="alert alert-danger">{error}</div>}
+        {message && (
+          <div role="status" className="alert alert-success">
+            {message}
+          </div>
+        )}
+        {error && (
+          <div role="alert" className="alert alert-danger">
+            {error}
+          </div>
+        )}
 
         <section className="mb-4">
           <div className="row g-3">
@@ -395,8 +418,14 @@ function MyVillage() {
             <form key={formVersion} onSubmit={handleSubmit}>
               <div className="row g-3">
                 <div className="col-md-2">
-                  <label htmlFor="unit-number" className="form-label fw-semibold">Unit Number</label>
-                  <input id="unit-number"
+                  <label
+                    htmlFor="unit-number"
+                    className="form-label fw-semibold"
+                  >
+                    Unit Number
+                  </label>
+                  <input
+                    id="unit-number"
                     className="form-control"
                     value={unitNumber}
                     onChange={(e) => setUnitNumber(e.target.value)}
@@ -404,8 +433,14 @@ function MyVillage() {
                 </div>
 
                 <div className="col-md-5">
-                  <label htmlFor="unit-address" className="form-label fw-semibold">Address</label>
-                  <input id="unit-address"
+                  <label
+                    htmlFor="unit-address"
+                    className="form-label fw-semibold"
+                  >
+                    Address
+                  </label>
+                  <input
+                    id="unit-address"
                     className="form-control"
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
@@ -413,12 +448,17 @@ function MyVillage() {
                 </div>
 
                 <div className="col-md-3">
-                  <label htmlFor="unit-resident-count" className="form-label fw-semibold">
+                  <label
+                    htmlFor="unit-resident-count"
+                    className="form-label fw-semibold"
+                  >
                     Number of Residents
                   </label>
-                  <input id="unit-resident-count"
+                  <input
+                    id="unit-resident-count"
                     type="number"
-                    min="0" max="20"
+                    min="0"
+                    max="20"
                     className="form-control"
                     value={residentCount}
                     onChange={(e) => setResidentCount(Number(e.target.value))}
@@ -426,10 +466,14 @@ function MyVillage() {
                 </div>
 
                 <div className="col-md-2">
-                  <label htmlFor="unit-resident-name" className="form-label fw-semibold">
+                  <label
+                    htmlFor="unit-resident-name"
+                    className="form-label fw-semibold"
+                  >
                     Resident Name
                   </label>
-                  <select id="unit-resident-name"
+                  <select
+                    id="unit-resident-name"
                     className="form-select"
                     value={residentName}
                     onChange={(e) => {
@@ -446,7 +490,9 @@ function MyVillage() {
                       setResidentEmail(selectedResident?.email || '')
                     }}
                   >
-                    <option value="">Select resident (leave empty for a vacant unit)</option>
+                    <option value="">
+                      Select resident (leave empty for a vacant unit)
+                    </option>
                     {residents.map((resident) => {
                       const name =
                         resident.fullName ||
@@ -485,10 +531,14 @@ function MyVillage() {
                 </div>
 
                 <div className="col-md-4">
-                  <label htmlFor="unit-manager" className="form-label fw-semibold">
+                  <label
+                    htmlFor="unit-manager"
+                    className="form-label fw-semibold"
+                  >
                     Village Manager
                   </label>
-                  <select id="unit-manager"
+                  <select
+                    id="unit-manager"
                     className="form-select"
                     value={villageManagerName}
                     onChange={(e) => setVillageManagerName(e.target.value)}
@@ -532,17 +582,24 @@ function MyVillage() {
                         setIsVisibleOnMarketing(e.target.checked)
                       }
                     />
-                    <label htmlFor="unit-marketing-visible" className="form-check-label">
+                    <label
+                      htmlFor="unit-marketing-visible"
+                      className="form-check-label"
+                    >
                       Show this property on the public Marketing page
                     </label>
                   </div>
                 </div>
 
                 <div className="col-12">
-                  <label htmlFor="unit-marketing-title" className="form-label fw-semibold">
+                  <label
+                    htmlFor="unit-marketing-title"
+                    className="form-label fw-semibold"
+                  >
                     Marketing Title
                   </label>
-                  <input id="unit-marketing-title"
+                  <input
+                    id="unit-marketing-title"
                     className="form-control"
                     value={marketingTitle}
                     onChange={(e) => setMarketingTitle(e.target.value)}
@@ -551,10 +608,14 @@ function MyVillage() {
                 </div>
 
                 <div className="col-12">
-                  <label htmlFor="unit-marketing-description" className="form-label fw-semibold">
+                  <label
+                    htmlFor="unit-marketing-description"
+                    className="form-label fw-semibold"
+                  >
                     Marketing Description
                   </label>
-                  <textarea id="unit-marketing-description"
+                  <textarea
+                    id="unit-marketing-description"
                     rows={4}
                     className="form-control"
                     value={marketingDescription}
@@ -587,14 +648,25 @@ function MyVillage() {
                   />
                 </div>
 
-                <Suspense fallback={<p>Loading photo editor…</p>}><UnitPhotoEditor photos={marketingPhotos} onChange={setMarketingPhotos} disabled={saving} /></Suspense>
+                <Suspense fallback={<p>Loading photo editor…</p>}>
+                  <UnitPhotoEditor
+                    photos={marketingPhotos}
+                    onChange={setMarketingPhotos}
+                    disabled={saving}
+                  />
+                </Suspense>
 
                 <div className="col-12 d-flex gap-2">
                   <button
                     className="btn btn-primary samct-button"
-                    type="submit" disabled={saving}
+                    type="submit"
+                    disabled={saving}
                   >
-                    {saving ? 'Saving...' : editingId ? 'Update Property' : 'Save Property'}
+                    {saving
+                      ? 'Saving...'
+                      : editingId
+                        ? 'Update Property'
+                        : 'Save Property'}
                   </button>
 
                   {editingId && (
@@ -765,7 +837,9 @@ function MyVillage() {
             )}
           </div>
         </section>
-        <Suspense fallback={<p>Loading brochure editor…</p>}><MarketingContentEditor village={village} /></Suspense>
+        <Suspense fallback={<p>Loading brochure editor…</p>}>
+          <MarketingContentEditor village={village} />
+        </Suspense>
       </main>
     </>
   )
