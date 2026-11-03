@@ -12,6 +12,7 @@ export type MarketingContent = {
   priceNzd: number | null
   availability: string
   sourceLabel: string
+  sourceUrl?: string
   contactName: string
   contactPhone: string
   isPublished?: boolean

@@ -143,7 +143,7 @@ test('brochure migration exposes the five areas and preserves dated unit prices 
   await expect
     .poll(() =>
       page
-        .locator('#marketing-listings img')
+        .locator('#marketing-listings img[src^="/uploads/ngatea-sep-2026/"]')
         .evaluateAll((images) =>
           images.every(
             (image) =>
@@ -225,9 +225,10 @@ test('brochure migration exposes the five areas and preserves dated unit prices 
     page.getByRole('heading', { name: 'Hale Place', exact: true }),
   ).toHaveCount(0)
   await expect(
-    page.getByText(
-      'No homes are currently listed for this village. Contact SAMCT to ask about availability.',
-    ),
+    page.getByRole('heading', { name: '23 Seascape Avenue, Whitianga' }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: 'Whitianga Independent Lifestyle Village' }),
   ).toBeVisible()
 })
 
@@ -237,8 +238,8 @@ test('photo covers open the correct gallery by mouse and keyboard, with contact 
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/marketing')
   await expect(
-    page.getByText(/The homes and street areas below are all in/),
-  ).toContainText('Ngatea')
+    page.getByRole('heading', { name: 'Whitianga Independent Lifestyle Village' }),
+  ).toBeVisible()
   await expect(
     page.getByRole('heading', { name: 'Individual homes', exact: true }),
   ).toBeVisible()

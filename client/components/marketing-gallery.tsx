@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { Modal } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
-import { API_BASE_URL } from '../security/api'
 import type { GalleryEntry } from './marketing'
 import MarketingContact from './marketing-contact'
+import { marketingImageSrc } from './marketing-image'
 
 const priceFormat = new Intl.NumberFormat('en-NZ', { style: 'currency', currency: 'NZD', maximumFractionDigits: 0 })
 export default function MarketingGallery({ entry: selectedEntry, initialPhotoIndex = 0, onClose }: { entry: GalleryEntry; initialPhotoIndex?: number; onClose: () => void }) {
@@ -29,11 +29,18 @@ export default function MarketingGallery({ entry: selectedEntry, initialPhotoInd
           </p>}
           {selectedEntry.kind === 'area' && <p className="rounded-3 bg-light p-3 small">This gallery introduces the street area. Photos may show different homes or example interiors, alongside an aerial or development image. Reference interiors do not confirm the layout or finish of an available home. Ask the team to confirm the photos for the specific unit you are considering.</p>}
           {selectedEntry.kind === 'area' && selectedEntry.images.some(image => /^\/uploads\/ngatea-sep-2026\/masons(?:[5-9]|10)\.jpg$/.test(image)) && <p className="small text-secondary">Additional interiors were supplied as staged examples in the Masons Way folder. Their source filenames identify 71 Darlington St; they are not verified photos of 11 or 1A Masons Way.</p>}
+          {selectedEntry.sourceUrl && (
+            <p className="small">
+              <a href={selectedEntry.sourceUrl} target="_blank" rel="noopener noreferrer">
+                View original Richardsons Real Estate listing
+              </a>
+            </p>
+          )}
           <MarketingContact contactName={selectedEntry.contactName} contactPhone={selectedEntry.contactPhone} />
           {selectedEntry.images.length > 0 &&
 
           <div aria-label="Photo gallery">
-            <img src={`${API_BASE_URL}${selectedEntry.images[photoIndex]}`}
+            <img src={marketingImageSrc(selectedEntry.images[photoIndex])}
               alt={`${selectedEntry.title}, image ${photoIndex + 1}`}
               className="w-100 rounded-3 bg-light"
               style={{ height: 'min(55vh, 520px)', objectFit: 'contain' }} />
@@ -55,7 +62,7 @@ export default function MarketingGallery({ entry: selectedEntry, initialPhotoInd
               <button type="button" key={`${image}-${index}`}
                 className={`btn p-1 flex-shrink-0 ${index === photoIndex ? 'btn-primary' : 'btn-outline-secondary'}`}
                 aria-label={`Show image ${index + 1}`} aria-pressed={index === photoIndex}
-                onClick={() => setPhotoIndex(index)}><img src={`${API_BASE_URL}${image}`}
+                onClick={() => setPhotoIndex(index)}><img src={marketingImageSrc(image)}
                 alt="" width={88} height={66} loading="lazy" style={{ objectFit: 'cover' }} />
               </button>)}
 
