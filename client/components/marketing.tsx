@@ -7,6 +7,8 @@ import MarketingContact, {
 } from './marketing-contact'
 const MarketingGallery = lazy(() => import('./marketing-gallery'))
 import type { MarketingContent } from './marketing-content-editor'
+import { whitiangaPublicListing } from './whitianga-public-listing'
+import { marketingImageSrc } from './marketing-image'
 
 type MarketingProperty = {
   id: number
@@ -28,6 +30,7 @@ export type GalleryEntry = MarketingContactDetails & {
   sourceLabel?: string
   priceNzd?: number | null
   availability?: string
+  sourceUrl?: string
 }
 
 const priceFormat = new Intl.NumberFormat('en-NZ', {
@@ -102,7 +105,12 @@ function Marketing() {
     return () => controller.abort()
   }, [attempt])
 
-  const visibleContent = content.filter(
+  // Show the dated Richardsons advert until Whitianga has published
+  // its own marketing records. Database content always takes priority.
+  const publicContent = content.some((entry) => entry.village === 'Whitianga')
+    ? content
+    : [...content, ...whitiangaPublicListing]
+  const visibleContent = publicContent.filter(
     (entry) => selectedVillage === 'All' || entry.village === selectedVillage,
   )
   const villageProperties = properties.filter(
@@ -110,7 +118,7 @@ function Marketing() {
       selectedVillage === 'All' || property.village === selectedVillage,
   )
   const villageContact = (village: string) =>
-    content.find(
+    publicContent.find(
       (entry) => entry.village === village && entry.kind === 'contact',
     )
   const propertyEntries: GalleryEntry[] = villageProperties.map((property) => ({
@@ -166,7 +174,7 @@ function Marketing() {
         aria-haspopup="dialog"
       >
         <img
-          src={`${API_BASE_URL}${entry.images[0]}`}
+          src={marketingImageSrc(entry.images[0])}
           alt={entry.title}
           loading="lazy"
           decoding="async"
@@ -204,7 +212,7 @@ function Marketing() {
                   onClick={() => showDetails(entry, index + 1)}
                 >
                   <img
-                    src={`${API_BASE_URL}${image}`}
+                    src={marketingImageSrc(image)}
                     alt=""
                     loading="lazy"
                     decoding="async"
@@ -259,6 +267,13 @@ function Marketing() {
               <p className="small text-secondary">
                 {entry.sourceLabel}
                 {!isArea && ' · Confirm current price and availability.'}
+              </p>
+            )}
+            {entry.sourceUrl && (
+              <p className="small">
+                <a href={entry.sourceUrl} target="_blank" rel="noopener noreferrer">
+                  View original Richardsons listing
+                </a>
               </p>
             )}
             <div className="mt-auto">
@@ -368,6 +383,11 @@ function Marketing() {
                       {entry.description}
                     </p>
                     <p className="small text-secondary">{entry.sourceLabel}</p>
+                    {entry.sourceUrl && (
+                      <a href={entry.sourceUrl} target="_blank" rel="noopener noreferrer">
+                        Original Richardsons listing
+                      </a>
+                    )}
                   </div>
                   {!!entry.images.length && (
                     <div className="col-lg-5">
@@ -488,6 +508,11 @@ function Marketing() {
                       <p className="small text-secondary">
                         {entry.sourceLabel}
                       </p>
+                      {entry.sourceUrl && (
+                        <a href={entry.sourceUrl} target="_blank" rel="noopener noreferrer">
+                          Original Richardsons listing
+                        </a>
+                      )}
                       {entry.kind === 'contact' && (
                         <Link to="/contactUs" className="btn btn-primary">
                           Contact SAMCT
