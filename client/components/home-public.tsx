@@ -30,7 +30,7 @@ function HomePublic() {
             </h1>
 
             <p className="lead mb-3">
-              Community-focused retirement living with village locations in
+              Community-focused independent retirement living with village locations in
               Ngatea, and Whitianga.
             </p>
 

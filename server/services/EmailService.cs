@@ -32,8 +32,11 @@ public class EmailService(IConfiguration configuration, IWebHostEnvironment envi
         await smtp.SendAsync(message);
         await smtp.DisconnectAsync(true);
     }
+    private string ContactRecipient => configuration["ContactForm:Recipient"] is { Length: > 0 } recipient
+        ? recipient : "secretary@samplvillages.org.nz";
+
     public Task SendContactEmail(string fullName, string email, string subject, string phone, string message) =>
-        Send(Setting("ToEmail"), $"Contact Form: {subject}", new TextPart("plain") {
+        Send(ContactRecipient, $"Contact Form: {subject}", new TextPart("plain") {
             Text = $"New SAMCT contact message\n\nName: {fullName}\nEmail: {email}\nPhone: {phone}\nSubject: {subject}\n\n{message}"
         }, fullName, email);
     public Task SendPasswordResetEmail(string toEmail, string resetLink) => Send(toEmail, "Reset your SAMCT password",

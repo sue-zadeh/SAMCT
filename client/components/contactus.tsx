@@ -243,6 +243,36 @@ function ContactUs() {
             </div>
           </div>
         </section>
+
+        <section className="row justify-content-center mt-4" aria-labelledby="settlements-heading">
+          <div className="col-lg-8">
+            <div className="p-4 p-md-5 border rounded-4 shadow-sm bg-white">
+              <h2 id="settlements-heading" className="h4 fw-bold mb-3">
+                Retirement village settlements
+              </h2>
+              <p className="mb-2">
+                For retirement village relationship and settlement enquiries,
+                you can contact Jan Signal at Covenant.
+              </p>
+              <p className="fw-semibold mb-1">Jan Signal</p>
+              <p className="text-secondary mb-3">
+                Senior Relationship and Settlements Manager - Retirement Village
+              </p>
+              <p className="mb-2">
+                Mobile: <a href="tel:+64276417261">027 641 7261</a>
+              </p>
+              <p className="mb-2">
+                Phone: <a href="tel:+6494750742">+64 9 475 0742</a>
+              </p>
+              <p className="mb-2">
+                Email: <a href="mailto:jan@covenant.co.nz">jan@covenant.co.nz</a>
+              </p>
+              <p className="mb-0">
+                Website: <a href="https://covenant.co.nz" target="_blank" rel="noopener noreferrer">covenant.co.nz</a>
+              </p>
+            </div>
+          </div>
+        </section>
       </main>
     </>
   )

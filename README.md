@@ -79,6 +79,8 @@ Set these under **Azure App Service → Settings → Environment variables → A
 
 The actual Azure hostname is shown on the Web App **Overview** page. Update the publish-profile secret after resetting publishing credentials; never paste the profile or private values into GitHub code or issues. Open **Monitoring → Log stream** to investigate a failed startup.
 
+**Contact form emails:** Messages are saved to the database and sent to **secretary@samplvillages.org.nz** by default. The address is configured under `ContactForm:Recipient` in `server/appsettings.json`. If the organisation changes the recipient, set `ContactForm__Recipient` in the Azure App Service settings. The previous `EmailSettings__ToEmail` setting is not used for contact messages. SMTP still needs `EmailSettings__SmtpHost`, `EmailSettings__SmtpPort`, `EmailSettings__SmtpUser` and `EmailSettings__SmtpPassword` in Azure. Confirm by sending one test form after deployment. The sender mailbox does not need to be the Secretary mailbox.
+
 **File uploads:** Production uploads are intentionally **disabled** until a private, approved file scanning/storage solution is installed. Published brochure JPEGs bundled with the server may still be displayed. Do not switch on uploads for an internet-facing deployment without a safe replacement. This restriction affects new document/photo uploads and some historical uploaded files.
 
 **Before public handover:** Rotate exposed credentials, confirm roles and resident data, review brochure publication, check database migrations and backups, verify email settings, and test login and permissions on the live Azure URL. A successfully completed GitHub deployment is not itself a security audit.
