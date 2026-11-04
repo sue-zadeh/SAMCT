@@ -1,0 +1,124 @@
+{
+  "village": "Whitianga",
+  "listing": "RW5199",
+  "address": "23 Seascape Avenue, Whitianga",
+  "source": "https://www.richardsons.co.nz/property/RW5199/23-seascape-avenue-whitianga/",
+  "sourceCredit": "Richardsons Real Estate Whitianga",
+  "note": "Agent images of a similar home. Some interiors are virtually staged. Keep the original labels.",
+  "photos": [
+    {
+      "file": "seascape-01.jpg",
+      "sourceImage": "https://webimages.propertysuite.co.nz/richardsons/listing-profile-main/26C03/RW5199.jpg",
+      "sha256": "b9cb35089bc5c0a8b8b6fa3481b262465c4ff98d994edd57d07908c2df2605b1",
+      "bytes": 404955
+    },
+    {
+      "file": "seascape-02.jpg",
+      "sourceImage": "https://webimages.propertysuite.co.nz/richardsons/listing-profile-main/26C04/RW5199.jpg",
+      "sha256": "ce6a434512f46cabc78974bb83af1969f404fcb95c9ee82654ae5d1fdd4a03b6",
+      "bytes": 431915
+    },
+    {
+      "file": "seascape-03.jpg",
+      "sourceImage": "https://webimages.propertysuite.co.nz/richardsons/listing-profile-main/26C05/RW5199.jpg",
+      "sha256": "692e009379b6413ca5576ef8b29466c1c2ae5201ccf8e6b9c09595f9269459eb",
+      "bytes": 387899
+    },
+    {
+      "file": "seascape-04.jpg",
+      "sourceImage": "https://webimages.propertysuite.co.nz/richardsons/listing-profile-main/26C06/RW5199.jpg",
+      "sha256": "f1d85e39634590c1816f29372c8e3856149b24c0852f56d19331390430bbe44e",
+      "bytes": 156743
+    },
+    {
+      "file": "seascape-05.jpg",
+      "sourceImage": "https://webimages.propertysuite.co.nz/richardsons/listing-profile-main/26C07/RW5199.jpg",
+      "sha256": "5c283583ed3ec33d1b35301b415cfe0c659af06b98cb980a7221667d660f6e6c",
+      "bytes": 174436
+    },
+    {
+      "file": "seascape-06.jpg",
+      "sourceImage": "https://webimages.propertysuite.co.nz/richardsons/listing-profile-main/26C08/RW5199.jpg",
+      "sha256": "8c08163a03a73eeb4e97fc718542493cc7c4f21707fafe123bc38d8f5007145c",
+      "bytes": 193436
+    },
+    {
+      "file": "seascape-07.jpg",
+      "sourceImage": "https://webimages.propertysuite.co.nz/richardsons/listing-profile-main/26C09/RW5199.jpg",
+      "sha256": "2d5357357e8d6e750d3088c038404049170d642b8f731aed9e7059b4fa6818e9",
+      "bytes": 205357
+    },
+    {
+      "file": "seascape-08.jpg",
+      "sourceImage": "https://webimages.propertysuite.co.nz/richardsons/listing-profile-main/26C0A/RW5199.jpg",
+      "sha256": "56bad35599959296f6e37193ed0bc03d72234cec06a8efe430d62aa6d63c6a1f",
+      "bytes": 155254
+    },
+    {
+      "file": "seascape-09.jpg",
+      "sourceImage": "https://webimages.propertysuite.co.nz/richardsons/listing-profile-main/26C0B/RW5199.jpg",
+      "sha256": "a81c08e5dc292dcb76083b82dc89e2f545c15ac7bceeaae35eeb4aee0c9ebd1e",
+      "bytes": 125512
+    },
+    {
+      "file": "seascape-10.jpg",
+      "sourceImage": "https://webimages.propertysuite.co.nz/richardsons/listing-profile-main/26C0C/RW5199.jpg",
+      "sha256": "a224f86981b3a80b89b8d624f71995ee4de641690f25eede0524702dc39d6b3e",
+      "bytes": 137266
+    },
+    {
+      "file": "seascape-11.jpg",
+      "sourceImage": "https://webimages.propertysuite.co.nz/richardsons/listing-profile-main/26C0D/RW5199.jpg",
+      "sha256": "460e221cabb2d9da5804e4e68d0c9df0d428b9792f5bfa1ea30abe7c00527747",
+      "bytes": 129939
+    },
+    {
+      "file": "seascape-12.jpg",
+      "sourceImage": "https://webimages.propertysuite.co.nz/richardsons/listing-profile-main/26C0E/RW5199.jpg",
+      "sha256": "34a09d112ff91831ef2386d357b52a49a308dcd818bfd2b30fa745088b4f92a6",
+      "bytes": 138442
+    },
+    {
+      "file": "seascape-13.jpg",
+      "sourceImage": "https://webimages.propertysuite.co.nz/richardsons/listing-profile-main/26C0F/RW5199.jpg",
+      "sha256": "e5e4ab83d8b7cb8e3e8edfbf763d3d7403adbbf629734ae9136c573736ac4e3d",
+      "bytes": 136494
+    },
+    {
+      "file": "seascape-14.jpg",
+      "sourceImage": "https://webimages.propertysuite.co.nz/richardsons/listing-profile-main/26C10/RW5199.jpg",
+      "sha256": "7eb281146ff563f0600c97fc3e02f73f666e8e8b1b10327b6bfe845e9b3c5408",
+      "bytes": 101038
+    },
+    {
+      "file": "seascape-15.jpg",
+      "sourceImage": "https://webimages.propertysuite.co.nz/richardsons/listing-profile-main/26C11/RW5199.jpg",
+      "sha256": "877deb267f14a7bf688f117d998d206c135ab569bf836449ada6e56fc6e6d2a2",
+      "bytes": 121868
+    },
+    {
+      "file": "seascape-16.jpg",
+      "sourceImage": "https://webimages.propertysuite.co.nz/richardsons/listing-profile-main/26C12/RW5199.jpg",
+      "sha256": "2ed1d5241a83c747af66a98710b52e78d208164126dc0db897a7bbef89525d82",
+      "bytes": 235738
+    },
+    {
+      "file": "seascape-17.jpg",
+      "sourceImage": "https://webimages.propertysuite.co.nz/richardsons/listing-profile-main/26C13/RW5199.jpg",
+      "sha256": "693d187d462778da1e95a988abeb5dcd9add9860e60892667dd29456f61c38c3",
+      "bytes": 197330
+    },
+    {
+      "file": "seascape-18.jpg",
+      "sourceImage": "https://webimages.propertysuite.co.nz/richardsons/listing-profile-main/26C14/RW5199.jpg",
+      "sha256": "08d35808b3451b89c02b8e3832b6c1265f052662969af82cdf6935fb8b7fc077",
+      "bytes": 185481
+    },
+    {
+      "file": "seascape-19.jpg",
+      "sourceImage": "https://webimages.propertysuite.co.nz/richardsons/listing-profile-main/26C15/RW5199.jpg",
+      "sha256": "ff6c5f9a57281318815b7877878a1a2b3a71ac79cb73bd33dba354bc4c0db2b7",
+      "bytes": 141290
+    }
+  ]
+}

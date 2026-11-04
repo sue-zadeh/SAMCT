@@ -1,7 +1,15 @@
-// Dated, temporary public listing. Photos show a similar home, some staged.
-// The files are still hosted by Richardsons, not uploaded to our repository.
-// Replace with approved property photos when supplied by the village team.
+// Dated, temporary Richardsons listing. Images are bundled locally from
+// client/assets/Whitianga so the site does not depend on external image links.
+// They show a similar unit, not necessarily the advertised property.
 import type { MarketingContent } from './marketing-content-editor'
+
+const localPhotos = Object.entries(import.meta.glob('../assets/Whitianga/seascape-*.jpg', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+}))
+  .sort(([first], [second]) => first.localeCompare(second))
+  .map(([, image]) => image as string)
 
 export const whitiangaPublicListing: MarketingContent[] = [
   {
@@ -11,9 +19,7 @@ export const whitiangaPublicListing: MarketingContent[] = [
     "title": "Whitianga Independent Lifestyle Village",
     "description": "Independent retirement living near the centre of Whitianga, close to shops, supermarkets, medical care and the beach. Village homes are offered under an Occupation Right Agreement (ORA), not as freehold properties.\n\nThis information is a temporary guide based on the current Richardsons listing. Official marketing photos and updated details are being requested from Caroline and Abby. The present listing images show a similar refurbished home, not necessarily the home for sale.",
     "address": "",
-    "images": [
-      "https://webimages.propertysuite.co.nz/richardsons/listing-profile-main/26C04/RW5199.jpg"
-    ],
+    "images": localPhotos[1] ? [localPhotos[1]] : [],
     "priceNzd": null,
     "availability": "Enquire",
     "sourceLabel": "Richardsons Real Estate · RW5199 · checked 4 November 2026",
@@ -28,16 +34,7 @@ export const whitiangaPublicListing: MarketingContent[] = [
     "title": "23 Seascape Avenue, Whitianga",
     "description": "A two-bedroom, 122 m² home on a corner site, set back from the road. Richardsons describes double glazing, LED lights, an updated kitchen and mobility-friendly bathroom, new carpets, a heat pump, a hot-water cylinder, a separate laundry, an internal garage and storage. Lawns and exterior maintenance are taken care of. Close to local shops, healthcare and the beach.\n\nThe home is offered under an Occupation Right Agreement (ORA), not freehold ownership. Ask Abby to confirm the advertised price, current availability, service fees and agreement terms.\n\nIMPORTANT PHOTO NOTE: The agent says these pictures show a SIMILAR home. Some furniture has been virtually staged. They are reference pictures, not verified photos of 23 Seascape Avenue.",
     "address": "23 Seascape Avenue, Whitianga",
-    "images": [
-      "https://webimages.propertysuite.co.nz/richardsons/listing-profile-main/26C03/RW5199.jpg",
-      "https://webimages.propertysuite.co.nz/richardsons/listing-profile-main/26C04/RW5199.jpg",
-      "https://webimages.propertysuite.co.nz/richardsons/listing-profile-main/26C08/RW5199.jpg",
-      "https://webimages.propertysuite.co.nz/richardsons/listing-profile-main/26C09/RW5199.jpg",
-      "https://webimages.propertysuite.co.nz/richardsons/listing-profile-main/26C0A/RW5199.jpg",
-      "https://webimages.propertysuite.co.nz/richardsons/listing-profile-main/26C0E/RW5199.jpg",
-      "https://webimages.propertysuite.co.nz/richardsons/listing-profile-main/26C0F/RW5199.jpg",
-      "https://webimages.propertysuite.co.nz/richardsons/listing-profile-main/26C11/RW5199.jpg"
-    ],
+    "images": localPhotos,
     "priceNzd": 650000,
     "availability": "Enquire",
     "sourceLabel": "Richardsons Real Estate · RW5199 · checked 4 November 2026",
@@ -52,10 +49,7 @@ export const whitiangaPublicListing: MarketingContent[] = [
     "title": "Seascape Avenue",
     "description": "Seascape Avenue is part of Whitianga Independent Lifestyle Village. Richardsons describes this village as being near the town centre, supermarkets, medical centre and beach.\n\nThe aerial and house images here are reference photos from the 23 Seascape Avenue advertisement. The house image shows a similar unit, not every home on the street.",
     "address": "Seascape Avenue, Whitianga",
-    "images": [
-      "https://webimages.propertysuite.co.nz/richardsons/listing-profile-main/26C04/RW5199.jpg",
-      "https://webimages.propertysuite.co.nz/richardsons/listing-profile-main/26C03/RW5199.jpg"
-    ],
+    "images": [localPhotos[1], localPhotos[0]].filter((photo): photo is string => Boolean(photo)),
     "priceNzd": null,
     "availability": "Enquire",
     "sourceLabel": "Richardsons Real Estate · RW5199 · checked 4 November 2026",
